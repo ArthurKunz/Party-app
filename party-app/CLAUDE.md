@@ -79,14 +79,13 @@ chats and stories.
 ## Data model (see SCHEMA.md for full detail)
 Core tables: profiles, events, rsvps, tasks (stubbed), votes (stubbed)
 Key fields:
-- events.visibility: 'public' | 'private'
 - events.invite_code: short random string for shareable links
 - rsvps.status: 'going' | 'not_going'
 - profiles.party_score: integer, starts at 0, used in V2
 
 ## Folder structure
 - app/ - all routes
-- app/e/[invite_code]/ — public event page via shareable link
+- app/e/[invite_code]/ — event page via shareable link
 - components/ — shared UI components
 - lib/ — Supabase client setup and utility functions
 - types/ — generated Supabase types and custom types

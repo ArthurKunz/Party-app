@@ -15,7 +15,7 @@ No role column exists on profiles — roles are always derived from relationship
 As a non-user, I can open an event link, see basic info, and get prompted to sign up
 As a user, I can sign up and log in with email
 As a user, I have a profile with my name and age
-As a user, I can RSVP to a public event
+As a user, I can join an event
 As a user, I can open a private event via link and RSVP
 As a host, I can create an event with a name, description, type, date, time, and location
 As a host, I can see who is coming with their name, age, and headcount

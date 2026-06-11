@@ -18,7 +18,6 @@
 | title         | text      |                                          |
 | description   | text      |                                          |
 | event_type    | text      | e.g. chill, rave, dinner — stubbed V1    |
-| visibility    | text      | 'public' or 'private'                    |
 | invite_code   | text      | unique short nanoid — used for link      |
 | event_date    | timestamp |                                          |
 | location      | text      |                                          |
@@ -55,7 +54,6 @@
 | created_at    | timestamp |                                          |
 
 ## RLS policies (write in Supabase before any API calls)
-- Anyone can read events where visibility = 'public'
 - Only the host can update or delete their own event
 - Only authenticated users can create an RSVP
 - Users can only read their own RSVPs

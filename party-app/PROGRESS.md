@@ -8,7 +8,6 @@ In this file you will see what features are done and what we still have implemen
 
 - Profile: display name, initials avatar and age
 - Create event: name, description, type, date, time, location
-- Two event types: public (visible to all) or private (link only)
 - Simple RSVP: coming / not coming
 - Host guest list: attendee names, ages, total headcount
 - Shareable link format: /e/[invite_code] — no auth required to view basic info

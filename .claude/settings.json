@@ -1,0 +1,21 @@
+{
+    "permissions": {
+      "allow": [
+        "Bash(npm run dev)",
+        "Bash(npm test)",
+        "Bash(npm run build)",
+        "Bash(npm run lint)",
+        "Bash(npm run type-check)",
+        "Bash(git *)",
+        "Bash(npx supabase *)",
+        "Bash(supabase *)"
+      ],
+      "deny": [
+        "Bash(rm -rf *)",
+        "Bash(sudo *)"
+      ]
+    },
+    "env": {
+      "NODE_ENV": "development"
+    }
+  }

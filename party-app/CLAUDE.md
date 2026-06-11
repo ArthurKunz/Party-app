@@ -108,6 +108,9 @@ Next task: onboarding process with full name, age and initials avatar
 These apply on top of all project-specific rules above.
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
+### If you can choose from using "" or '' just the latter
+Don't ask. Don't overthink, but doublecheck if you can really use '' instead of ""
+
 ### Think before coding
 Don't assume. Don't hide confusion. Surface tradeoffs.
 

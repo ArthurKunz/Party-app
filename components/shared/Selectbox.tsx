@@ -177,8 +177,8 @@ export default function Selectbox<Value extends string = string>({
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
         className={cn(
-          'flex h-12 w-full items-center gap-2 rounded border border-[var(--color-input-border)] bg-[var(--color-input-bg)] px-3 text-xs text-[var(--color-light-body)] outline-none transition-[box-shadow,opacity] hover:opacity-95 focus-visible:ring-2 focus-visible:ring-[var(--color-brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-secondary)] disabled:cursor-not-allowed disabled:opacity-50',
-          center ? 'relative justify-center' : 'justify-between',
+          'flex h-12 w-full items-center rounded-xl border border-border-input bg-background-input px-4 text-sm text-input outline-none disabled:cursor-not-allowed disabled:opacity-50',
+          center ? 'justify-center' : 'justify-between',
           triggerClassName,
         )}
         onClick={() => {
@@ -191,8 +191,8 @@ export default function Selectbox<Value extends string = string>({
         <span
           className={cn(
             'min-w-0 truncate',
-            center ? 'w-full text-center' : 'flex-1 text-left',
-            !selectedOption && 'text-[var(--color-light-placeholder)]',
+            center ? 'w-full text-center' : 'flex-1 text-center',
+            !selectedOption && 'text-placeholder',
           )}
         >
           {displayLabel}
@@ -205,7 +205,7 @@ export default function Selectbox<Value extends string = string>({
           role='listbox'
           aria-labelledby={baseId}
           className={cn(
-            'absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded border border-[var(--color-input-border)] bg-[var(--color-secondary)] py-1 shadow-lg',
+            'absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-border-input bg-background-input py-1 shadow-lg',
             listboxClassName,
           )}
         >
@@ -223,9 +223,7 @@ export default function Selectbox<Value extends string = string>({
                   aria-disabled={opt.disabled ?? false}
                   id={`${listboxId}-opt-${index}`}
                   className={cn(
-                    'cursor-pointer px-3 py-2 text-sm text-[var(--color-light-body)]',
-                    center && 'text-center',
-                    isHighlighted && 'bg-[var(--color-brand)]/20',
+                    'cursor-pointer px-3 py-2 text-sm text-input text-center',
                     isSelected && 'font-medium',
                     opt.disabled && 'cursor-not-allowed opacity-40',
                     optionClassName,

@@ -1,14 +1,7 @@
-export type PersonalDataObject = {
-  firstname: string,
-  surname: string,
-  gender: string
+export interface NameFormProps {
+  onSuccess: (firstname: string, surname: string) => void
 }
 
-export interface PersonalDataProps {
-  onSuccess: (data: PersonalDataObject) => void
-}
-
-export interface ProfilePictureProps {
-  onSuccess: (avatarUrl: string) => void
-  onGoBack: () => void
+export interface BirthdateFormProps {
+  onSuccess: (birthday: string) => void
 }

@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
-import type { ProfilePictureProps } from '../types/onboarding.types'
+interface ProfilePictureProps {
+  onSuccess: (avatarUrl: string) => void
+  onGoBack: () => void
+}
 import { MAX_BYTES, BUCKET } from '../constants/onboarding.constants'
 import { getSession } from '../services/onboarding.service'
 

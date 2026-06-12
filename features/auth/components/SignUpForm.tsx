@@ -6,8 +6,6 @@ import type { SignUpProps } from '../types/auth.types'
 import { usePasswordValidation } from '../hooks/usePasswordValidation'
 import { signUpWithEmail, signUpWithGoogle } from '../services/auth.service'
 
-const inputClass = 'w-full px-4 h-12 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30 placeholder:text-white/40'
-
 export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -36,32 +34,27 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
 
   return (
     <div className='w-full flex flex-col gap-8'>
-      <div className='flex flex-col items-center gap-2'>
-        <h1 className='text-3xl font-bold text-white'>Sign Up</h1>
-        <span className='text-sm text-white/50 text-center'>
-          Erstelle ein Account und lerne <span className='text-[#D47AFF] font-semibold'>Leipzig</span> kennen
-        </span>
-      </div>
+      <h1 className='text-3xl text-center font-bold text-headline'>Sign Up</h1>
 
       <form className='flex flex-col gap-4' onSubmit={handleSignUp} noValidate>
         <div className='flex flex-col gap-2'>
-          <label className='text-sm text-white/80'>Email</label>
+          <label className='text-sm text-label'>Email</label>
           <input
             type='email'
             placeholder='max.mustermann@example.com'
-            className={inputClass}
+            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className='flex flex-col gap-2'>
-          <label className='text-sm text-white/80'>Passwort</label>
+          <label className='text-sm text-label'>Passwort</label>
           <input
             type='password'
             placeholder='Erstelle ein Passwort'
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className={inputClass}
+            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
           {showPasswordWarning && (
             <p className='text-xs text-red-400' role='alert'>
@@ -73,7 +66,7 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
         <div className='flex flex-col gap-4 mt-4'>
           <button
             type='submit'
-            className='w-full h-12 rounded-full bg-white text-[#09090B] text-sm font-semibold'
+            className='w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
           >
             Sign up
           </button>
@@ -85,7 +78,7 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
           <button
             type='button'
             onClick={handleGoogleSignUp}
-            className='flex w-full items-center justify-center gap-2 h-12 rounded-full bg-white/5 border border-white/10 text-white text-sm font-semibold'
+            className='flex w-full items-center justify-center gap-2 w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
           >
             <Image src='/icons/Google.png' alt='' width={18} height={18} className='shrink-0' />
             Google
@@ -93,10 +86,10 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
         </div>
       </form>
 
-      <p className='text-xs text-white/40 text-center'>
+      <p className='text-xs text-hint text-center'>
         Du hast schon ein Account?{' '}
-        <span className='text-[#D47AFF] font-semibold cursor-pointer' onClick={onGoToSignIn}>
-          Sign In
+        <span className='text-[#fff] font-semibold cursor-pointer' onClick={onGoToSignIn}>
+          Login
         </span>
       </p>
     </div>

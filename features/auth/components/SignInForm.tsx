@@ -7,8 +7,6 @@ import { sendResetPasswordEmail, signInWithGoogle, signInWithPassword } from '..
 
 type SignInStep = 'signin' | 'forgot' | 'forgot-sent'
 
-const inputClass = 'w-full px-4 h-12 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30 placeholder:text-white/40'
-
 export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -47,27 +45,23 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
   if (step === 'forgot') {
     return (
       <div className='w-full flex flex-col gap-8'>
-        <div className='flex flex-col items-center gap-2'>
-          <h1 className='text-3xl font-bold text-white text-center'>Password zurücksetzen</h1>
-          <span className='text-sm text-white/50 text-center'>
-            Gib deine Emailadresse ein und wir senden dir eine{' '}
-            <span className='text-[#D47AFF] font-semibold'>Zurücksetzung</span>
-          </span>
-        </div>
+        <h1 className='text-3xl text-center font-bold text-headline'>Password zurücksetzen</h1>
+
         <div className='flex flex-col gap-2'>
-          <label className='text-sm text-white/80'>Email</label>
+          <label className='text-sm text-label'>Email</label>
           <input
             type='email'
             placeholder='Email'
             value={resetEmail}
             onChange={(e) => setResetEmail(e.target.value)}
-            className={inputClass}
+            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
         </div>
+
         <button
           type='button'
           onClick={handleForgotPassword}
-          className='w-full h-12 rounded-full bg-white text-[#09090B] text-sm font-semibold'
+          className='w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
         >
           Weiter
         </button>
@@ -77,50 +71,44 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
 
   if (step === 'forgot-sent') {
     return (
-      <div className='w-full flex flex-col items-center gap-8'>
-        <div className='flex flex-col items-center gap-2'>
-          <h1 className='text-3xl font-bold text-white text-center'>Passwort zurücksetzen</h1>
-          <span className='text-sm text-white/50 text-center'>
-            Wir haben einen Link an{' '}
-            <span className='text-[#D47AFF] font-semibold'>{resetEmail}</span>{' '}
-            gesendet
-          </span>
-        </div>
+      <div className='w-full flex flex-col gap-8'>
+        <h1 className='text-3xl text-center font-bold text-headline'>Passwort zurücksetzen</h1>
+
+        <p className='text-xs text-hint text-center'>
+          Wir haben einen Link an{' '}
+          <span className='text-[#fff] font-semibold'>{resetEmail}</span>{' '}
+          gesendet
+        </p>
       </div>
     )
   }
 
   return (
     <div className='w-full flex flex-col gap-8'>
-      <div className='flex flex-col items-center gap-2'>
-        <h1 className='text-3xl font-bold text-white'>Login</h1>
-        <span className='text-sm text-white/50 text-center'>
-          Log dich ein und lerne <span className='text-[#D47AFF] font-semibold'>Leipzig</span> kennen
-        </span>
-      </div>
+      <h1 className='text-3xl text-center font-bold text-headline'>Login</h1>
 
       <form className='flex flex-col gap-4' onSubmit={handleSignIn} noValidate>
         <div className='flex flex-col gap-2'>
-          <label className='text-sm text-white/80'>Email</label>
+          <label className='text-sm text-label'>Email</label>
           <input
             type='email'
             placeholder='max.mustermann@example.com'
-            className={inputClass}
+            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className='flex flex-col gap-2'>
-          <label className='text-sm text-white/80'>Passwort</label>
+          <label className='text-sm text-label'>Passwort</label>
           <input
             type='password'
             placeholder='Gib dein Passwort ein'
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className={inputClass}
+            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
           <span
-            className='text-xs text-white/40 cursor-pointer hover:text-white/60 transition-colors'
+            className='text-xs text-hint cursor-pointer'
             onClick={() => setStep('forgot')}
           >
             Passwort vergessen?
@@ -130,7 +118,7 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
         <div className='flex flex-col gap-4 mt-4'>
           <button
             type='submit'
-            className='w-full h-12 rounded-full bg-white text-[#09090B] text-sm font-semibold'
+            className='w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
           >
             Login
           </button>
@@ -142,7 +130,7 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
           <button
             type='button'
             onClick={handleGoogleSignIn}
-            className='flex w-full items-center justify-center gap-2 h-12 rounded-full bg-white/5 border border-white/10 text-white text-sm font-semibold'
+            className='flex w-full items-center justify-center gap-2 w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
           >
             <Image src='/icons/Google.png' alt='' width={18} height={18} className='shrink-0' />
             Google
@@ -150,9 +138,9 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
         </div>
       </form>
 
-      <p className='text-xs text-white/40 text-center'>
+      <p className='text-xs text-hint text-center'>
         Noch kein Account?{' '}
-        <span className='text-[#D47AFF] font-semibold cursor-pointer' onClick={onGoToSignUp}>
+        <span className='text-[#fff] font-semibold cursor-pointer' onClick={onGoToSignUp}>
           Sign Up
         </span>
       </p>

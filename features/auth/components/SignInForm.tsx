@@ -7,6 +7,8 @@ import { sendResetPasswordEmail, signInWithGoogle, signInWithPassword } from '..
 
 type SignInStep = 'signin' | 'forgot' | 'forgot-sent'
 
+const inputClass = 'w-full px-4 h-12 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30 placeholder:text-white/40'
+
 export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -44,27 +46,30 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
 
   if (step === 'forgot') {
     return (
-      <div className='w-full flex flex-col items-center gap-15'>
-        <div className='w-full h-full flex flex-col items-center gap-2.5'>
-          <h1 className='text-4xl font-bold text-center text-light-heading'>Password zurücksetzen</h1>
-          <span className='text-center text-sm text-light-subheading'>Gib deine Emailadresse ein und wir werden eine <span className='text-brand text-sm font-semibold '>Zurücksetzung</span> an dich senden</span>
+      <div className='w-full flex flex-col gap-8'>
+        <div className='flex flex-col items-center gap-2'>
+          <h1 className='text-3xl font-bold text-white text-center'>Password zurücksetzen</h1>
+          <span className='text-sm text-white/50 text-center'>
+            Gib deine Emailadresse ein und wir senden dir eine{' '}
+            <span className='text-[#D47AFF] font-semibold'>Zurücksetzung</span>
+          </span>
         </div>
-        <div className='w-full flex flex-col gap-2'>
-          <label className='text-sm text-light-label'>Email</label>
+        <div className='flex flex-col gap-2'>
+          <label className='text-sm text-white/80'>Email</label>
           <input
-          type='Email'
-          placeholder='Email'
-          value={resetEmail}
-          onChange={(e) => setResetEmail(e.target.value)}
-          className='w-full text-light-input text-xs px-3 h-12 bg-input-bg border border-input-border rounded-md text-sm text-light focus:outline-none placeholder:text-xs placeholder:text-light-placeholder'
+            type='email'
+            placeholder='Email'
+            value={resetEmail}
+            onChange={(e) => setResetEmail(e.target.value)}
+            className={inputClass}
           />
         </div>
-        <button 
-            type='submit'
-            onClick={handleForgotPassword}
-            className='flex w-full items-center justify-center gap-2 rounded-full bg-button-bg py-3 text-sm font-semibold'
+        <button
+          type='button'
+          onClick={handleForgotPassword}
+          className='w-full h-12 rounded-full bg-white text-[#09090B] text-sm font-semibold'
         >
-          weiter
+          Weiter
         </button>
       </div>
     )
@@ -72,78 +77,85 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
 
   if (step === 'forgot-sent') {
     return (
-      <div className='w-full flex flex-col items-center gap-15'>
-        <div className='w-full h-full flex flex-col items-center gap-2.5'>
-          <h1 className='text-4xl font-bold text-center text-light-heading'>Passwort zurücksetzen</h1>
-          <span className='text-center text-sm text-light-subheading'>Wir haben ein Zurücksetzungslink an <span className='text-brand text-sm font-semibold '>{resetEmail}</span> gesendet</span>
+      <div className='w-full flex flex-col items-center gap-8'>
+        <div className='flex flex-col items-center gap-2'>
+          <h1 className='text-3xl font-bold text-white text-center'>Passwort zurücksetzen</h1>
+          <span className='text-sm text-white/50 text-center'>
+            Wir haben einen Link an{' '}
+            <span className='text-[#D47AFF] font-semibold'>{resetEmail}</span>{' '}
+            gesendet
+          </span>
         </div>
       </div>
     )
   }
 
   return (
-    <div className='w-full flex flex-col items-center gap-15'>
-
-      <div className='w-full h-full flex flex-col items-center gap-2.5'>
-        <h1 className='text-4xl font-bold text-light-heading'>Login</h1>
-        <span className='text-center text-sm text-light-subheading'>Log dich ein und lerne <span className='text-brand text-sm font-semibold '>Leipzig</span> kennen</span>
+    <div className='w-full flex flex-col gap-8'>
+      <div className='flex flex-col items-center gap-2'>
+        <h1 className='text-3xl font-bold text-white'>Login</h1>
+        <span className='text-sm text-white/50 text-center'>
+          Log dich ein und lerne <span className='text-[#D47AFF] font-semibold'>Leipzig</span> kennen
+        </span>
       </div>
 
-      <form className='w-full flex flex-col gap-12.5' onSubmit={handleSignIn} noValidate>
-        <div className='w-full'>
-          <div className='w-full flex flex-col gap-5'>
-            <div className='w-full flex flex-col gap-2'>
-              <label className='text-sm text-light-label'>Email</label>
-              <input
-              type='email'
-              placeholder='max.mustermann@example.com'
-              className='w-full text-light-input text-xs px-3 h-12 bg-input-bg border border-input-border rounded-md text-sm text-light focus:outline-none placeholder:text-xs placeholder:text-light-placeholder'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className='w-full flex flex-col gap-2'>
-              <label className='text-sm text-light-label'>Passwort</label>
-              <input
-              type='password'
-              placeholder='Gib dein Passwort ein'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className='w-full text-light-input text-xs px-3 h-12 bg-input-bg border border-input-border rounded-md text-sm text-light focus:outline-none placeholder:text-xs placeholder:text-light-placeholder'
-              />
-              <span 
-              className='text-xs text-light-subheading cursor-pointer'
-              onClick={()=> setStep('forgot')}
-              >Password vergessen?</span>
-            </div>
-          </div>
+      <form className='flex flex-col gap-4' onSubmit={handleSignIn} noValidate>
+        <div className='flex flex-col gap-2'>
+          <label className='text-sm text-white/80'>Email</label>
+          <input
+            type='email'
+            placeholder='max.mustermann@example.com'
+            className={inputClass}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        <div className='flex flex-col gap-2'>
+          <label className='text-sm text-white/80'>Passwort</label>
+          <input
+            type='password'
+            placeholder='Gib dein Passwort ein'
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={inputClass}
+          />
+          <span
+            className='text-xs text-white/40 cursor-pointer hover:text-white/60 transition-colors'
+            onClick={() => setStep('forgot')}
+          >
+            Passwort vergessen?
+          </span>
         </div>
 
-        <div className='w-full flex flex-col gap-5'>
-          <button 
+        <div className='flex flex-col gap-4 mt-4'>
+          <button
             type='submit'
-            className='flex w-full items-center justify-center gap-2 rounded-full bg-button-bg py-3 text-sm font-semibold'
+            className='w-full h-12 rounded-full bg-white text-[#09090B] text-sm font-semibold'
           >
-            Sign Up
+            Login
           </button>
-          <div className='w-full flex justify-between items-center'>
-            <div className='w-full h-0.25 bg-divider-bg'></div>
-            <span className='text-xs text-light-muted px-2.5'>Oder</span>
-            <div className='w-full h-0.25 bg-divider-bg'></div>
+          <div className='flex items-center gap-3'>
+            <div className='flex-1 h-px bg-white/10' />
+            <span className='text-xs text-white/40'>or</span>
+            <div className='flex-1 h-px bg-white/10' />
           </div>
           <button
             type='button'
             onClick={handleGoogleSignIn}
-            className='flex w-full items-center justify-center gap-2 rounded-full bg-button-bg py-3 text-sm font-semibold'
+            className='flex w-full items-center justify-center gap-2 h-12 rounded-full bg-white/5 border border-white/10 text-white text-sm font-semibold'
           >
             <Image src='/icons/Google.png' alt='' width={18} height={18} className='shrink-0' />
             Google
           </button>
         </div>
       </form>
-      <div className='absolute flex justify-center items-center w-full h-10 bg-primary bottom-0 left-[50%] translate-x-[-50%]'>
-        <span className='text-xs text-center text-light-muted'>Noch kein Account? <span className='text-brand text-sm font-semibold cursor-pointer' onClick={() => onGoToSignUp()}>Sign Up</span></span>
-      </div>
+
+      <p className='text-xs text-white/40 text-center'>
+        Noch kein Account?{' '}
+        <span className='text-[#D47AFF] font-semibold cursor-pointer' onClick={onGoToSignUp}>
+          Sign Up
+        </span>
+      </p>
     </div>
   )
 }

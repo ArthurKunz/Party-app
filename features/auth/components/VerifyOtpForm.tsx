@@ -19,12 +19,16 @@ export default function VerifyOtpForm({ email, onSuccess }: VerifyProps) {
   }
 
   return (
-    <div className='w-full flex flex-col items-center gap-15'>
-      <div className='w-full h-full flex flex-col items-center gap-2.5'>
-        <h1 className='text-4xl font-bold text-light-heading'>Verifizierung</h1>
-        <span className='text-center text-sm text-light-subheading'>Wir haben ein 6 stelligen Code an <span className='text-brand text-sm font-semibold '>{email}</span> geschickt</span>
+    <div className='w-full flex flex-col gap-8'>
+      <div className='flex flex-col items-center gap-2'>
+        <h1 className='text-3xl font-bold text-white text-center'>Verifizierung</h1>
+        <span className='text-sm text-white/50 text-center'>
+          Wir haben einen 6-stelligen Code an{' '}
+          <span className='text-[#D47AFF] font-semibold'>{email}</span>{' '}
+          geschickt
+        </span>
       </div>
-      <div className='w-full flex justify-between gap-2.5'>
+      <div className='w-full flex justify-between gap-2'>
         {digits.map((digit, index) => (
           <input
             key={index}
@@ -38,46 +42,16 @@ export default function VerifyOtpForm({ email, onSuccess }: VerifyProps) {
             onChange={(e) => handleChange(e.target.value, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             onPaste={handlePaste}
-            className='w-full text-light-input text-center text-xs px-3 h-12 bg-input-bg border border-input-border rounded-md text-sm text-light focus:outline-none placeholder:text-xs placeholder:text-light-placeholder'
+            className='w-full text-center h-12 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-white/30'
           />
         ))}
       </div>
-      <button 
-      className='flex w-full items-center justify-center gap-2 rounded-full bg-button-bg py-3 text-sm font-semibold'
-      onClick={handleVerify}
+      <button
+        className='w-full h-12 rounded-full bg-white text-[#09090B] text-sm font-semibold'
+        onClick={handleVerify}
       >
         Verify
       </button>
     </div>
   )
 }
-
-{/* 
-    <form onSubmit={handleVerify} className='flex w-full flex-col gap-4'>
-      <h2 className='text-lg font-bold'>Check your email</h2>
-      <p className='text-sm text-gray-500'>
-        We sent a code to <strong>{email}</strong>
-      </p>
-      <div className='w-full flex justify-between gap-2.5'>
-        {digits.map((digit, index) => (
-          <input
-            key={index}
-            ref={(el) => {
-              inputRefs.current[index] = el
-            }}
-            type='text'
-            inputMode='numeric'
-            maxLength={1}
-            value={digit}
-            onChange={(e) => handleChange(e.target.value, index)}
-            onKeyDown={(e) => handleKeyDown(e, index)}
-            onPaste={handlePaste}
-            className='w-full text-light-input text-xs px-3 h-12 bg-input-bg border border-input-border rounded-md text-sm text-light focus:outline-none placeholder:text-xs placeholder:text-light-placeholder'
-          />
-        ))}
-      </div>
-      <button type='submit' className='bg-green-500 text-white p-2 rounded'>
-        Verify
-      </button>
-    </form>
-*/}

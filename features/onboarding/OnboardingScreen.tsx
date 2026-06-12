@@ -21,11 +21,11 @@ export default function OnboardingScreen() {
   const router = useRouter()
   const [step, setStep] = useState<'name' | 'birthday'>('name')
   const [firstname, setFirstname] = useState('')
-  const [surname, setSurname] = useState('')
+  const [lastname, setLastname] = useState('')
 
-  const handleNameDone = (fn: string, sn: string) => {
+  const handleNameDone = (fn: string, ln: string) => {
     setFirstname(fn)
-    setSurname(sn)
+    setLastname(ln)
     setStep('birthday')
   }
 
@@ -36,7 +36,7 @@ export default function OnboardingScreen() {
     const { error } = await supabase.from('profiles').insert({
       id: session.user.id,
       firstname,
-      surname,
+      lastname,
       birthday,
     })
 

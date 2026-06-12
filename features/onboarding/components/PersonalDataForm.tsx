@@ -5,7 +5,7 @@ import type { NameFormProps } from '../types/onboarding.types'
 
 export default function PersonalDataForm({ onSuccess }: NameFormProps) {
   const [firstname, setFirstname] = useState('')
-  const [surname, setSurname] = useState('')
+  const [lastname, setLastname] = useState('')
 
   return (
     <div className='w-full flex flex-col gap-8'>
@@ -27,15 +27,15 @@ export default function PersonalDataForm({ onSuccess }: NameFormProps) {
           <input
             type='text'
             placeholder='Nachname'
-            value={surname}
-            onChange={(e) => setSurname(e.target.value)}
+            value={lastname}
+            onChange={(e) => setLastname(e.target.value)}
             className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
         </div>
       </div>
 
       <button
-        onClick={() => onSuccess(firstname, surname)}
+        onClick={() => onSuccess(firstname, lastname)}
         className='w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
       >
         Weiter

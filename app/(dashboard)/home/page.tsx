@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -32,6 +33,12 @@ export default function HomePlaceholderPage() {
           Dein Account und dein Profil sind erfolgreich erstellt.
           Die nächsten Funktionen des Dashboards sind noch in Arbeit.
         </p>
+        <Link
+          href='/create-event'
+          className='mb-3 block w-full rounded-xl bg-background-button px-4 py-2.5 text-center text-sm font-semibold text-button'
+        >
+          Party erstellen
+        </Link>
         <button
           type='button'
           onClick={handleLogout}

@@ -32,6 +32,43 @@
     --color-button-bg: #fff;
 
     --color-divider-bg: #323232;
+
+
+    /* BRAND COLORS */
+    --color-brand-pink: #FF0090;
+    --color-brand-lila: #A336FF;
+    --color-brand-blue: #161BFA;
+
+    /* BASE COLORS */
+    --color-background-main: #09090B;
+    --color-background-secondary: #151515;
+
+    /* TEXT */
+    --color-headline: #fff;
+    --color-subheadline: #949494;
+    --color-explanation: #fff;
+    --color-body: #fff;
+    --color-hint: #C6C6C6;
+    --color-placeholder: #A2A2A2;
+    --color-label: #fff;
+    --color-input: #fff;
+    --color-button: #000;
+
+    /* ELEMENTS */
+    --color-background-input: #0F0F0F;
+    --color-background-spacer: #323232;
+    --color-background-button: #fff;
+
+    /* SEMANTIC */
+    --color-warning: #FF0000;
+    --color-success: #09FF00;
+
+    /* BORDERS & RADIUS */
+    --color-border: #404040;
+    --color-border-input: #3D3D3D;
+    --color-border-button: #;
+
+    /* SPACING SCALE */
 }
 
 @layer utilities {

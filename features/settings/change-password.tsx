@@ -3,6 +3,7 @@
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { usePasswordValidation } from '@/features/auth/hooks/usePasswordValidation'
 
 interface ChangePasswordFormProps {
   onSuccess?: () => void
@@ -11,10 +12,14 @@ interface ChangePasswordFormProps {
 export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProps) {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const { passwordWarning, isPasswordValid } = usePasswordValidation(newPassword)
+  const showPasswordWarning = newPassword.length > 0 && passwordWarning !== ''
   const router = useRouter()
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!isPasswordValid) return
 
     if (newPassword !== confirmPassword) {
       alert('Passwörter stimmen nicht überein!')
@@ -50,6 +55,11 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
             required
             className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
+          {showPasswordWarning && (
+            <p className='text-xs text-red-400' role='alert'>
+              {passwordWarning}
+            </p>
+          )}
         </div>
         <div className='flex flex-col gap-2'>
           <label className='text-sm text-label'>Passwort bestätigen</label>

@@ -24,3 +24,28 @@ export interface CreateEventFormProps {
   onSubmit: (values: CreateEventFormValues) => Promise<void>
   loading: boolean
 }
+
+export type EventWithCount = {
+  id: string
+  title: string
+  event_date: string
+  location: string
+  invite_code: string
+  attendee_count: number
+}
+
+export type EventDetail = {
+  id: string
+  title: string
+  description: string | null
+  event_date: string
+  location: string
+  invite_code: string
+}
+
+export type Attendee = {
+  user_id: string
+  firstname: string | null
+  lastname: string | null
+  birthday: string | null
+}

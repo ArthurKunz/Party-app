@@ -30,7 +30,11 @@ chats and stories.
 - Styling: Tailwind CSS
 
 ## Coding rules
+- After new experience, context or important things, update CLAUDE.md and all related files yourself
 - Never use `any` type
+- Always ask for my permission to commit or add something
+- call me 'Arthur' every time you respond
+- Always give me a summary of all changes at the end of all responses
 - Always use App Router patterns — never Pages Router
 - Default to server components, use `use client` only when needed
 - Use createServerClient in server components and API routes
@@ -53,6 +57,7 @@ Always use this keywords:
 - ci -> GitHub Actions / CI stuff
 Always use this structure:
 - git commit -m 'KEYWORD(FILE, CHANGES OR FEATURE): EXPLANATION OF THE COMMIT'
+Always git push after commiting something
 
 ## Do not suggest these — locked out of this project
 - Prisma, Firebase, PlanetScale (using Supabase)
@@ -114,8 +119,8 @@ Key fields:
 Never hardcode these. Always read from process.env.
 
 ## Current state
-Auth is complete. Supabase is connected. middleware.ts is in place.
-Next task: onboarding process with full name, age and initials avatar
+Auth is complete. Supabase is connected. middleware.ts is in place. Onboarding is complete. create party page ready. My parties overview page ready (hosting/attending tabs). Bottom nav (glass pill) ready. Host event detail page ready (/parties/[id]) with attendee list, copyable invite link, and delete. Edit button is a stub (not wired up yet).
+Next task: build the public invite page /e/[invite_code] and wire up event editing
 
 ---
 

@@ -29,6 +29,9 @@ const links = [
 export default function BottomNav() {
   const pathname = usePathname()
 
+  // Hide on detail pages (e.g. /parties/[id]) that carry their own bottom actions
+  if (/^\/parties\/.+/.test(pathname)) return null
+
   return (
     <nav className='fixed bottom-6 left-1/2 -translate-x-1/2 z-50'>
       <div className='flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-2 backdrop-blur-xl shadow-lg'>

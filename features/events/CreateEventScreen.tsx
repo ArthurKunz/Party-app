@@ -54,7 +54,7 @@ export default function CreateEventScreen() {
       return
     }
 
-    router.push(`/e/${invite_code}`)
+    router.push(`/parties`)
   }
 
   if (!userId) return null

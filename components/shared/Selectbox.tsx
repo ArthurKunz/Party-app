@@ -210,7 +210,7 @@ export default function Selectbox<Value extends string = string>({
           )}
         >
           {options.length === 0 ? (
-            <li className='px-3 py-2 text-sm text-[var(--color-light-muted)]'>{emptyContent}</li>
+            <li className='px-3 py-2 text-sm text-subheadline'>{emptyContent}</li>
           ) : (
             options.map((opt, index) => {
               const isSelected = opt.value === value

@@ -41,17 +41,17 @@ const PinIcon = (
 
 export default function EventInfoCard({ eventDate, location }: { eventDate: string; location: string }) {
   return (
-    <div className='flex flex-col gap-4 rounded-2xl bg-white/5 p-5'>
-      <div className='flex items-center gap-3 text-white/80'>
-        <span className='text-white/50'>{ClockIcon}</span>
+    <div className='flex flex-col gap-4 rounded-2xl bg-background-secondary border border-border p-5'>
+      <div className='flex items-center gap-3 text-hint'>
+        <span className='text-background-icon'>{ClockIcon}</span>
         <span>{formatTime(eventDate)} Uhr</span>
       </div>
-      <div className='flex items-center gap-3 text-white/80'>
-        <span className='text-white/50'>{CalendarIcon}</span>
+      <div className='flex items-center gap-3 text-hint'>
+        <span className='text-background-icon'>{CalendarIcon}</span>
         <span>{formatDate(eventDate)}</span>
       </div>
-      <div className='flex items-center gap-3 text-white/80'>
-        <span className='text-white/50'>{PinIcon}</span>
+      <div className='flex items-center gap-3 text-hint'>
+        <span className='text-background-icon'>{PinIcon}</span>
         <span>{location}</span>
       </div>
     </div>

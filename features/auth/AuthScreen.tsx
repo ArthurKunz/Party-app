@@ -42,7 +42,7 @@ export default function AuthPage() {
   const activeDot = effectiveStep === 'verify' ? 1 : 0
 
   return (
-    <div className='relative w-screen h-screen overflow-hidden bg-[#09090B]'>
+    <div className='relative w-screen h-screen overflow-hidden bg-background-main'>
       {/* Background — U-shape: left corner + right corner circles */}
       <div className='absolute inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {
@@ -64,7 +64,7 @@ export default function AuthPage() {
       </div>
 
       {/* Dark overlay with blur */}
-      <div className='absolute inset-0 bg-[#09090B]/10 backdrop-blur-[80px]' />
+      <div className='absolute inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
       {/* Content */}
       <div className='relative z-10 w-full h-full flex flex-col items-center justify-center px-6'>

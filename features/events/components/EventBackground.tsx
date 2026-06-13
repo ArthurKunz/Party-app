@@ -14,7 +14,7 @@ const CIRCLES = [
 
 export default function EventBackground({ children }: { children: ReactNode }) {
   return (
-    <div className='relative w-screen min-h-screen overflow-hidden bg-[#09090B]'>
+    <div className='relative w-screen min-h-screen overflow-hidden bg-background-main'>
       <div className='absolute inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {
           const size = radius * 2
@@ -26,7 +26,7 @@ export default function EventBackground({ children }: { children: ReactNode }) {
         })}
       </div>
 
-      <div className='absolute inset-0 bg-[#09090B]/10 backdrop-blur-[80px]' />
+      <div className='absolute inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
       <div className='relative z-10 mx-auto w-full max-w-md px-6 py-10'>{children}</div>
     </div>

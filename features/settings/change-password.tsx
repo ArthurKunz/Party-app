@@ -17,7 +17,7 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
     e.preventDefault()
 
     if (newPassword !== confirmPassword) {
-      alert('Passwords do not match!')
+      alert('Passwörter stimmen nicht überein!')
       return
     }
 
@@ -36,26 +36,40 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
   }
 
   return (
-    <form onSubmit={handleChangePassword} className='flex flex-col gap-4'>
-      <h2 className='text-lg font-bold'>Change Password</h2>
-      <input
-        type='password'
-        placeholder='New Password'
-        value={newPassword}
-        className='p-2 border'
-        onChange={(e) => setNewPassword(e.target.value)}
-        required
-      />
-      <input
-        type='password'
-        placeholder='Confirm New Password'
-        value={confirmPassword}
-        className='p-2 border'
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        required
-      />
-      <button className='bg-blue-500 text-white p-2 rounded'>Save New Password</button>
+    <form onSubmit={handleChangePassword} className='w-full flex flex-col gap-8'>
+      <h1 className='text-3xl text-center font-bold text-headline'>Neues Passwort</h1>
+
+      <div className='flex flex-col gap-4'>
+        <div className='flex flex-col gap-2'>
+          <label className='text-sm text-label'>Neues Passwort</label>
+          <input
+            type='password'
+            placeholder='Neues Passwort'
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+          />
+        </div>
+        <div className='flex flex-col gap-2'>
+          <label className='text-sm text-label'>Passwort bestätigen</label>
+          <input
+            type='password'
+            placeholder='Passwort bestätigen'
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+          />
+        </div>
+      </div>
+
+      <button
+        type='submit'
+        className='w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
+      >
+        Speichern
+      </button>
     </form>
   )
 }
-

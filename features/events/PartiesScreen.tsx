@@ -51,7 +51,7 @@ export default function PartiesScreen() {
       : 'Du nimmst noch an keinem Event teil.'
 
   return (
-    <div className='relative w-screen min-h-screen overflow-hidden bg-[#09090B]'>
+    <div className='relative w-screen min-h-screen overflow-hidden bg-background-main'>
       <div className='absolute inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {
           const size = radius * 2
@@ -71,15 +71,15 @@ export default function PartiesScreen() {
         })}
       </div>
 
-      <div className='absolute inset-0 bg-[#09090B]/10 backdrop-blur-[80px]' />
+      <div className='absolute inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
       <div className='relative z-10 flex flex-col items-center px-6 py-16'>
-        <h1 className='text-white text-3xl font-bold text-center'>Meine Events</h1>
-        <p className='text-white/50 text-sm mt-2 text-center'>Wo du Gast oder Gastgeber bist</p>
+        <span className='block text-center text-3xl font-bold text-headline'>Meine Events</span>
+        <span className='mt-2 block text-center text-sm text-subheadline'>Wo du Gast oder Gastgeber bist</span>
 
         <div
           role='tablist'
-          className='flex bg-white/10 rounded-full p-1 mt-8 w-72'
+          className='flex bg-background-tertiary rounded-full p-1 mt-8 w-72'
         >
           {(['hosting', 'attending'] as Tab[]).map((t) => (
             <button
@@ -88,7 +88,7 @@ export default function PartiesScreen() {
               aria-selected={tab === t}
               onClick={() => setTab(t)}
               className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${
-                tab === t ? 'bg-white text-[#09090B]' : 'text-white/60'
+                tab === t ? 'bg-background-button text-button' : 'text-subheadline'
               }`}
             >
               {t === 'hosting' ? 'Ich hoste' : 'Ich bin Gast'}
@@ -98,7 +98,7 @@ export default function PartiesScreen() {
 
         <div className='w-full max-w-md mt-6 flex flex-col gap-3'>
           {loading ? null : currentList.length === 0 ? (
-            <p className='text-white/40 text-sm text-center mt-8'>{emptyMessage}</p>
+            <span className='mt-8 block text-center text-sm text-hint'>{emptyMessage}</span>
           ) : (
             currentList.map((event) => (
               <Link key={event.id} href={`/parties/${event.id}`} className='block'>

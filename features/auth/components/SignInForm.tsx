@@ -45,7 +45,7 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
   if (step === 'forgot') {
     return (
       <div className='w-full flex flex-col gap-8'>
-        <h1 className='text-3xl text-center font-bold text-headline'>Password zurücksetzen</h1>
+        <span className='block text-center text-3xl font-bold text-headline'>Password zurücksetzen</span>
 
         <div className='flex flex-col gap-2'>
           <label className='text-sm text-label'>Email</label>
@@ -72,20 +72,20 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
   if (step === 'forgot-sent') {
     return (
       <div className='w-full flex flex-col gap-8'>
-        <h1 className='text-3xl text-center font-bold text-headline'>Passwort zurücksetzen</h1>
+        <span className='text-3xl text-center font-bold text-headline'>Passwort zurücksetzen</span>
 
-        <p className='text-xs text-hint text-center'>
+        <span className='block text-center text-xs text-hint'>
           Wir haben einen Link an{' '}
-          <span className='text-[#fff] font-semibold'>{resetEmail}</span>{' '}
+          <span className='text-body font-semibold'>{resetEmail}</span>{' '}
           gesendet
-        </p>
+        </span>
       </div>
     )
   }
 
   return (
     <div className='w-full flex flex-col gap-8'>
-      <h1 className='text-3xl text-center font-bold text-headline'>Login</h1>
+      <span className='block text-center text-3xl font-bold text-headline'>Login</span>
 
       <form className='flex flex-col gap-4' onSubmit={handleSignIn} noValidate>
         <div className='flex flex-col gap-2'>
@@ -123,9 +123,9 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
             Login
           </button>
           <div className='flex items-center gap-3'>
-            <div className='flex-1 h-px bg-white/10' />
-            <span className='text-xs text-white/40'>or</span>
-            <div className='flex-1 h-px bg-white/10' />
+            <div className='flex-1 h-px bg-glass' />
+            <span className='text-xs text-subheadline'>or</span>
+            <div className='flex-1 h-px bg-glass' />
           </div>
           <button
             type='button'
@@ -138,12 +138,12 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
         </div>
       </form>
 
-      <p className='text-xs text-hint text-center'>
+      <span className='block text-center text-xs text-hint'>
         Noch kein Account?{' '}
-        <span className='text-[#fff] font-semibold cursor-pointer' onClick={onGoToSignUp}>
+        <span className='text-body font-semibold cursor-pointer' onClick={onGoToSignUp}>
           Sign Up
         </span>
-      </p>
+      </span>
     </div>
   )
 }

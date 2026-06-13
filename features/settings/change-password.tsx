@@ -42,7 +42,7 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
 
   return (
     <form onSubmit={handleChangePassword} className='w-full flex flex-col gap-8'>
-      <h1 className='text-3xl text-center font-bold text-headline'>Neues Passwort</h1>
+      <span className='block text-center text-3xl font-bold text-headline'>Neues Passwort</span>
 
       <div className='flex flex-col gap-4'>
         <div className='flex flex-col gap-2'>
@@ -56,9 +56,9 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
             className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
           {showPasswordWarning && (
-            <p className='text-xs text-red-400' role='alert'>
+            <span className='text-xs text-red-400' role='alert'>
               {passwordWarning}
-            </p>
+            </span>
           )}
         </div>
         <div className='flex flex-col gap-2'>

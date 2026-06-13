@@ -71,7 +71,7 @@ export default function CreateEventForm({ onSubmit, loading }: CreateEventFormPr
 
   return (
     <div className='w-full flex flex-col gap-8'>
-      <h1 className='text-3xl text-center font-bold text-headline'>Party erstellen</h1>
+      <span className='block text-center text-3xl font-bold text-headline'>Party erstellen</span>
 
       <div className='flex flex-col gap-4'>
         <div className='flex flex-col gap-2'>

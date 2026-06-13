@@ -6,23 +6,23 @@ import type { Attendee } from '../types/events.types'
 export default function AttendeeList({ attendees }: { attendees: Attendee[] }) {
   return (
     <div>
-      <h2 className='text-xs font-semibold uppercase tracking-wide text-white/50'>
+      <span className='block text-xs font-semibold uppercase tracking-wide text-label'>
         Teilnehmer ({attendees.length})
-      </h2>
+      </span>
       <div className='mt-2 flex flex-col gap-2'>
         {attendees.length === 0 ? (
-          <p className='py-4 text-center text-sm text-white/40'>Noch keine Zusagen.</p>
+          <span className='block py-4 text-center text-sm text-hint'>Noch keine Zusagen.</span>
         ) : (
           attendees.map((a) => (
-            <div key={a.user_id} className='flex items-center gap-3 rounded-xl bg-white/5 p-3'>
-              <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 text-sm font-semibold text-white'>
+            <div key={a.user_id} className='flex items-center gap-3 rounded-xl border border-border bg-background-secondary p-3'>
+              <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background-profilpicture text-sm font-semibold text-body'>
                 {getInitials(a.firstname, a.lastname)}
               </div>
               <div className='min-w-0'>
-                <p className='truncate text-sm font-medium text-white'>
+                <span className='block truncate text-sm font-medium text-body'>
                   {[a.firstname, a.lastname].filter(Boolean).join(' ') || 'Unbekannt'}
-                </p>
-                {a.birthday && <p className='text-xs text-white/50'>{calculateAge(a.birthday)} Jahre</p>}
+                </span>
+                {a.birthday && <span className='block text-xs text-hint'>{calculateAge(a.birthday)} Jahre</span>}
               </div>
             </div>
           ))

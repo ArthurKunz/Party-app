@@ -72,8 +72,8 @@ export default function ProfilePictureForm ({ onSuccess }: ProfilePictureProps) 
     return (
         <div className='flex flex-col items-center gap-15 max-w-sm'>
             <div className='w-full h-full flex flex-col items-center gap-2.5'>
-                <h1 className='text-4xl font-bold text-light-heading'>Profil erstellen</h1>
-                <span className='text-center text-sm text-light-subheading'>Lade ein Bild hoch um dein <span className='text-brand text-sm font-semibold'>Profilbild</span> zu erstellen</span>
+                <span className='block text-4xl font-bold text-light-heading'>Profil erstellen</span>
+                <span className='block text-center text-sm text-light-subheading'>Lade ein Bild hoch um dein <span className='text-brand text-sm font-semibold'>Profilbild</span> zu erstellen</span>
             </div>
 
             <div 
@@ -91,7 +91,7 @@ export default function ProfilePictureForm ({ onSuccess }: ProfilePictureProps) 
                 </div>
             </div>
 
-            {error && <p className='text-sm text-red-600' role='alert'>{error}</p>}
+            {error && <span className='text-sm text-red-600' role='alert'>{error}</span>}
 
             <div className='w-full flex flex-col gap-2'>
                 <button

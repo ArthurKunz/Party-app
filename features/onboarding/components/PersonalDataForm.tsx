@@ -9,7 +9,7 @@ export default function PersonalDataForm({ onSuccess }: NameFormProps) {
 
   return (
     <div className='w-full flex flex-col gap-8'>
-      <h1 className='text-3xl text-center font-bold text-headline'>Wie heißt du?</h1>
+      <span className='block text-center text-3xl font-bold text-headline'>Wie heißt du?</span>
 
       <div className='flex flex-col gap-4'>
         <div className='flex flex-col gap-2'>

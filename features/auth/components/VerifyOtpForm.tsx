@@ -20,7 +20,7 @@ export default function VerifyOtpForm({ email, onSuccess }: VerifyProps) {
 
   return (
     <div className='w-full flex flex-col gap-8'>
-      <h1 className='text-3xl text-center font-bold text-headline'>Verifizierung</h1>
+      <span className='block text-center text-3xl font-bold text-headline'>Verifizierung</span>
 
       <div className='flex flex-col gap-2'>
         <label className='text-sm text-label'>Verifizierungs-code</label>

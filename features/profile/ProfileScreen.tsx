@@ -42,7 +42,7 @@ export default function ProfileScreen() {
   const name = [profile?.firstname, profile?.lastname].filter(Boolean).join(' ') || 'Unbekannt'
 
   return (
-    <div className='relative w-screen min-h-screen overflow-hidden bg-[#09090B]'>
+    <div className='relative w-screen min-h-screen overflow-hidden bg-background-main'>
       <div className='absolute inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {
           const size = radius * 2
@@ -62,45 +62,45 @@ export default function ProfileScreen() {
         })}
       </div>
 
-      <div className='absolute inset-0 bg-[#09090B]/10 backdrop-blur-[80px]' />
+      <div className='absolute inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
       <div className='relative z-10 flex flex-col items-center px-6 py-16'>
-        <div className='flex h-24 w-24 items-center justify-center rounded-full bg-white/10 text-2xl font-semibold text-white'>
+        <div className='flex h-24 w-24 items-center justify-center rounded-full bg-background-profilpicture border border-border text-2xl font-semibold text-body'>
           {getInitials(profile?.firstname ?? null, profile?.lastname ?? null)}
         </div>
-        <h1 className='mt-4 text-2xl font-bold text-white'>{name}</h1>
+        <span className='mt-4 block text-2xl font-bold text-headline'>{name}</span>
         {profile?.birthday && (
-          <p className='mt-1 text-sm text-white/50'>{calculateAge(profile.birthday)} Jahre alt</p>
+          <span className='mt-1 block text-sm text-subheadline'>{calculateAge(profile.birthday)} Jahre alt</span>
         )}
 
-        <div className='mt-10 w-full max-w-md overflow-hidden rounded-2xl bg-white/5'>
-          <button className='flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/5'>
-            <span className='flex h-6 w-6 items-center justify-center rounded-md bg-white/10 text-white'>
+        <div className='mt-10 w-full max-w-md overflow-hidden rounded-2xl border border-border bg-background-secondary'>
+          <button className='flex w-full items-center gap-3 px-4 py-3.5 text-left'>
+            <span className='flex h-6 w-6 items-center justify-center rounded-md bg-glass text-body'>
               <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
                 <circle cx='12' cy='7' r='4' />
                 <path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' />
               </svg>
             </span>
-            <span className='text-sm text-white'>Konto verwalten</span>
+            <span className='text-sm text-body'>Konto verwalten</span>
           </button>
 
-          <div className='mx-4 h-px bg-white/10' />
+          <div className='mx-4 h-px bg-background-spacer' />
 
-          <button className='flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-white/5'>
-            <span className='flex h-6 w-6 items-center justify-center rounded-md bg-white/10 text-white'>
+          <button className='flex w-full items-center gap-3 px-4 py-3.5 text-left'>
+            <span className='flex h-6 w-6 items-center justify-center rounded-md bg-glass text-body'>
               <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
                 <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' />
                 <polyline points='14 2 14 8 20 8' />
               </svg>
             </span>
-            <span className='text-sm text-white'>Rechtliche Informationen</span>
+            <span className='text-sm text-body'>Rechtliche Informationen</span>
           </button>
 
-          <div className='mx-4 h-px bg-white/10' />
+          <div className='mx-4 h-px bg-background-spacer' />
 
           <button
             onClick={handleSignOut}
-            className='flex w-full items-center px-4 py-3.5 text-left text-sm font-medium text-red-500 transition-colors hover:bg-white/5'
+            className='flex w-full items-center px-4 py-3.5 text-left text-sm font-medium text-warning'
           >
             Abmelden
           </button>

@@ -49,7 +49,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
     return (
       <EventBackground>
         <div className='flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center'>
-          <p className='text-white/70'>Dieses Event existiert nicht (mehr).</p>
+          <span className='block text-hint'>Dieses Event existiert nicht (mehr).</span>
         </div>
       </EventBackground>
     )
@@ -62,7 +62,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
 
   return (
     <EventBackground>
-      <h1 className='text-center text-3xl font-bold text-white'>{event.title}</h1>
+      <span className='block text-center text-3xl font-bold text-headline'>{event.title}</span>
       <HostRow host={host} />
 
       <div className='mt-8'>
@@ -70,10 +70,10 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
       </div>
 
       <div className='mt-8'>
-        <h2 className='text-xs font-semibold uppercase tracking-wide text-white/50'>Infos</h2>
-        <p className='mt-2 text-sm leading-relaxed text-white/80'>
+        <span className='block text-xs font-semibold uppercase tracking-wide text-label'>Infos</span>
+        <span className='mt-2 block text-center text-sm leading-relaxed text-hint'>
           {event.description?.trim() || 'Keine Beschreibung vorhanden.'}
-        </p>
+        </span>
       </div>
 
       <div className='mt-8'>
@@ -86,9 +86,9 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
           onGoing={handleAnonRsvp}
           onNotGoing={handleAnonRsvp}
         />
-        <p className='mt-3 text-center text-xs text-white/40'>
+        <span className='mt-3 block text-center text-xs text-hint'>
           Melde dich an, um zu- oder abzusagen.
-        </p>
+        </span>
       </div>
     </EventBackground>
   )

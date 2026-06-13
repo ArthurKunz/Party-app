@@ -34,7 +34,7 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
 
   return (
     <div className='w-full flex flex-col gap-8'>
-      <h1 className='text-3xl text-center font-bold text-headline'>Sign Up</h1>
+      <span className='block text-center text-3xl font-bold text-headline'>Sign Up</span>
 
       <form className='flex flex-col gap-4' onSubmit={handleSignUp} noValidate>
         <div className='flex flex-col gap-2'>
@@ -57,9 +57,9 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
             className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
           {showPasswordWarning && (
-            <p className='text-xs text-red-400' role='alert'>
+            <span className='text-xs text-red-400' role='alert'>
               {passwordWarning}
-            </p>
+            </span>
           )}
         </div>
 
@@ -71,9 +71,9 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
             Sign up
           </button>
           <div className='flex items-center gap-3'>
-            <div className='flex-1 h-px bg-white/10' />
-            <span className='text-xs text-white/40'>or</span>
-            <div className='flex-1 h-px bg-white/10' />
+            <div className='flex-1 h-px bg-glass' />
+            <span className='text-xs text-subheadline'>or</span>
+            <div className='flex-1 h-px bg-glass' />
           </div>
           <button
             type='button'
@@ -86,12 +86,12 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
         </div>
       </form>
 
-      <p className='text-xs text-hint text-center'>
+      <span className='block text-center text-xs text-hint'>
         Du hast schon ein Account?{' '}
-        <span className='text-[#fff] font-semibold cursor-pointer' onClick={onGoToSignIn}>
+        <span className='text-body font-semibold cursor-pointer' onClick={onGoToSignIn}>
           Login
         </span>
-      </p>
+      </span>
     </div>
   )
 }

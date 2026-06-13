@@ -113,7 +113,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
         <button
           onClick={() => router.push('/parties')}
           aria-label='Zurück'
-          className='flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white backdrop-blur-xl transition-colors hover:bg-white/20'
+          className='flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background-secondary text-body'
         >
           <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
             <line x1='19' y1='12' x2='5' y2='12' />
@@ -124,14 +124,14 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
           <button
             onClick={handleCopy}
             aria-label='Link kopieren'
-            className='flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white backdrop-blur-xl transition-colors hover:bg-white/20'
+            className='flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background-secondary text-body'
           >
             {CopyIcon}
           </button>
         )}
       </div>
 
-      <h1 className='mt-8 text-center text-3xl font-bold text-white'>{event.title}</h1>
+      <span className='mt-8 block text-center text-3xl font-bold text-headline'>{event.title}</span>
       {!isHost && <HostRow host={host} />}
 
       <div className='mt-8'>
@@ -139,24 +139,24 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
       </div>
 
       <div className='mt-8'>
-        <h2 className='text-xs font-semibold uppercase tracking-wide text-white/50'>Infos</h2>
-        <p className='mt-2 text-sm leading-relaxed text-white/80'>
+        <span className='block text-xs font-semibold uppercase tracking-wide text-label'>Infos</span>
+        <span className='mt-2 block text-sm leading-relaxed text-hint'>
           {event.description?.trim() || 'Keine Beschreibung vorhanden.'}
-        </p>
+        </span>
       </div>
 
       {isHost && (
         <div className='mt-8'>
-          <h2 className='text-xs font-semibold uppercase tracking-wide text-white/50'>Einladungslink</h2>
-          <div className='mt-2 flex items-center gap-3 rounded-xl bg-white/5 p-3'>
+          <span className='block text-xs font-semibold uppercase tracking-wide text-label'>Einladungslink</span>
+          <div className='mt-2 flex items-center gap-3 rounded-xl border border-border bg-background-secondary p-3'>
             <button
               onClick={handleCopy}
               aria-label='Link kopieren'
-              className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white transition-colors hover:bg-white/20'
+              className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-background-tertiary text-body'
             >
               {CopyIcon}
             </button>
-            <span className='flex-1 truncate text-sm text-white/70'>
+            <span className='flex-1 truncate text-sm text-hint'>
               {copied ? 'Link kopiert!' : shareLink}
             </span>
           </div>
@@ -172,7 +172,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
           <>
             <button
               type='button'
-              className='w-full rounded-full bg-white py-3 font-medium text-[#09090B] transition-colors hover:bg-white/90'
+              className='w-full rounded-full bg-background-button py-3 font-medium text-button transition-colors hover:bg-background-button/90'
             >
               Bearbeiten
             </button>

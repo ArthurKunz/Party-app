@@ -41,7 +41,7 @@ export default function BirthdateForm({ onSuccess }: BirthdateFormProps) {
 
   return (
     <div className='w-full flex flex-col gap-8'>
-      <h1 className='text-3xl text-center font-bold text-headline'>Wie alt bist du?</h1>
+      <span className='block text-center text-3xl font-bold text-headline'>Wie alt bist du?</span>
 
       <div className='flex flex-col gap-2'>
         <label className='text-sm text-label'>Geburtstag</label>

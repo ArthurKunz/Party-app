@@ -24,15 +24,15 @@ export default function HomePlaceholderPage() {
   }
 
   return (
-    <div className='flex min-h-screen flex-col items-center justify-center bg-primary px-4'>
-      <div className='max-w-md rounded-2xl border border-border bg-secondary p-8 text-center shadow-lg'>
-        <h1 className='mb-3 text-2xl font-semibold text-light-heading'>
+    <div className='flex min-h-screen flex-col items-center justify-center bg-background-main px-4'>
+      <div className='max-w-md rounded-2xl border border-border bg-background-secondary p-8 text-center shadow-lg'>
+        <span className='mb-3 block text-2xl font-semibold text-headline'>
           Willkommen bei Student Connect
-        </h1>
-        <p className='mb-6 text-sm text-light-subheading'>
+        </span>
+        <span className='mb-6 block text-sm text-subheadline'>
           Dein Account und dein Profil sind erfolgreich erstellt.
           Die nächsten Funktionen des Dashboards sind noch in Arbeit.
-        </p>
+        </span>
         <Link
           href='/create-event'
           className='mb-3 block w-full rounded-xl bg-background-button px-4 py-2.5 text-center text-sm font-semibold text-button'
@@ -42,7 +42,7 @@ export default function HomePlaceholderPage() {
         <button
           type='button'
           onClick={handleLogout}
-          className='w-full rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand/90'
+          className='w-full rounded-xl bg-brand-pink px-4 py-2.5 text-sm font-semibold text-body hover:bg-brand-pink/90'
         >
           Ausloggen
         </button>

@@ -139,6 +139,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_event_host: {
+        Args: { p_event_id: string }
+        Returns: {
+          firstname: string
+          lastname: string
+        }[]
+      }
       get_rsvp_count: { Args: { p_event_id: string }; Returns: number }
     }
     Enums: {

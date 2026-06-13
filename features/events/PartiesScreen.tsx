@@ -99,14 +99,12 @@ export default function PartiesScreen() {
         <div className='w-full max-w-md mt-6 flex flex-col gap-3'>
           {loading ? null : currentList.length === 0 ? (
             <p className='text-white/40 text-sm text-center mt-8'>{emptyMessage}</p>
-          ) : tab === 'hosting' ? (
+          ) : (
             currentList.map((event) => (
               <Link key={event.id} href={`/parties/${event.id}`} className='block'>
                 <EventCard event={event} />
               </Link>
             ))
-          ) : (
-            currentList.map((event) => <EventCard key={event.id} event={event} />)
           )}
         </div>
       </div>

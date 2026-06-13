@@ -36,6 +36,7 @@ export type EventWithCount = {
 
 export type EventDetail = {
   id: string
+  host_id: string
   title: string
   description: string | null
   event_date: string
@@ -49,3 +50,10 @@ export type Attendee = {
   lastname: string | null
   birthday: string | null
 }
+
+export type EventHost = {
+  firstname: string | null
+  lastname: string | null
+}
+
+export type RsvpStatus = 'going' | 'not_going'

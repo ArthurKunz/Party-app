@@ -119,8 +119,8 @@ Key fields:
 Never hardcode these. Always read from process.env.
 
 ## Current state
-Auth is complete. Supabase is connected. middleware.ts is in place. Onboarding is complete. create party page ready. My parties overview page ready (hosting/attending tabs). Bottom nav (glass pill) ready. Host event detail page ready (/parties/[id]) with attendee list, copyable invite link, and delete. Edit button is a stub (not wired up yet).
-Next task: build the public invite page /e/[invite_code] and wire up event editing
+Auth is complete. Supabase is connected. middleware.ts is in place. Onboarding is complete. create party page ready. My parties overview page ready (hosting/attending tabs, both clickable). Bottom nav (glass pill) ready. Event detail page /parties/[id] branches host vs guest: host sees copyable link + Bearbeiten (stub) + delete; guest sees host info + RSVP toggle. Public invite page /e/[invite_code] ready: signed-in users redirect to /parties/[id], anon users see the event and are sent to /login when they try to RSVP (after creating an account they must reopen the invite link to RSVP). RSVP working (upsert going/not_going); both statuses show under 'Ich bin Gast'. Attendees + host name are exposed publicly via SECURITY DEFINER functions.
+Next task: wire up event editing (Bearbeiten button)
 
 ---
 

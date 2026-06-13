@@ -1,39 +1,6 @@
 @import "tailwindcss";
 
 @theme {
-    --color-brand: #0056FF;
-    --color-primary: #0c0c0c;
-    --color-secondary: #292929;
-    --color-tertiary: #4C4C4C;
-
-    --color-border: #323232;
-
-    --color-light-heading: #fff;
-    --color-light-subheading: #B3B3B3;
-    --color-light-body: #fff;
-    --color-light-muted: #777777;
-    --color-light-label: #fff;
-    --color-light-placeholder: #A2A2A2;
-    --color-light-input: #fff;
-    --color-light-button: #fff;
-
-    --color-dark-heading: #0c0c0c;
-    --color-dark-subheading: #0c0c0c;
-    --color-dark-body: #0c0c0c;
-    --color-dark-muted: #0c0c0c;
-    --color-dark-label: #0c0c0c;
-    --color-dark-placeholder: #0c0c0c;
-    --color-dark-input: #0c0c0c;
-    --color-dark-button: #0c0c0c;
-
-    --color-input-bg: #292929;
-    --color-input-border: #323232;
-
-    --color-button-bg: #fff;
-
-    --color-divider-bg: #323232;
-
-
     /* BRAND COLORS */
     --color-brand-pink: #FF0090;
     --color-brand-lila: #A336FF;
@@ -42,13 +9,14 @@
     /* BASE COLORS */
     --color-background-main: #09090B;
     --color-background-secondary: #151515;
+    --color-background-tertiary: #2A2A2A;
 
     /* TEXT */
     --color-headline: #fff;
     --color-subheadline: #949494;
     --color-explanation: #fff;
     --color-body: #fff;
-    --color-hint: #C6C6C6;
+    --color-hint: #949494;
     --color-placeholder: #A2A2A2;
     --color-label: #fff;
     --color-input: #fff;
@@ -58,6 +26,12 @@
     --color-background-input: #0F0F0F;
     --color-background-spacer: #323232;
     --color-background-button: #fff;
+    --color-background-profilpicture: #151515;
+    --color-background-icon: #949494;
+
+    /* GLASS (translucent surfaces over the blurred gradient) */
+    --color-glass: rgba(255, 255, 255, 0.1);
+    --color-glass-strong: rgba(255, 255, 255, 0.2);
 
     /* SEMANTIC */
     --color-warning: #FF0000;
@@ -72,6 +46,9 @@
 }
 
 @layer utilities {
+    .border-border { border-width: 0.75px; }
+    .border-border-input { border-width: 0.75px; }
+
     .scrollbar-none {
         scrollbar-width: none;
         -ms-overflow-style: none;

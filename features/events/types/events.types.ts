@@ -20,11 +20,6 @@ export type CreateEventFormValues = {
   max_guests: string
 }
 
-export interface CreateEventFormProps {
-  onSubmit: (values: CreateEventFormValues) => Promise<void>
-  loading: boolean
-}
-
 export type EventWithCount = {
   id: string
   title: string

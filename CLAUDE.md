@@ -30,7 +30,8 @@ chats and stories.
 - Styling: Tailwind CSS
 
 ## Coding rules
-- After new experience, context or important things, update CLAUDE.md and all related files yourself
+- Always use my global.css variables. Never use things like bg-green-500 or bg-[#fff], but always use the variables. If there are no matching variables, ask me for permisson to create those.
+- update the CLAUDE.md file after each change yourself
 - Never use `any` type
 - Always ask for my permission to commit or add something
 - call me 'Arthur' every time you respond
@@ -71,10 +72,15 @@ Always git push after commiting something
 - Sign up / log in with email
 - Profile: display name, initials avatar and age
 - Create event: name, description, type, date, time, location
-- Simple RSVP: coming / not coming
+- Simple RSVP: coming / not coming 
 - Host guest list: attendee names, ages, total headcount
 - Shareable link format: /e/[invite_code] — no auth required to view basic info
 - Non-users who open a link see basic info and are prompted to sign up
+- Guest can click 'coming late' and provide the expected arriving time
+- Location is displayed in a Map
+- voting: the host asks a question, the guest answer or vote for something
+- Checklist / who brings what
+- click, navigation and loading animations
 - Mobile responsive
 
 ## Not in V1 — do not suggest these
@@ -83,16 +89,14 @@ Always git push after commiting something
 - Gender field on profiles (legal complexity for under-18 users)
 - Age limits or restrictions on events
 - Join request or host approval flow
-- Collaborative event type or voting
+- Collaborative event type
 - Party score or reputation system
 - Discovery feed with filters
 - External sharing buttons (WhatsApp, Instagram)
-- Checklist / who brings what
 - Push notifications
 - PWA
 - Native mobile app
 - AI features
-- Payments or monetization
 - Public profile pages
 - Party type tags
 
@@ -119,8 +123,8 @@ Key fields:
 Never hardcode these. Always read from process.env.
 
 ## Current state
-Auth is complete. Supabase is connected. middleware.ts is in place. Onboarding is complete. create party page ready. My parties overview page ready (hosting/attending tabs, both clickable). Bottom nav (glass pill) ready. Event detail page /parties/[id] branches host vs guest: host sees copyable link + Bearbeiten (stub) + delete; guest sees host info + RSVP toggle. Public invite page /e/[invite_code] ready: signed-in users redirect to /parties/[id], anon users see the event and are sent to /login when they try to RSVP (after creating an account they must reopen the invite link to RSVP). RSVP working (upsert going/not_going); both statuses show under 'Ich bin Gast'. Attendees + host name are exposed publicly via SECURITY DEFINER functions.
-Next task: wire up event editing (Bearbeiten button)
+We are in V1. Auth is complete. Supabase is connected. middleware.ts is in place. Onboarding is complete. create party page ready. My parties overview page ready (hosting/attending tabs, both clickable). Bottom nav (glass pill) ready. Event detail page /parties/[id] branches host vs guest: host sees copyable link + Bearbeiten (stub) + delete; guest sees host info + RSVP toggle. Public invite page /e/[invite_code] ready: signed-in users redirect to /parties/[id], anon users see the event and are sent to /login when they try to RSVP (after creating an account they must reopen the invite link to RSVP). RSVP working (upsert going/not_going); both statuses show under 'Ich bin Gast'. Attendees + host name are exposed publicly via SECURITY DEFINER functions. Added Profile page. Create party page is now a step-by-step flow (like onboarding): one topic per screen — Name, Beschreibung, Datum+Uhrzeit, Ort, Max. Gäste, then a finish screen with the copyable invite link. Cross (top-right) cancels to /parties; bottom progress dots show remaining questions and let you jump back to earlier ones (locked once the event is created). The event is created in Supabase on the last question; BottomNav is hidden during the flow.
+Next task: Edit create party
 
 ---
 

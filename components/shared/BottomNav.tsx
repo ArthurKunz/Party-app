@@ -38,6 +38,8 @@ export default function BottomNav() {
 
   // Hide on detail pages (e.g. /parties/[id]) that carry their own bottom actions
   if (/^\/parties\/.+/.test(pathname)) return null
+  // Hide during the create-event flow, which has its own bottom progress bar
+  if (pathname === '/create-event') return null
 
   return (
     <nav className='fixed bottom-6 left-1/2 -translate-x-1/2 z-50'>

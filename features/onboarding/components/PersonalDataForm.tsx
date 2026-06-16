@@ -19,7 +19,7 @@ export default function PersonalDataForm({ onSuccess }: NameFormProps) {
             placeholder='Vorname'
             value={firstname}
             onChange={(e) => setFirstname(e.target.value)}
-            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
         </div>
         <div className='flex flex-col gap-2'>
@@ -29,7 +29,7 @@ export default function PersonalDataForm({ onSuccess }: NameFormProps) {
             placeholder='Nachname'
             value={lastname}
             onChange={(e) => setLastname(e.target.value)}
-            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
         </div>
       </div>

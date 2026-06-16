@@ -53,7 +53,7 @@ const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => ({
 const MINUTE_OPTIONS = ['00', '15', '30', '45'].map((m) => ({ value: m, label: m }))
 
 const inputClass =
-  'w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+  'w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
 
 type StepId = 'name' | 'description' | 'when' | 'location' | 'guests' | 'done'
 
@@ -292,7 +292,7 @@ export default function CreateEventScreen() {
               <button
                 type='button'
                 onClick={handleCopy}
-                className='w-full px-4 h-12 flex items-center justify-between gap-3 bg-background-input border border-border-input rounded-xl text-input text-sm'
+                className='w-full px-4 h-14 flex items-center justify-between gap-3 bg-background-input border border-border-input rounded-xl text-input text-sm'
               >
                 <span className='truncate'>{shareLink}</span>
                 <span className='shrink-0 text-subheadline'>{copied ? 'Kopiert ✓' : 'Kopieren'}</span>

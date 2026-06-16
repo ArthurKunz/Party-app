@@ -38,7 +38,7 @@ export default function VerifyOtpForm({ email, onSuccess }: VerifyProps) {
               onChange={(e) => handleChange(e.target.value, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               onPaste={handlePaste}
-              className='w-full text-center h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+              className='w-full text-center h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
             />
           ))}
         </div>

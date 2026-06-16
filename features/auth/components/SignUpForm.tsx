@@ -42,7 +42,7 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
           <input
             type='email'
             placeholder='max.mustermann@example.com'
-            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -54,7 +54,7 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
             placeholder='Erstelle ein Passwort'
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
           {showPasswordWarning && (
             <span className='text-xs text-red-400' role='alert'>

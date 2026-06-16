@@ -54,7 +54,7 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
             placeholder='Email'
             value={resetEmail}
             onChange={(e) => setResetEmail(e.target.value)}
-            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
         </div>
 
@@ -93,7 +93,7 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
           <input
             type='email'
             placeholder='max.mustermann@example.com'
-            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -105,7 +105,7 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
             placeholder='Gib dein Passwort ein'
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
           <span
             className='text-xs text-hint cursor-pointer'

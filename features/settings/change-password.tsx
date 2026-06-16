@@ -53,7 +53,7 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
-            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
           {showPasswordWarning && (
             <span className='text-xs text-red-400' role='alert'>
@@ -69,7 +69,7 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            className='w-full px-4 h-12 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
         </div>
       </div>

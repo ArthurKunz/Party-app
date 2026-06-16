@@ -57,7 +57,7 @@ const inputClass =
 
 type StepId = 'name' | 'description' | 'when' | 'location' | 'guests' | 'done'
 
-const STEPS: StepId[] = ['name', 'description', 'when', 'location', 'guests', 'done']
+const STEPS: StepId[] = ['name', 'when', 'location', 'guests', 'description', 'done']
 const QUESTION_COUNT = STEPS.length - 1
 
 const HEADLINES: Record<StepId, string> = {
@@ -151,7 +151,7 @@ export default function CreateEventScreen() {
   }
 
   const handleNext = () => {
-    if (step === 'guests') {
+    if (step === 'description') {
       handleCreate()
       return
     }
@@ -332,7 +332,7 @@ export default function CreateEventScreen() {
                 disabled={!canContinue || creating}
                 className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-10 disabled:opacity-40'
               >
-                {step === 'guests' ? (creating ? 'Erstellen …' : 'Party erstellen →') : 'weiter →'}
+                {step === 'description' ? (creating ? 'Erstellen …' : 'Party erstellen →') : 'weiter →'}
               </button>
             )}
           </div>

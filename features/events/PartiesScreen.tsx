@@ -22,7 +22,7 @@ const CIRCLES = [
 
 export default function PartiesScreen() {
   const router = useRouter()
-  const [tab, setTab] = useState<Tab>('hosting')
+  const [tab, setTab] = useState<Tab>('attending')
   const [hosted, setHosted] = useState<EventWithCount[]>([])
   const [attended, setAttended] = useState<EventWithCount[]>([])
   const [loading, setLoading] = useState(true)
@@ -81,7 +81,7 @@ export default function PartiesScreen() {
           role='tablist'
           className='flex bg-background-tertiary rounded-full p-1 mt-8 w-72'
         >
-          {(['hosting', 'attending'] as Tab[]).map((t) => (
+          {(['attending', 'hosting'] as Tab[]).map((t) => (
             <button
               key={t}
               role='tab'

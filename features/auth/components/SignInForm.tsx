@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState, type KeyboardEvent } from 'react'
 import Image from 'next/image'
 import type { SignInProps } from '../types/auth.types'
 import { sendResetPasswordEmail, signInWithGoogle, signInWithPassword } from '../services/auth.service'
@@ -12,6 +12,7 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
   const [password, setPassword] = useState('')
   const [step, setStep] = useState<SignInStep>('signin')
   const [resetEmail, setResetEmail] = useState('')
+  const passwordRef = useRef<HTMLInputElement>(null)
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,6 +33,12 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
     }
   }
 
+  const handleEmailKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+    if (email.trim()) passwordRef.current?.focus()
+  }
+
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     const { error } = await sendResetPasswordEmail(resetEmail)
@@ -40,6 +47,12 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
       return
     }
     setStep('forgot-sent')
+  }
+
+  const handleResetEmailKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+    if (resetEmail.trim()) handleForgotPassword(e)
   }
 
   if (step === 'forgot') {
@@ -54,6 +67,7 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
             placeholder='Email'
             value={resetEmail}
             onChange={(e) => setResetEmail(e.target.value)}
+            onKeyDown={handleResetEmailKeyDown}
             className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
         </div>
@@ -96,11 +110,13 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
             className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={handleEmailKeyDown}
           />
         </div>
         <div className='flex flex-col gap-2'>
           <label className='text-sm text-label'>Passwort</label>
           <input
+            ref={passwordRef}
             type='password'
             placeholder='Gib dein Passwort ein'
             value={password}

@@ -2,7 +2,7 @@
 
 import { supabase } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRef, useState, type KeyboardEvent } from 'react'
 import { usePasswordValidation } from '@/features/auth/hooks/usePasswordValidation'
 
 interface ChangePasswordFormProps {
@@ -15,6 +15,13 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
   const { passwordWarning, isPasswordValid } = usePasswordValidation(newPassword)
   const showPasswordWarning = newPassword.length > 0 && passwordWarning !== ''
   const router = useRouter()
+  const confirmPasswordRef = useRef<HTMLInputElement>(null)
+
+  const handleNewPasswordKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+    if (newPassword.trim()) confirmPasswordRef.current?.focus()
+  }
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -52,6 +59,7 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
             placeholder='Neues Passwort'
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            onKeyDown={handleNewPasswordKeyDown}
             required
             className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
           />
@@ -64,6 +72,7 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
         <div className='flex flex-col gap-2'>
           <label className='text-sm text-label'>Passwort bestätigen</label>
           <input
+            ref={confirmPasswordRef}
             type='password'
             placeholder='Passwort bestätigen'
             value={confirmPassword}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState, type KeyboardEvent } from 'react'
 import Image from 'next/image'
 import type { SignUpProps } from '../types/auth.types'
 import { usePasswordValidation } from '../hooks/usePasswordValidation'
@@ -11,6 +11,13 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
   const [password, setPassword] = useState('')
   const { passwordWarning, isPasswordValid } = usePasswordValidation(password)
   const showPasswordWarning = password.length > 0 && passwordWarning !== ''
+  const passwordRef = useRef<HTMLInputElement>(null)
+
+  const handleEmailKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+    if (email.trim()) passwordRef.current?.focus()
+  }
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,11 +52,13 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
             className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={handleEmailKeyDown}
           />
         </div>
         <div className='flex flex-col gap-2'>
           <label className='text-sm text-label'>Passwort</label>
           <input
+            ref={passwordRef}
             type='password'
             placeholder='Erstelle ein Passwort'
             value={password}

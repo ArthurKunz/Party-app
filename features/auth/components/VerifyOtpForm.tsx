@@ -36,7 +36,12 @@ export default function VerifyOtpForm({ email, onSuccess }: VerifyProps) {
               maxLength={1}
               value={digit}
               onChange={(e) => handleChange(e.target.value, index)}
-              onKeyDown={(e) => handleKeyDown(e, index)}
+              onKeyDown={(e) => {
+                handleKeyDown(e, index)
+                if (e.key !== 'Enter' || !digit) return
+                if (index < digits.length - 1) inputRefs.current[index + 1]?.focus()
+                else if (code.length === digits.length) handleVerify(e)
+              }}
               onPaste={handlePaste}
               className='w-full text-center h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
             />

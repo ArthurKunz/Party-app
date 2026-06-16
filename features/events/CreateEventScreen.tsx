@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { generateInviteCode } from '@/lib/utils'
@@ -163,6 +163,18 @@ export default function CreateEventScreen() {
     setStep(STEPS[index])
   }
 
+  const handleEnterAdvance = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter' || !canContinue) return
+    e.preventDefault()
+    handleNext()
+  }
+
+  const handleTextareaEnterAdvance = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== 'Enter' || e.shiftKey) return
+    e.preventDefault()
+    handleNext()
+  }
+
   const handleCopy = async () => {
     if (!shareLink) return
     await navigator.clipboard.writeText(shareLink)
@@ -221,6 +233,7 @@ export default function CreateEventScreen() {
                 placeholder='z.B. Dachterrassen-Party'
                 value={values.title}
                 onChange={(e) => setField('title', e.target.value)}
+                onKeyDown={handleEnterAdvance}
                 className={inputClass}
               />
             </div>
@@ -233,6 +246,7 @@ export default function CreateEventScreen() {
                 placeholder='Was erwartet die Gäste?'
                 value={values.description}
                 onChange={(e) => setField('description', e.target.value)}
+                onKeyDown={handleTextareaEnterAdvance}
                 rows={3}
                 className='w-full px-4 py-3 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder resize-none'
               />
@@ -267,6 +281,7 @@ export default function CreateEventScreen() {
                 placeholder='Adresse oder Ortsname'
                 value={values.location}
                 onChange={(e) => setField('location', e.target.value)}
+                onKeyDown={handleEnterAdvance}
                 className={inputClass}
               />
             </div>
@@ -281,6 +296,7 @@ export default function CreateEventScreen() {
                 min={1}
                 value={values.max_guests}
                 onChange={(e) => setField('max_guests', e.target.value)}
+                onKeyDown={handleEnterAdvance}
                 className={inputClass}
               />
             </div>

@@ -4,7 +4,7 @@ import { useState, useEffect, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { generateInviteCode } from '@/lib/utils'
-import Selectbox from '@/components/shared/Selectbox'
+import DateTimePicker from './components/DateTimePicker'
 import StepProgress from './components/StepProgress'
 import { createEvent } from './services/events.service'
 import type { CreateEventFormValues } from './types/events.types'
@@ -18,39 +18,6 @@ const CIRCLES = [
   { color: '#E224A1', radius: 350 },
   { color: '#FF0090', radius: 280 },
 ]
-
-const DAY_OPTIONS = Array.from({ length: 31 }, (_, i) => ({
-  value: String(i + 1).padStart(2, '0'),
-  label: String(i + 1),
-}))
-
-const MONTH_OPTIONS = [
-  { value: '01', label: 'Januar' },
-  { value: '02', label: 'Februar' },
-  { value: '03', label: 'März' },
-  { value: '04', label: 'April' },
-  { value: '05', label: 'Mai' },
-  { value: '06', label: 'Juni' },
-  { value: '07', label: 'Juli' },
-  { value: '08', label: 'August' },
-  { value: '09', label: 'September' },
-  { value: '10', label: 'Oktober' },
-  { value: '11', label: 'November' },
-  { value: '12', label: 'Dezember' },
-]
-
-const currentYear = new Date().getFullYear()
-const YEAR_OPTIONS = Array.from({ length: 3 }, (_, i) => ({
-  value: String(currentYear + i),
-  label: String(currentYear + i),
-}))
-
-const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => ({
-  value: String(i).padStart(2, '0'),
-  label: String(i).padStart(2, '0'),
-}))
-
-const MINUTE_OPTIONS = ['00', '15', '30', '45'].map((m) => ({ value: m, label: m }))
 
 const inputClass =
   'w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
@@ -254,23 +221,14 @@ export default function CreateEventScreen() {
           )}
 
           {step === 'when' && (
-            <div className='flex flex-col gap-4'>
-              <div className='flex flex-col gap-2'>
-                <label className='text-sm text-label'>Datum</label>
-                <div className='flex gap-2'>
-                  <Selectbox options={DAY_OPTIONS} value={values.day} onValueChange={(v) => setField('day', v)} placeholder='Tag' aria-label='Tag' center />
-                  <Selectbox options={MONTH_OPTIONS} value={values.month} onValueChange={(v) => setField('month', v)} placeholder='Monat' aria-label='Monat' />
-                  <Selectbox options={YEAR_OPTIONS} value={values.year} onValueChange={(v) => setField('year', v)} placeholder='Jahr' aria-label='Jahr' center />
-                </div>
-              </div>
-              <div className='flex flex-col gap-2'>
-                <label className='text-sm text-label'>Uhrzeit</label>
-                <div className='flex gap-2'>
-                  <Selectbox options={HOUR_OPTIONS} value={values.hour} onValueChange={(v) => setField('hour', v)} placeholder='Std.' aria-label='Stunde' center />
-                  <Selectbox options={MINUTE_OPTIONS} value={values.minute} onValueChange={(v) => setField('minute', v)} placeholder='Min.' aria-label='Minute' center />
-                </div>
-              </div>
-            </div>
+            <DateTimePicker
+              day={values.day}
+              month={values.month}
+              year={values.year}
+              hour={values.hour}
+              minute={values.minute}
+              onChange={setField}
+            />
           )}
 
           {step === 'location' && (

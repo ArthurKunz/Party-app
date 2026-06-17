@@ -124,7 +124,7 @@ Never hardcode these. Always read from process.env.
 
 ## Current state
 We are in V1. Auth is complete. Supabase is connected. middleware.ts is in place. Onboarding is complete. create party page ready. My parties overview page ready (hosting/attending tabs, both clickable). Bottom nav (glass pill) ready. Event detail page /parties/[id] branches host vs guest: host sees copyable link + Bearbeiten (stub) + delete; guest sees host info + RSVP toggle. Public invite page /e/[invite_code] ready: signed-in users redirect to /parties/[id], anon users see the event and are sent to /login when they try to RSVP (after creating an account they must reopen the invite link to RSVP). RSVP working (upsert going/not_going); both statuses show under 'Ich bin Gast'. Attendees + host name are exposed publicly via SECURITY DEFINER functions. Added Profile page. Create party page is now a step-by-step flow (like onboarding): one topic per screen — Name, Beschreibung, Datum+Uhrzeit, Ort, Max. Gäste, then a finish screen with the copyable invite link. Cross (top-right) cancels to /parties; bottom progress dots show remaining questions and let you jump back to earlier ones (locked once the event is created). The event is created in Supabase on the last question; BottomNav is hidden during the flow.
-Next task: adding coming late flow
+Next task: adding calender select date box
 
 ---
 

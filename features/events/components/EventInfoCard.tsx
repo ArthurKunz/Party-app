@@ -16,13 +16,6 @@ function formatTime(dateString: string): string {
   })
 }
 
-const ClockIcon = (
-  <svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
-    <circle cx='12' cy='12' r='9' />
-    <polyline points='12 7 12 12 15 14' />
-  </svg>
-)
-
 const CalendarIcon = (
   <svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
     <rect x='3' y='4' width='18' height='18' rx='2' />
@@ -41,18 +34,15 @@ const PinIcon = (
 
 export default function EventInfoCard({ eventDate, location }: { eventDate: string; location: string }) {
   return (
-    <div className='flex flex-col gap-4 rounded-2xl bg-background-secondary border border-border p-5'>
-      <div className='flex items-center gap-3 text-hint'>
-        <span className='text-background-icon'>{ClockIcon}</span>
-        <span>{formatTime(eventDate)} Uhr</span>
-      </div>
-      <div className='flex items-center gap-3 text-hint'>
+    <div className='grid grid-cols-2 gap-3'>
+      <div className='flex flex-col gap-2 rounded-2xl border border-glass bg-glass p-4 backdrop-blur-xl'>
         <span className='text-background-icon'>{CalendarIcon}</span>
-        <span>{formatDate(eventDate)}</span>
+        <span className='text-sm font-medium text-body'>{formatDate(eventDate)}</span>
+        <span className='text-xs text-hint'>{formatTime(eventDate)} Uhr</span>
       </div>
-      <div className='flex items-center gap-3 text-hint'>
+      <div className='flex flex-col gap-2 rounded-2xl border border-glass bg-glass p-4 backdrop-blur-xl'>
         <span className='text-background-icon'>{PinIcon}</span>
-        <span>{location}</span>
+        <span className='text-sm font-medium text-body line-clamp-3'>{location}</span>
       </div>
     </div>
   )

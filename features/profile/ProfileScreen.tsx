@@ -43,7 +43,7 @@ export default function ProfileScreen() {
 
   return (
     <div className='relative w-screen min-h-screen overflow-hidden bg-background-main'>
-      <div className='absolute inset-0 overflow-hidden'>
+      <div className='fixed inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {
           const size = radius * 2
           const bottom = -(200 + radius)
@@ -62,7 +62,7 @@ export default function ProfileScreen() {
         })}
       </div>
 
-      <div className='absolute inset-0 bg-background-main/10 backdrop-blur-[80px]' />
+      <div className='fixed inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
       <div className='relative z-10 flex flex-col items-center px-6 py-16'>
         <div className='flex h-24 w-24 items-center justify-center rounded-full bg-background-profilpicture border border-border text-2xl font-semibold text-body'>

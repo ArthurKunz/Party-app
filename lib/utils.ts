@@ -23,3 +23,15 @@ export function getInitials(firstname: string | null, lastname: string | null): 
   const last = lastname?.trim()?.[0] ?? ''
   return (first + last).toUpperCase() || '?'
 }
+
+const COVER_GRADIENTS = [
+  'from-brand-pink to-brand-lila',
+  'from-brand-lila to-brand-blue',
+  'from-brand-blue to-brand-pink',
+]
+
+// Deterministic per-event cover gradient (no event images in V1, so we fake a "cover photo").
+export function eventCoverGradient(id: string): string {
+  const hash = id.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0)
+  return COVER_GRADIENTS[hash % COVER_GRADIENTS.length]
+}

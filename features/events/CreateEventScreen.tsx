@@ -186,7 +186,7 @@ export default function CreateEventScreen() {
 
   return (
     <div className='relative w-screen h-screen overflow-hidden bg-background-main'>
-      <div className='absolute inset-0 overflow-hidden'>
+      <div className='fixed inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {
           const size = radius * 2
           const bottom = -(200 + radius)
@@ -205,7 +205,7 @@ export default function CreateEventScreen() {
         })}
       </div>
 
-      <div className='absolute inset-0 bg-background-main/10 backdrop-blur-[80px]' />
+      <div className='fixed inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
       <button
         type='button'

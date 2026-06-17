@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
+import { eventCoverGradient } from '@/lib/utils'
 import {
   getEventById,
   getEventAttendees,
@@ -107,13 +108,16 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
 
   if (loading || !event) return null
 
+  const day = new Date(event.event_date).toLocaleDateString('de-DE', { day: 'numeric' })
+  const month = new Date(event.event_date).toLocaleDateString('de-DE', { month: 'short' }).replace('.', '')
+
   return (
     <EventBackground>
       <div className='flex items-center justify-between'>
         <button
           onClick={() => router.push('/parties')}
           aria-label='Zurück'
-          className='flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background-secondary text-body'
+          className='flex h-11 w-11 items-center justify-center rounded-full border border-glass bg-glass text-body backdrop-blur-xl'
         >
           <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
             <line x1='19' y1='12' x2='5' y2='12' />
@@ -124,21 +128,30 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
           <button
             onClick={handleCopy}
             aria-label='Link kopieren'
-            className='flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background-secondary text-body'
+            className='flex h-11 w-11 items-center justify-center rounded-full border border-glass bg-glass text-body backdrop-blur-xl'
           >
             {CopyIcon}
           </button>
         )}
       </div>
 
-      <span className='mt-8 block text-center text-3xl font-bold text-headline'>{event.title}</span>
-      {!isHost && <HostRow host={host} />}
+      <div className='relative mt-6 overflow-hidden rounded-3xl border border-border bg-background-secondary'>
+        <div className={`h-28 w-full bg-gradient-to-br ${eventCoverGradient(event.id)}`} />
+        <div className='px-5 pb-5'>
+          <div className='-mt-8 mb-4 flex h-16 w-16 flex-col items-center justify-center rounded-2xl bg-background-button shadow-lg'>
+            <span className='text-xl font-bold leading-none text-button'>{day}</span>
+            <span className='text-[10px] font-semibold uppercase leading-none text-button/70'>{month}</span>
+          </div>
+          <span className='block text-2xl font-bold text-headline'>{event.title}</span>
+          {!isHost && <HostRow host={host} />}
+        </div>
+      </div>
 
-      <div className='mt-8'>
+      <div className='mt-6'>
         <EventInfoCard eventDate={event.event_date} location={event.location} />
       </div>
 
-      <div className='mt-8'>
+      <div className='mt-6 rounded-2xl border border-border bg-background-secondary p-5'>
         <span className='block text-xs font-semibold uppercase tracking-wide text-label'>Infos</span>
         <span className='mt-2 block text-sm leading-relaxed text-hint'>
           {event.description?.trim() || 'Keine Beschreibung vorhanden.'}
@@ -146,24 +159,22 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
       </div>
 
       {isHost && (
-        <div className='mt-8'>
+        <div className='mt-6'>
           <span className='block text-xs font-semibold uppercase tracking-wide text-label'>Einladungslink</span>
-          <div className='mt-2 flex items-center gap-3 rounded-xl border border-border bg-background-secondary p-3'>
-            <button
-              onClick={handleCopy}
-              aria-label='Link kopieren'
-              className='flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-background-tertiary text-body'
-            >
-              {CopyIcon}
-            </button>
-            <span className='flex-1 truncate text-sm text-hint'>
-              {copied ? 'Link kopiert!' : shareLink}
+          <button
+            onClick={handleCopy}
+            className='mt-2 flex h-14 w-full items-center justify-between gap-3 rounded-xl border border-border-input bg-background-input px-4 text-sm text-input'
+          >
+            <span className='flex items-center gap-3 truncate'>
+              <span className='shrink-0 text-background-icon'>{CopyIcon}</span>
+              <span className='truncate'>{shareLink}</span>
             </span>
-          </div>
+            <span className='shrink-0 text-subheadline'>{copied ? 'Kopiert ✓' : 'Kopieren'}</span>
+          </button>
         </div>
       )}
 
-      <div className='mt-8'>
+      <div className='mt-6'>
         <AttendeeList attendees={attendees} />
       </div>
 
@@ -172,7 +183,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
           <>
             <button
               type='button'
-              className='w-full rounded-full bg-background-button py-3 font-medium text-button transition-colors hover:bg-background-button/90'
+              className='w-full rounded-full bg-background-button py-3 font-semibold text-button'
             >
               Bearbeiten
             </button>
@@ -180,7 +191,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
               type='button'
               onClick={handleDelete}
               disabled={deleting}
-              className='w-full rounded-full bg-red-600 py-3 font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50'
+              className='w-full rounded-full bg-warning py-3 font-semibold text-body disabled:opacity-50'
             >
               {deleting ? 'Wird gelöscht…' : 'Event löschen'}
             </button>

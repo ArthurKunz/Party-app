@@ -46,7 +46,7 @@ export default function OnboardingScreen() {
 
   return (
     <div className='relative w-screen h-screen overflow-hidden bg-background-main'>
-      <div className='absolute inset-0 overflow-hidden'>
+      <div className='fixed inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {
           const size = radius * 2
           const bottom = -(200 + radius)
@@ -65,7 +65,7 @@ export default function OnboardingScreen() {
         })}
       </div>
 
-      <div className='absolute inset-0 bg-background-main/10 backdrop-blur-[80px]' />
+      <div className='fixed inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
       <div className='relative z-10 w-full h-full flex flex-col items-center justify-center px-6'>
         <div className='w-full max-w-sm'>

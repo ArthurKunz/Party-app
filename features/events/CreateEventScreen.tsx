@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase/client'
 import { generateInviteCode } from '@/lib/utils'
 import DateTimePicker from './components/DateTimePicker'
 import StepProgress from './components/StepProgress'
+import PoolsSection from './components/PoolsSection'
 import { createEvent } from './services/events.service'
 import type { CreateEventFormValues } from './types/events.types'
 
@@ -22,9 +23,9 @@ const CIRCLES = [
 const inputClass =
   'w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
 
-type StepId = 'name' | 'description' | 'when' | 'location' | 'guests' | 'done'
+type StepId = 'name' | 'description' | 'when' | 'location' | 'guests' | 'pools' | 'done'
 
-const STEPS: StepId[] = ['name', 'when', 'location', 'guests', 'description', 'done']
+const STEPS: StepId[] = ['name', 'when', 'location', 'guests', 'description', 'pools', 'done']
 const QUESTION_COUNT = STEPS.length - 1
 
 const HEADLINES: Record<StepId, string> = {
@@ -33,6 +34,7 @@ const HEADLINES: Record<StepId, string> = {
   when: 'Wann steigt die Party?',
   location: 'Wo findet sie statt?',
   guests: 'Wie viele Gäste?',
+  pools: 'Umfragen hinzufügen',
   done: 'Deine Party ist bereit! 🎉',
 }
 
@@ -44,6 +46,7 @@ export default function CreateEventScreen() {
   const [creating, setCreating] = useState(false)
   const [created, setCreated] = useState(false)
   const [inviteCode, setInviteCode] = useState('')
+  const [eventId, setEventId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [values, setValues] = useState<CreateEventFormValues>({
     title: '',
@@ -95,7 +98,7 @@ export default function CreateEventScreen() {
     const event_date = `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:00`
     const max_guests = values.max_guests ? parseInt(values.max_guests, 10) : null
 
-    const { error } = await createEvent({
+    const { data, error } = await createEvent({
       host_id: userId,
       title: values.title.trim(),
       description: values.description.trim() || null,
@@ -105,16 +108,17 @@ export default function CreateEventScreen() {
       max_guests,
     })
 
-    if (error) {
-      alert(error.message)
+    if (error || !data) {
+      alert(error?.message ?? 'Fehler beim Erstellen')
       setCreating(false)
       return
     }
 
     setInviteCode(code)
+    setEventId(data.id)
     setCreated(true)
     setCreating(false)
-    setStep('done')
+    setStep('pools')
   }
 
   const handleNext = () => {
@@ -186,120 +190,145 @@ export default function CreateEventScreen() {
         </svg>
       </button>
 
-      <div className='relative z-10 flex h-full flex-col items-center justify-center px-6'>
-        <div className='w-full max-w-sm flex flex-col gap-10'>
-          <span className='block text-center text-4xl font-bold text-headline'>
-            {HEADLINES[step]}
-          </span>
-
-          {step === 'name' && (
-            <div className='flex flex-col gap-2'>
-              <label className='text-sm text-label'>Name</label>
-              <input
-                type='text'
-                placeholder='z.B. Dachterrassen-Party'
-                value={values.title}
-                onChange={(e) => setField('title', e.target.value)}
-                onKeyDown={handleEnterAdvance}
-                className={inputClass}
-              />
-            </div>
-          )}
-
-          {step === 'description' && (
-            <div className='flex flex-col gap-2'>
-              <label className='text-sm text-label'>Beschreibung (optional)</label>
-              <textarea
-                placeholder='Was erwartet die Gäste?'
-                value={values.description}
-                onChange={(e) => setField('description', e.target.value)}
-                onKeyDown={handleTextareaEnterAdvance}
-                rows={3}
-                className='w-full px-4 py-3 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder resize-none'
-              />
-            </div>
-          )}
-
-          {step === 'when' && (
-            <DateTimePicker
-              day={values.day}
-              month={values.month}
-              year={values.year}
-              hour={values.hour}
-              minute={values.minute}
-              onChange={setField}
-            />
-          )}
-
-          {step === 'location' && (
-            <div className='flex flex-col gap-2'>
-              <label className='text-sm text-label'>Ort</label>
-              <input
-                type='text'
-                placeholder='Adresse oder Ortsname'
-                value={values.location}
-                onChange={(e) => setField('location', e.target.value)}
-                onKeyDown={handleEnterAdvance}
-                className={inputClass}
-              />
-            </div>
-          )}
-
-          {step === 'guests' && (
-            <div className='flex flex-col gap-2'>
-              <label className='text-sm text-label'>Max. Gäste (optional)</label>
-              <input
-                type='number'
-                placeholder='z.B. 30'
-                min={1}
-                value={values.max_guests}
-                onChange={(e) => setField('max_guests', e.target.value)}
-                onKeyDown={handleEnterAdvance}
-                className={inputClass}
-              />
-            </div>
-          )}
-
-          {step === 'done' && (
-            <div className='flex flex-col gap-3'>
-              <label className='text-sm text-label'>Einladungs-Link</label>
-              <button
-                type='button'
-                onClick={handleCopy}
-                className='w-full px-4 h-14 flex items-center justify-between gap-3 bg-background-input border border-border-input rounded-xl text-input text-sm'
-              >
-                <span className='truncate'>{shareLink}</span>
-                <span className='shrink-0 text-subheadline'>{copied ? 'Kopiert ✓' : 'Kopieren'}</span>
-              </button>
-            </div>
-          )}
-
-          <div className='flex justify-center'>
-            {step === 'done' ? (
-              <button
-                type='button'
-                onClick={() => router.push('/parties')}
-                className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-10'
-              >
-                Fertig
-              </button>
-            ) : (
+      {step === 'pools' ? (
+        <div className='relative z-10 h-full overflow-y-auto scrollbar-none px-6 pt-20 pb-24'>
+          <div className='w-full max-w-sm mx-auto flex flex-col gap-8'>
+            <span className='block text-center text-4xl font-bold text-headline'>
+              {HEADLINES.pools}
+            </span>
+            {eventId && userId && (
+              <PoolsSection eventId={eventId} isHost={true} userId={userId} />
+            )}
+            <div className='flex justify-center'>
               <button
                 type='button'
                 onClick={handleNext}
-                disabled={!canContinue || creating}
-                className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-10 disabled:opacity-40'
+                className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-10'
               >
-                {step === 'description' ? (creating ? 'Erstellen …' : 'Party erstellen →') : 'weiter →'}
+                weiter →
               </button>
-            )}
+            </div>
+            <div className='flex justify-center pb-2'>
+              <StepProgress count={QUESTION_COUNT} current={stepIndex} onSelect={handleSelectStep} />
+            </div>
           </div>
         </div>
+      ) : (
+        <div className='relative z-10 flex h-full flex-col items-center justify-center px-6'>
+          <div className='w-full max-w-sm flex flex-col gap-10'>
+            <span className='block text-center text-4xl font-bold text-headline'>
+              {HEADLINES[step]}
+            </span>
 
-        <div className='absolute bottom-8'>
-          <StepProgress count={QUESTION_COUNT} current={stepIndex} onSelect={handleSelectStep} />
+            {step === 'name' && (
+              <div className='flex flex-col gap-2'>
+                <label className='text-sm text-label'>Name</label>
+                <input
+                  type='text'
+                  placeholder='z.B. Dachterrassen-Party'
+                  value={values.title}
+                  onChange={(e) => setField('title', e.target.value)}
+                  onKeyDown={handleEnterAdvance}
+                  className={inputClass}
+                />
+              </div>
+            )}
+
+            {step === 'description' && (
+              <div className='flex flex-col gap-2'>
+                <label className='text-sm text-label'>Beschreibung (optional)</label>
+                <textarea
+                  placeholder='Was erwartet die Gäste?'
+                  value={values.description}
+                  onChange={(e) => setField('description', e.target.value)}
+                  onKeyDown={handleTextareaEnterAdvance}
+                  rows={3}
+                  className='w-full px-4 py-3 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder resize-none'
+                />
+              </div>
+            )}
+
+            {step === 'when' && (
+              <DateTimePicker
+                day={values.day}
+                month={values.month}
+                year={values.year}
+                hour={values.hour}
+                minute={values.minute}
+                onChange={setField}
+              />
+            )}
+
+            {step === 'location' && (
+              <div className='flex flex-col gap-2'>
+                <label className='text-sm text-label'>Ort</label>
+                <input
+                  type='text'
+                  placeholder='Adresse oder Ortsname'
+                  value={values.location}
+                  onChange={(e) => setField('location', e.target.value)}
+                  onKeyDown={handleEnterAdvance}
+                  className={inputClass}
+                />
+              </div>
+            )}
+
+            {step === 'guests' && (
+              <div className='flex flex-col gap-2'>
+                <label className='text-sm text-label'>Max. Gäste (optional)</label>
+                <input
+                  type='number'
+                  placeholder='z.B. 30'
+                  min={1}
+                  value={values.max_guests}
+                  onChange={(e) => setField('max_guests', e.target.value)}
+                  onKeyDown={handleEnterAdvance}
+                  className={inputClass}
+                />
+              </div>
+            )}
+
+            {step === 'done' && (
+              <div className='flex flex-col gap-3'>
+                <label className='text-sm text-label'>Einladungs-Link</label>
+                <button
+                  type='button'
+                  onClick={handleCopy}
+                  className='w-full px-4 h-14 flex items-center justify-between gap-3 bg-background-input border border-border-input rounded-xl text-input text-sm'
+                >
+                  <span className='truncate'>{shareLink}</span>
+                  <span className='shrink-0 text-subheadline'>{copied ? 'Kopiert ✓' : 'Kopieren'}</span>
+                </button>
+              </div>
+            )}
+
+            <div className='flex justify-center'>
+              {step === 'done' ? (
+                <button
+                  type='button'
+                  onClick={() => router.push('/parties')}
+                  className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-10'
+                >
+                  Fertig
+                </button>
+              ) : (
+                <button
+                  type='button'
+                  onClick={handleNext}
+                  disabled={!canContinue || creating}
+                  className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-10 disabled:opacity-40'
+                >
+                  {step === 'description' ? (creating ? 'Erstellen …' : 'Party erstellen →') : 'weiter →'}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className='absolute bottom-8'>
+            <StepProgress count={QUESTION_COUNT} current={stepIndex} onSelect={handleSelectStep} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

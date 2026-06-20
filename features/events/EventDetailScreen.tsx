@@ -17,6 +17,7 @@ import EventInfoCard from './components/EventInfoCard'
 import AttendeeList from './components/AttendeeList'
 import HostRow from './components/HostRow'
 import RsvpButtons from './components/RsvpButtons'
+import PoolsSection from './components/PoolsSection'
 import type { EventDetail, Attendee, EventHost, RsvpStatus } from './types/events.types'
 
 const CopyIcon = (
@@ -33,6 +34,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
   const [host, setHost] = useState<EventHost | null>(null)
   const [isHost, setIsHost] = useState(false)
   const [rsvpStatus, setRsvpStatus] = useState<RsvpStatus | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -46,12 +48,13 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
         router.push('/login')
         return
       }
-      const userId = session.user.id
+      const uid = session.user.id
+      setUserId(uid)
       const [eventData, attendeeData, hostData, status] = await Promise.all([
         getEventById(eventId),
         getEventAttendees(eventId),
         getEventHost(eventId),
-        getMyRsvpStatus(eventId, userId),
+        getMyRsvpStatus(eventId, uid),
       ])
       if (!eventData) {
         router.push('/parties')
@@ -60,7 +63,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
       setEvent(eventData)
       setAttendees(attendeeData)
       setHost(hostData)
-      setIsHost(eventData.host_id === userId)
+      setIsHost(eventData.host_id === uid)
       setRsvpStatus(status)
       setLoading(false)
     })
@@ -177,6 +180,12 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
       <div className='mt-6'>
         <AttendeeList attendees={attendees} />
       </div>
+
+      {userId && (
+        <div className='mt-6'>
+          <PoolsSection eventId={eventId} isHost={isHost} userId={userId} />
+        </div>
+      )}
 
       <div className='mt-10 flex flex-col gap-3'>
         {isHost ? (

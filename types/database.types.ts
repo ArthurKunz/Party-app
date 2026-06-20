@@ -124,6 +124,118 @@ export type Database = {
           },
         ]
       }
+      pools: {
+        Row: {
+          id: string
+          event_id: string
+          question: string
+          description: string | null
+          type: string
+          allow_text_response: boolean
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          question: string
+          description?: string | null
+          type: string
+          allow_text_response?: boolean
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          question?: string
+          description?: string | null
+          type?: string
+          allow_text_response?: boolean
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pools_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pool_options: {
+        Row: {
+          id: string
+          pool_id: string
+          label: string
+          position: number
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          pool_id: string
+          label: string
+          position?: number
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          pool_id?: string
+          label?: string
+          position?: number
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pool_options_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pool_responses: {
+        Row: {
+          id: string
+          pool_id: string
+          user_id: string
+          option_id: string | null
+          text_response: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          pool_id: string
+          user_id: string
+          option_id?: string | null
+          text_response?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          pool_id?: string
+          user_id?: string
+          option_id?: string | null
+          text_response?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pool_responses_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pool_responses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -147,6 +259,19 @@ export type Database = {
         }[]
       }
       get_rsvp_count: { Args: { p_event_id: string }; Returns: number }
+      get_pool_responses_by_event: {
+        Args: { p_event_id: string }
+        Returns: {
+          id: string
+          pool_id: string
+          user_id: string
+          option_id: string | null
+          text_response: string | null
+          created_at: string
+          firstname: string | null
+          lastname: string | null
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

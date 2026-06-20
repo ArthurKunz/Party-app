@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase/client'
 import type { CreateEventPayload, EventWithCount, EventDetail, Attendee, EventHost, RsvpStatus } from '../types/events.types'
 
 export async function createEvent(payload: CreateEventPayload) {
-  return supabase.from('events').insert(payload).select('invite_code').single()
+  return supabase.from('events').insert(payload).select('id, invite_code').single()
 }
 
 async function attachCount(event: Omit<EventWithCount, 'attendee_count'>): Promise<EventWithCount> {

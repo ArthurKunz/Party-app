@@ -23,9 +23,11 @@ const CIRCLES = [
 const inputClass =
   'w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
 
-type StepId = 'name' | 'description' | 'when' | 'location' | 'guests' | 'pools' | 'done'
+const BG_MAX_BYTES = 10 * 1024 * 1024
 
-const STEPS: StepId[] = ['name', 'when', 'location', 'guests', 'description', 'pools', 'done']
+type StepId = 'name' | 'description' | 'when' | 'location' | 'guests' | 'background' | 'pools' | 'done'
+
+const STEPS: StepId[] = ['name', 'when', 'location', 'guests', 'description', 'background', 'pools', 'done']
 const QUESTION_COUNT = STEPS.length - 1
 
 const HEADLINES: Record<StepId, string> = {
@@ -34,6 +36,7 @@ const HEADLINES: Record<StepId, string> = {
   when: 'Wann steigt die Party?',
   location: 'Wo findet sie statt?',
   guests: 'Wie viele Gäste?',
+  background: 'Hintergrundbild',
   pools: 'Umfragen hinzufügen',
   done: 'Deine Party ist bereit! 🎉',
 }
@@ -45,9 +48,13 @@ export default function CreateEventScreen() {
   const [step, setStep] = useState<StepId>('name')
   const [creating, setCreating] = useState(false)
   const [created, setCreated] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [inviteCode, setInviteCode] = useState('')
   const [eventId, setEventId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [bgFile, setBgFile] = useState<File | null>(null)
+  const [bgPreviewUrl, setBgPreviewUrl] = useState<string | null>(null)
+  const [bgError, setBgError] = useState<string | null>(null)
   const [values, setValues] = useState<CreateEventFormValues>({
     title: '',
     description: '',
@@ -118,12 +125,63 @@ export default function CreateEventScreen() {
     setEventId(data.id)
     setCreated(true)
     setCreating(false)
+    setStep('background')
+  }
+
+  const handlePickBg = (picked: File | null) => {
+    setBgError(null)
+    if (!picked) return
+    if (!picked.type.startsWith('image/')) {
+      setBgError('Bitte ein Bild (JPG, PNG, …) auswählen.')
+      return
+    }
+    if (picked.size > BG_MAX_BYTES) {
+      setBgError('Die Datei darf höchstens 10 MB groß sein.')
+      return
+    }
+    setBgFile(picked)
+    setBgPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return URL.createObjectURL(picked)
+    })
+  }
+
+  const handleUploadBackground = async () => {
+    if (!bgFile || !eventId || !userId) {
+      setStep('pools')
+      return
+    }
+    setBgError(null)
+    setUploading(true)
+
+    const ext = bgFile.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'jpg'
+    const path = `${userId}/${eventId}/background.${safeExt}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('event-backgrounds')
+      .upload(path, bgFile, { cacheControl: '3600', upsert: true })
+
+    if (uploadError) {
+      setBgError(uploadError.message)
+      setUploading(false)
+      return
+    }
+
+    const { data: urlData } = supabase.storage.from('event-backgrounds').getPublicUrl(path)
+    await supabase.from('events').update({ background_url: urlData.publicUrl }).eq('id', eventId)
+
+    setUploading(false)
     setStep('pools')
   }
 
   const handleNext = () => {
     if (step === 'description') {
-      handleCreate()
+      void handleCreate()
+      return
+    }
+    if (step === 'background') {
+      void handleUploadBackground()
       return
     }
     setStep(STEPS[stepIndex + 1])
@@ -288,6 +346,31 @@ export default function CreateEventScreen() {
               </div>
             )}
 
+            {step === 'background' && (
+              <div className='flex flex-col gap-3'>
+                <label className='cursor-pointer block w-full'>
+                  <div className='w-full aspect-video rounded-xl overflow-hidden bg-background-tertiary flex items-center justify-center'>
+                    {bgPreviewUrl ? (
+                      <img src={bgPreviewUrl} alt='Hintergrundbild' className='w-full h-full object-cover' />
+                    ) : (
+                      <svg width='36' height='36' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' className='text-subheadline'>
+                        <path d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z' />
+                        <circle cx='12' cy='13' r='4' />
+                      </svg>
+                    )}
+                  </div>
+                  <input
+                    type='file'
+                    accept='image/*'
+                    className='hidden'
+                    onChange={(e) => handlePickBg(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+                <span className='text-xs text-center text-subheadline'>Tippe auf das Bild um ein Foto auszuwählen</span>
+                {bgError && <span className='text-sm text-warning text-center' role='alert'>{bgError}</span>}
+              </div>
+            )}
+
             {step === 'done' && (
               <div className='flex flex-col gap-3'>
                 <label className='text-sm text-label'>Einladungs-Link</label>
@@ -311,6 +394,24 @@ export default function CreateEventScreen() {
                 >
                   Fertig
                 </button>
+              ) : step === 'background' ? (
+                <div className='flex flex-col items-center gap-4 w-full'>
+                  <button
+                    type='button'
+                    onClick={handleNext}
+                    disabled={!bgFile || uploading}
+                    className='h-12 w-full rounded-full bg-background-button text-button text-sm font-semibold disabled:opacity-40'
+                  >
+                    {uploading ? 'Wird hochgeladen…' : 'weiter →'}
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => setStep('pools')}
+                    className='text-sm text-subheadline'
+                  >
+                    Überspringen →
+                  </button>
+                </div>
               ) : (
                 <button
                   type='button'

@@ -52,7 +52,8 @@ export default function PersonalDataForm({ onSuccess }: NameFormProps) {
 
       <button
         onClick={() => onSuccess(firstname, lastname)}
-        className='w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
+        disabled={!firstname.trim() || !lastname.trim()}
+        className='w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold disabled:opacity-40'
       >
         Weiter
       </button>

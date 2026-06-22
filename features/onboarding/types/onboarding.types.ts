@@ -5,3 +5,7 @@ export interface NameFormProps {
 export interface BirthdateFormProps {
   onSuccess: (birthday: string) => void
 }
+
+export interface ProfilePictureFormProps {
+  onSuccess: (avatarUrl: string | null, avatarColor: string) => void
+}

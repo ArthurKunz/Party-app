@@ -6,6 +6,11 @@ import { supabase } from '@/lib/supabase/client'
 import { getSession } from './services/onboarding.service'
 import PersonalDataForm from './components/PersonalDataForm'
 import BirthdateForm from './components/BirthdateForm'
+import ProfilePictureForm from './components/ProfilePictureForm'
+
+type Step = 'name' | 'birthday' | 'picture'
+
+const STEPS: Step[] = ['name', 'birthday', 'picture']
 
 const CIRCLES = [
   { color: '#161BFA', radius: 700 },
@@ -19,9 +24,10 @@ const CIRCLES = [
 
 export default function OnboardingScreen() {
   const router = useRouter()
-  const [step, setStep] = useState<'name' | 'birthday'>('name')
+  const [step, setStep] = useState<Step>('name')
   const [firstname, setFirstname] = useState('')
   const [lastname, setLastname] = useState('')
+  const [birthday, setBirthday] = useState('')
 
   const handleNameDone = (fn: string, ln: string) => {
     setFirstname(fn)
@@ -29,7 +35,12 @@ export default function OnboardingScreen() {
     setStep('birthday')
   }
 
-  const handleBirthdateDone = async (birthday: string) => {
+  const handleBirthdateDone = (bd: string) => {
+    setBirthday(bd)
+    setStep('picture')
+  }
+
+  const handlePictureDone = async (avatarUrl: string | null, avatarColor: string) => {
     const { data: { session } } = await getSession()
     if (!session) return
 
@@ -38,11 +49,15 @@ export default function OnboardingScreen() {
       firstname,
       lastname,
       birthday,
+      avatar_url: avatarUrl,
+      avatar_color: avatarColor,
     })
 
     if (error) alert(error.message)
     else router.push('/home')
   }
+
+  const stepIndex = STEPS.indexOf(step)
 
   return (
     <div className='relative w-screen h-screen overflow-hidden bg-background-main'>
@@ -71,13 +86,16 @@ export default function OnboardingScreen() {
         <div className='w-full max-w-sm'>
           {step === 'name' && <PersonalDataForm onSuccess={handleNameDone} />}
           {step === 'birthday' && <BirthdateForm onSuccess={handleBirthdateDone} />}
+          {step === 'picture' && <ProfilePictureForm onSuccess={handlePictureDone} />}
         </div>
 
         <div className='absolute bottom-8 flex gap-2 items-center'>
-          {[0, 1, 2].map((i) => (
+          {STEPS.map((_, i) => (
             <div
               key={i}
-              className={`h-2 rounded-full transition-all duration-300 ${i === 2 ? 'w-6 bg-white' : 'w-2 bg-white/30'}`}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                i === stepIndex ? 'w-6 bg-white' : 'w-2 bg-white/30'
+              }`}
             />
           ))}
         </div>

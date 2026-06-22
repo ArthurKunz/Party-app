@@ -42,13 +42,13 @@ export default function BottomNav() {
   if (pathname === '/create-event') return null
 
   return (
-    <nav className='fixed bottom-6 left-1/2 -translate-x-1/2 z-50'>
-      <div className='flex items-center gap-2 rounded-full border border-glass bg-glass px-3 py-2 backdrop-blur-xl shadow-lg'>
+    <nav className='fixed bottom-6 left-1/2 -translate-x-1/2 z-50 '>
+      <div className='flex items-center gap-1.5 rounded-full border border-glass bg-glass px-2 py-2 backdrop-blur-xl shadow-lg'>
         <Link
           href='/parties'
           aria-label='Meine Events'
-          className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${
-            pathname === '/parties' ? 'bg-background-button text-button' : 'text-hint hover:text-body'
+          className={`flex h-11 w-15 items-center justify-center rounded-full transition-colors ${
+            pathname === '/parties' ? 'bg-black/15 text-white' : 'text-hint hover:text-body'
           }`}
         >
           {links[0].icon}
@@ -57,7 +57,7 @@ export default function BottomNav() {
         <Link
           href='/create-event'
           aria-label='Event erstellen'
-          className='flex h-12 w-12 items-center justify-center rounded-full bg-background-button text-button transition-transform hover:scale-105'
+          className='flex h-11 w-11 items-center justify-center rounded-full bg-black/15 text-white transition-transform hover:scale-105'
         >
           <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
             <line x1='12' y1='5' x2='12' y2='19' />
@@ -68,8 +68,8 @@ export default function BottomNav() {
         <Link
           href='/profile'
           aria-label='Mein Profil'
-          className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors ${
-            pathname === '/profile' ? 'bg-background-button text-button' : 'text-hint hover:text-body'
+          className={`flex h-11 w-15 items-center justify-center rounded-full transition-colors ${
+            pathname === '/profile' ? 'bg-black/15 text-white' : 'text-hint hover:text-body'
           }`}
         >
           {links[1].icon}

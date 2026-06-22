@@ -27,6 +27,13 @@ export type EventWithCount = {
   location: string
   invite_code: string
   attendee_count: number
+  background_url?: string | null
+  rsvp_status?: 'going' | 'not_going' | null
+  host_firstname?: string | null
+  host_lastname?: string | null
+  host_avatar_color?: string | null
+  host_avatar_url?: string | null
+  attendees?: Attendee[]
 }
 
 export type EventDetail = {
@@ -44,6 +51,8 @@ export type Attendee = {
   firstname: string | null
   lastname: string | null
   birthday: string | null
+  avatar_url: string | null
+  avatar_color: string | null
 }
 
 export type EventHost = {

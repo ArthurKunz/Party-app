@@ -5,32 +5,108 @@ export async function createEvent(payload: CreateEventPayload) {
   return supabase.from('events').insert(payload).select('id, invite_code').single()
 }
 
-async function attachCount(event: Omit<EventWithCount, 'attendee_count'>): Promise<EventWithCount> {
-  const { data } = await supabase.rpc('get_rsvp_count', { p_event_id: event.id })
-  return { ...event, attendee_count: data ?? 0 }
+async function attachCountAndAttendees(event: Omit<EventWithCount, 'attendee_count' | 'attendees'>): Promise<EventWithCount> {
+  const [countResult, attendeesResult] = await Promise.all([
+    supabase.rpc('get_rsvp_count', { p_event_id: event.id }),
+    supabase.rpc('get_event_attendees', { p_event_id: event.id }),
+  ])
+  return {
+    ...event,
+    attendee_count: countResult.data ?? 0,
+    attendees: ((attendeesResult.data as Attendee[] | null) ?? []).slice(0, 10),
+  }
+}
+
+const AVATAR_COLORS = ['#FF0090', '#A336FF', '#161BFA', '#5684FF', '#AE4FFF', '#D47AFF', '#E224A1']
+
+function hostColor(hostId: string): string {
+  const sum = hostId.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
+  return AVATAR_COLORS[sum % AVATAR_COLORS.length]
+}
+
+interface HostedRow {
+  id: string
+  title: string
+  event_date: string
+  location: string
+  invite_code: string
+  background_url: string | null
+}
+
+interface AttendedRsvpRow {
+  status: string
+  events: {
+    id: string
+    title: string
+    event_date: string
+    location: string
+    invite_code: string
+    background_url: string | null
+    host_id: string
+  } | null
 }
 
 export async function getHostedEvents(userId: string): Promise<EventWithCount[]> {
   const { data, error } = await supabase
     .from('events')
-    .select('id, title, event_date, location, invite_code')
+    .select('id, title, event_date, location, invite_code, background_url')
     .eq('host_id', userId)
     .order('event_date', { ascending: true })
   if (error || !data) return []
-  return Promise.all(data.map(attachCount))
+  return Promise.all(
+    (data as unknown as HostedRow[]).map((e) =>
+      attachCountAndAttendees({
+        id: e.id,
+        title: e.title,
+        event_date: e.event_date,
+        location: e.location,
+        invite_code: e.invite_code,
+        background_url: e.background_url,
+      })
+    )
+  )
 }
 
 export async function getAttendedEvents(userId: string): Promise<EventWithCount[]> {
   // Both 'going' and 'not_going' RSVPs appear under "Ich bin Gast"
   const { data, error } = await supabase
     .from('rsvps')
-    .select('events(id, title, event_date, location, invite_code)')
+    .select('status, events(id, title, event_date, location, invite_code, background_url, host_id)')
     .eq('user_id', userId)
   if (error || !data) return []
-  const events = data
-    .map((row) => row.events as unknown as Omit<EventWithCount, 'attendee_count'> | null)
-    .filter((e): e is Omit<EventWithCount, 'attendee_count'> => e !== null)
-  return Promise.all(events.map(attachCount))
+
+  const rows = (data as unknown as AttendedRsvpRow[])
+    .filter((r) => r.events !== null)
+    .map((r) => ({ status: r.status as 'going' | 'not_going', event: r.events! }))
+
+  if (rows.length === 0) return []
+
+  return Promise.all(
+    rows.map(async ({ status, event }) => {
+      // get_event_host is SECURITY DEFINER so it bypasses profiles RLS
+      const [hostResult, countResult, attendeesResult] = await Promise.all([
+        supabase.rpc('get_event_host', { p_event_id: event.id }),
+        supabase.rpc('get_rsvp_count', { p_event_id: event.id }),
+        supabase.rpc('get_event_attendees', { p_event_id: event.id }),
+      ])
+      const host = (hostResult.data as { firstname: string | null; lastname: string | null }[] | null)?.[0] ?? null
+      return {
+        id: event.id,
+        title: event.title,
+        event_date: event.event_date,
+        location: event.location,
+        invite_code: event.invite_code,
+        background_url: event.background_url,
+        attendee_count: countResult.data ?? 0,
+        attendees: ((attendeesResult.data as Attendee[] | null) ?? []).slice(0, 10),
+        rsvp_status: status,
+        host_firstname: host?.firstname ?? null,
+        host_lastname: host?.lastname ?? null,
+        host_avatar_color: hostColor(event.host_id),
+        host_avatar_url: null,
+      }
+    })
+  )
 }
 
 const EVENT_DETAIL_COLUMNS = 'id, host_id, title, description, event_date, location, invite_code'

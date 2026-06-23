@@ -84,6 +84,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
         <RsvpButtons
           status={null}
           onGoing={handleAnonRsvp}
+          onMaybe={handleAnonRsvp}
           onNotGoing={handleAnonRsvp}
         />
         <span className='mt-3 block text-center text-xs text-hint'>

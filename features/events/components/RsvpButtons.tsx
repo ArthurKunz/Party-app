@@ -5,52 +5,23 @@ import type { RsvpStatus } from '../types/events.types'
 type Props = {
   status: RsvpStatus | null
   onGoing: () => void
+  onMaybe: () => void
   onNotGoing: () => void
   loading?: boolean
 }
 
-const CheckIcon = (
-  <svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
-    <polyline points='20 6 9 17 4 12' />
-  </svg>
-)
+const base = 'flex-1 rounded-2xl py-3.5 font-semibold cursor-pointer'
+const goingClass = `${base} bg-success/50 text-success ring-1 ring-inset ring-success`
+const maybeClass = `${base} bg-maybe/50 text-maybe ring-1 ring-inset ring-maybe`
+const notGoingClass = `${base} bg-warning/50 text-warning ring-1 ring-inset ring-warning`
 
-const XIcon = (
-  <svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
-    <line x1='18' y1='6' x2='6' y2='18' />
-    <line x1='6' y1='6' x2='18' y2='18' />
-  </svg>
-)
+export default function RsvpButtons({ status, onGoing, onMaybe, onNotGoing, loading }: Props) {
+  const goingBtn = <button type='button' onClick={onGoing} disabled={loading} className={goingClass}>Zusagen</button>
+  const maybeBtn = <button type='button' onClick={onMaybe} disabled={loading} className={maybeClass}>Vielleicht</button>
+  const notGoingBtn = <button type='button' onClick={onNotGoing} disabled={loading} className={notGoingClass}>Absagen</button>
 
-const goingClass =
-  'flex w-full items-center justify-center gap-2 rounded-full bg-success py-3 font-semibold text-button transition-opacity hover:opacity-90 disabled:opacity-50'
-const notGoingClass =
-  'flex w-full items-center justify-center gap-2 rounded-full bg-warning py-3 font-semibold text-body transition-opacity hover:opacity-90 disabled:opacity-50'
-
-// No RSVP yet -> offer both choices. Already responded -> single toggle to the other state.
-export default function RsvpButtons({ status, onGoing, onNotGoing, loading }: Props) {
-  if (status === 'going') {
-    return (
-      <button type='button' onClick={onNotGoing} disabled={loading} className={notGoingClass}>
-        {XIcon} Absagen
-      </button>
-    )
-  }
-  if (status === 'not_going') {
-    return (
-      <button type='button' onClick={onGoing} disabled={loading} className={goingClass}>
-        {CheckIcon} Zusagen
-      </button>
-    )
-  }
-  return (
-    <div className='flex gap-3'>
-      <button type='button' onClick={onNotGoing} disabled={loading} className={notGoingClass}>
-        {XIcon} Absagen
-      </button>
-      <button type='button' onClick={onGoing} disabled={loading} className={goingClass}>
-        {CheckIcon} Zusagen
-      </button>
-    </div>
-  )
+  if (status === 'going') return <div className='flex gap-3'>{maybeBtn}{notGoingBtn}</div>
+  if (status === 'maybe') return <div className='flex gap-3'>{goingBtn}{notGoingBtn}</div>
+  if (status === 'not_going') return <div className='flex gap-3'>{goingBtn}{maybeBtn}</div>
+  return <div className='flex gap-3'>{goingBtn}{maybeBtn}</div>
 }

@@ -109,7 +109,7 @@ export async function getAttendedEvents(userId: string): Promise<EventWithCount[
   )
 }
 
-const EVENT_DETAIL_COLUMNS = 'id, host_id, title, description, event_date, location, invite_code'
+const EVENT_DETAIL_COLUMNS = 'id, host_id, title, description, event_date, location, invite_code, background_url'
 
 export async function getEventById(eventId: string): Promise<EventDetail | null> {
   const { data, error } = await supabase
@@ -134,13 +134,21 @@ export async function getEventByInviteCode(inviteCode: string): Promise<EventDet
 export async function getEventHost(eventId: string): Promise<EventHost | null> {
   const { data, error } = await supabase.rpc('get_event_host', { p_event_id: eventId })
   if (error || !data || data.length === 0) return null
-  return data[0]
+  return data[0] as unknown as EventHost
 }
 
 export async function getEventAttendees(eventId: string): Promise<Attendee[]> {
   const { data, error } = await supabase.rpc('get_event_attendees', { p_event_id: eventId })
   if (error || !data) return []
-  return data
+  return data as unknown as Attendee[]
+}
+
+interface RsvpCountRow { going_count: number; maybe_count: number; not_going_count: number }
+
+export async function getRsvpCountsByStatus(eventId: string): Promise<{ going: number; maybe: number; not_going: number }> {
+  const { data } = await (supabase.rpc as unknown as (fn: string, args: Record<string, string>) => Promise<{ data: unknown }>)('get_rsvp_counts_by_status', { p_event_id: eventId })
+  const row = (data as RsvpCountRow[] | null)?.[0]
+  return { going: row?.going_count ?? 0, maybe: row?.maybe_count ?? 0, not_going: row?.not_going_count ?? 0 }
 }
 
 export async function getMyRsvpStatus(eventId: string, userId: string): Promise<RsvpStatus | null> {

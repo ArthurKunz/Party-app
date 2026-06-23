@@ -17,6 +17,7 @@ export type CreateEventFormValues = {
   hour: string
   minute: string
   location: string
+  city: string
   max_guests: string
 }
 
@@ -44,6 +45,7 @@ export type EventDetail = {
   event_date: string
   location: string
   invite_code: string
+  background_url?: string | null
 }
 
 export type Attendee = {
@@ -53,14 +55,17 @@ export type Attendee = {
   birthday: string | null
   avatar_url: string | null
   avatar_color: string | null
+  status: 'going' | 'maybe' | 'not_going'
 }
 
 export type EventHost = {
   firstname: string | null
   lastname: string | null
+  avatar_url: string | null
+  avatar_color: string | null
 }
 
-export type RsvpStatus = 'going' | 'not_going'
+export type RsvpStatus = 'going' | 'not_going' | 'maybe'
 
 export type PoolType = 'options' | 'text_only'
 

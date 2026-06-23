@@ -6,7 +6,15 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { getHostedEvents, getAttendedEvents } from './services/events.service'
 import EventCard from './components/EventCard'
+import { getInitials } from '@/lib/utils'
 import type { EventWithCount } from './types/events.types'
+
+type Profile = {
+  firstname: string | null
+  lastname: string | null
+  avatar_url: string | null
+  avatar_color: string | null
+}
 
 type Tab = 'hosting' | 'attending'
 
@@ -26,6 +34,7 @@ export default function PartiesScreen() {
   const [hosted, setHosted] = useState<EventWithCount[]>([])
   const [attended, setAttended] = useState<EventWithCount[]>([])
   const [loading, setLoading] = useState(true)
+  const [profile, setProfile] = useState<Profile | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -34,12 +43,14 @@ export default function PartiesScreen() {
         return
       }
       const userId = session.user.id
-      const [hostedEvents, attendedEvents] = await Promise.all([
+      const [hostedEvents, attendedEvents, profileResult] = await Promise.all([
         getHostedEvents(userId),
         getAttendedEvents(userId),
+        supabase.from('profiles').select('firstname, lastname, avatar_url, avatar_color').eq('id', userId).maybeSingle(),
       ])
       setHosted(hostedEvents)
       setAttended(attendedEvents)
+      if (profileResult.data) setProfile(profileResult.data as Profile)
       setLoading(false)
     })
   }, [router])
@@ -73,13 +84,27 @@ export default function PartiesScreen() {
 
       <div className='fixed inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
-      <div className='relative z-10 flex flex-col items-center px-6 py-16'>
-        <span className='block text-center text-3xl font-bold text-headline'>Meine Events</span>
-        <span className='mt-2 block text-center text-sm text-subheadline'>Wo du Gast oder Gastgeber bist</span>
+      <div className='relative z-10 flex flex-col items-center px-6 pt-16 pb-16'>
+        <div className='flex w-full items-center justify-between mb-8'>
+          <Link href='/create-event' className='h-10 w-10 flex justify-center items-center'>
+            <span className='text-4xl font-light text-headline'>+</span>
+          </Link>
+          <span className='text-3xl font-bold text-headline'>Events</span>
+          <div
+            className='h-10 w-10 shrink-0 rounded-full overflow-hidden flex items-center justify-center text-sm font-semibold text-body'
+            style={{ backgroundColor: profile?.avatar_color ?? '#2A2A2A' }}
+          >
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt='' className='h-full w-full object-cover' />
+            ) : (
+              getInitials(profile?.firstname ?? null, profile?.lastname ?? null)
+            )}
+          </div>
+        </div>
 
         <div
           role='tablist'
-          className='flex bg-background-tertiary rounded-full p-1 mt-8 w-72'
+          className='flex bg-background-secondary border border-border rounded-full p-1 mt-8 w-full h-13'
         >
           {(['attending', 'hosting'] as Tab[]).map((t) => (
             <button
@@ -87,7 +112,7 @@ export default function PartiesScreen() {
               role='tab'
               aria-selected={tab === t}
               onClick={() => setTab(t)}
-              className={`flex-1 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`flex-1 py-2 rounded-full text-md font-medium transition-colors ${
                 tab === t ? 'bg-background-button text-button' : 'text-subheadline'
               }`}
             >

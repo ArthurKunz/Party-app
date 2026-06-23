@@ -59,7 +59,7 @@ export default function EventCard({
         )}
 
         {/* Content */}
-        <div className={`relative z-10 px-8 pb-3 ${isHost ? 'pt-5' : 'pt-8'}`}>
+        <div className='relative z-10 px-8 py-6'>
           {/* Top row */}
           <div className='flex items-center justify-between gap-3'>
             <div className='flex min-w-0 flex-1 flex-col gap-0.5'>
@@ -96,12 +96,6 @@ export default function EventCard({
             </div>
           </div>
 
-          {/* Location + date */}
-          {!isHost && (
-            <p className='mt-3 mb-1.5 text-center text-xs font-thin text-hint'>
-              {event.location} · {formatDate(event.event_date)}
-            </p>
-          )}
         </div>
       </div>
 

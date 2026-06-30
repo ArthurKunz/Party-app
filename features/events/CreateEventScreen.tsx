@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase/client'
 import { generateInviteCode } from '@/lib/utils'
 import DateTimePicker from './components/DateTimePicker'
 import StepProgress from './components/StepProgress'
-import PoolsSection from './components/PoolsSection'
+import CreatePoolForm from './components/CreatePoolForm'
 import { createEvent } from './services/events.service'
 import type { CreateEventFormValues } from './types/events.types'
 
@@ -27,7 +27,7 @@ const BG_MAX_BYTES = 10 * 1024 * 1024
 
 type StepId = 'name' | 'description' | 'when' | 'location' | 'guests' | 'background' | 'pools' | 'done'
 
-const STEPS: StepId[] = ['name', 'when', 'location', 'guests', 'description', 'background', 'pools', 'done']
+const STEPS: StepId[] = ['name', 'when', 'location', 'description', 'guests', 'background', 'pools', 'done']
 const QUESTION_COUNT = STEPS.length - 1
 
 const HEADLINES: Record<StepId, string> = {
@@ -52,6 +52,8 @@ export default function CreateEventScreen() {
   const [inviteCode, setInviteCode] = useState('')
   const [eventId, setEventId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [showPoolForm, setShowPoolForm] = useState(false)
+  const [localPools, setLocalPools] = useState<Array<{ id: string; question: string; options: string[] }>>([])
   const [bgFile, setBgFile] = useState<File | null>(null)
   const [bgPreviewUrl, setBgPreviewUrl] = useState<string | null>(null)
   const [bgError, setBgError] = useState<string | null>(null)
@@ -64,13 +66,26 @@ export default function CreateEventScreen() {
     hour: '',
     minute: '',
     location: '',
+    city: '',
     max_guests: '',
   })
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) router.push('/login')
-      else setUserId(session.user.id)
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) {
+        router.push('/login')
+        return
+      }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', session.user.id)
+        .maybeSingle()
+      if (!profile) {
+        router.push('/onboarding')
+        return
+      }
+      setUserId(session.user.id)
     })
   }, [router])
 
@@ -91,7 +106,7 @@ export default function CreateEventScreen() {
       case 'when':
         return Boolean(values.day && values.month && values.year && values.hour && values.minute)
       case 'location':
-        return values.location.trim().length > 0
+        return values.location.trim().length > 0 && values.city.trim().length > 0
       default:
         return true
     }
@@ -111,7 +126,7 @@ export default function CreateEventScreen() {
       description: values.description.trim() || null,
       invite_code: code,
       event_date,
-      location: values.location.trim(),
+      location: `${values.location.trim()}, ${values.city.trim()}`,
       max_guests,
     })
 
@@ -176,7 +191,7 @@ export default function CreateEventScreen() {
   }
 
   const handleNext = () => {
-    if (step === 'description') {
+    if (step === 'guests') {
       void handleCreate()
       return
     }
@@ -206,7 +221,18 @@ export default function CreateEventScreen() {
 
   const handleCopy = async () => {
     if (!shareLink) return
-    await navigator.clipboard.writeText(shareLink)
+    try {
+      await navigator.clipboard.writeText(shareLink)
+    } catch {
+      const el = document.createElement('textarea')
+      el.value = shareLink
+      el.style.position = 'fixed'
+      el.style.opacity = '0'
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+    }
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -214,7 +240,7 @@ export default function CreateEventScreen() {
   if (!userId) return null
 
   return (
-    <div className='relative w-screen h-screen overflow-hidden bg-background-main'>
+    <div className='relative w-full h-dvh overflow-hidden bg-background-main'>
       <div className='fixed inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {
           const size = radius * 2
@@ -249,25 +275,55 @@ export default function CreateEventScreen() {
       </button>
 
       {step === 'pools' ? (
-        <div className='relative z-10 h-full overflow-y-auto scrollbar-none px-6 pt-20 pb-24'>
-          <div className='w-full max-w-sm mx-auto flex flex-col gap-8'>
-            <span className='block text-center text-4xl font-bold text-headline'>
-              {HEADLINES.pools}
-            </span>
-            {eventId && userId && (
-              <PoolsSection eventId={eventId} isHost={true} userId={userId} />
-            )}
-            <div className='flex justify-center'>
-              <button
-                type='button'
-                onClick={handleNext}
-                className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-10'
-              >
-                weiter →
-              </button>
-            </div>
-            <div className='flex justify-center pb-2'>
-              <StepProgress count={QUESTION_COUNT} current={stepIndex} onSelect={handleSelectStep} />
+        <div className='relative z-10 h-full overflow-y-auto scrollbar-none px-6'>
+          <div className='min-h-full flex flex-col items-center justify-center py-24'>
+            <div className='w-full max-w-sm flex flex-col gap-8'>
+              <span className='block text-center text-4xl font-bold text-headline'>
+                {HEADLINES.pools}
+              </span>
+              <div className='flex flex-col gap-3'>
+                {localPools.map((pool) => (
+                  <div key={pool.id} className='rounded-xl bg-background-input border border-border-input px-4 py-3 flex flex-col gap-2'>
+                    <span className='text-sm font-semibold text-input'>{pool.question}</span>
+                    <div className='flex flex-wrap gap-1.5'>
+                      {pool.options.map((opt, i) => (
+                        <span key={i} className='text-xs text-subheadline bg-background-tertiary px-2.5 py-1 rounded-full'>
+                          {opt}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {showPoolForm ? (
+                  <CreatePoolForm
+                    eventId={eventId!}
+                    onCreated={(pool) => { setLocalPools((prev) => [...prev, pool]); setShowPoolForm(false) }}
+                    onCancel={() => setShowPoolForm(false)}
+                  />
+                ) : (
+                  <button
+                    type='button'
+                    onClick={() => setShowPoolForm(true)}
+                    className='text-sm text-hint'
+                  >
+                    + Hinzufügen
+                  </button>
+                )}
+              </div>
+              {!showPoolForm && (
+                <div className='flex justify-center'>
+                  <button
+                    type='button'
+                    onClick={handleNext}
+                    className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-7.5'
+                  >
+                    erstellen
+                  </button>
+                </div>
+              )}
+              <div className='flex justify-center'>
+                <StepProgress count={QUESTION_COUNT} current={stepIndex} onSelect={handleSelectStep} />
+              </div>
             </div>
           </div>
         </div>
@@ -318,16 +374,28 @@ export default function CreateEventScreen() {
             )}
 
             {step === 'location' && (
-              <div className='flex flex-col gap-2'>
-                <label className='text-sm text-label'>Ort</label>
-                <input
-                  type='text'
-                  placeholder='Adresse oder Ortsname'
-                  value={values.location}
-                  onChange={(e) => setField('location', e.target.value)}
-                  onKeyDown={handleEnterAdvance}
-                  className={inputClass}
-                />
+              <div className='flex flex-col gap-3'>
+                <div className='flex flex-col gap-2'>
+                  <label className='text-sm text-label'>Straße & Hausnummer</label>
+                  <input
+                    type='text'
+                    placeholder='z.B. Musterstraße 14'
+                    value={values.location}
+                    onChange={(e) => setField('location', e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+                <div className='flex flex-col gap-2'>
+                  <label className='text-sm text-label'>Stadt</label>
+                  <input
+                    type='text'
+                    placeholder='z.B. Berlin'
+                    value={values.city}
+                    onChange={(e) => setField('city', e.target.value)}
+                    onKeyDown={handleEnterAdvance}
+                    className={inputClass}
+                  />
+                </div>
               </div>
             )}
 
@@ -349,7 +417,7 @@ export default function CreateEventScreen() {
             {step === 'background' && (
               <div className='flex flex-col gap-3'>
                 <label className='cursor-pointer block w-full'>
-                  <div className='w-full aspect-video rounded-xl overflow-hidden bg-background-tertiary flex items-center justify-center'>
+                  <div className='w-full aspect-video rounded-xl overflow-hidden bg-background-input flex items-center justify-center'>
                     {bgPreviewUrl ? (
                       <img src={bgPreviewUrl} alt='Hintergrundbild' className='w-full h-full object-cover' />
                     ) : (
@@ -390,7 +458,7 @@ export default function CreateEventScreen() {
                 <button
                   type='button'
                   onClick={() => router.push('/parties')}
-                  className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-10'
+                  className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-7.5'
                 >
                   Fertig
                 </button>
@@ -400,9 +468,9 @@ export default function CreateEventScreen() {
                     type='button'
                     onClick={handleNext}
                     disabled={!bgFile || uploading}
-                    className='h-12 w-full rounded-full bg-background-button text-button text-sm font-semibold disabled:opacity-40'
+                    className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-7.5 disabled:opacity-40'
                   >
-                    {uploading ? 'Wird hochgeladen…' : 'weiter →'}
+                    {uploading ? 'Wird hochgeladen…' : 'weiter'}
                   </button>
                   <button
                     type='button'
@@ -417,9 +485,9 @@ export default function CreateEventScreen() {
                   type='button'
                   onClick={handleNext}
                   disabled={!canContinue || creating}
-                  className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-10 disabled:opacity-40'
+                  className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-7.5 disabled:opacity-40'
                 >
-                  {step === 'description' ? (creating ? 'Erstellen …' : 'Party erstellen →') : 'weiter →'}
+                  weiter
                 </button>
               )}
             </div>

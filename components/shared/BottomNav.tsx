@@ -42,8 +42,8 @@ export default function BottomNav() {
   if (pathname === '/create-event') return null
 
   return (
-    <nav className='fixed bottom-safe-nav left-1/2 -translate-x-1/2 z-50'>
-      <div className='flex items-center gap-1.5 rounded-full border border-glass bg-glass px-2 py-2 backdrop-blur-xl shadow-lg'>
+    <nav className='fixed bottom-0 w-full bg-background-main flex justify-center items-center pt-2'>
+      <div className='flex items-center gap-4'>
         <Link
           href='/parties'
           aria-label='Meine Events'

@@ -5,7 +5,7 @@ import { createPool, addPoolOption } from '../services/pools.service'
 
 type Props = {
   eventId: string
-  onCreated: () => void
+  onCreated: (pool: { id: string; question: string; options: string[] }) => void
   onCancel: () => void
 }
 
@@ -44,7 +44,7 @@ export default function CreatePoolForm({ eventId, onCreated, onCancel }: Props) 
     await Promise.all(validOptions.map((label, i) => addPoolOption(data.id, label.trim(), i)))
 
     setSaving(false)
-    onCreated()
+    onCreated({ id: data.id, question: question.trim(), options: validOptions })
   }
 
   return (
@@ -120,7 +120,7 @@ export default function CreatePoolForm({ eventId, onCreated, onCancel }: Props) 
           disabled={!canSubmit || saving}
           className='flex-1 h-11 rounded-full bg-background-button text-button text-sm font-semibold disabled:opacity-40'
         >
-          {saving ? 'Erstellen …' : 'Pool erstellen'}
+          {saving ? 'Erstellen …' : 'Erstellen'}
         </button>
       </div>
     </div>

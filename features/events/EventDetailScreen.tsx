@@ -156,7 +156,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
       <div className='fixed inset-0 bg-background-main/50' />
 
       {/* ── HERO ── */}
-      <div className='relative z-10 h-[45vh]'>
+      <div className='relative z-10 h-[45dvh]'>
         <div className='flex h-full flex-col px-6 pt-14 pb-10'>
           {/* Header */}
           <div className='relative flex items-center justify-center'>
@@ -260,8 +260,9 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
 
           {/* Attendee list */}
           <AttendeeList attendees={attendees} />
+        </div>
 
-          {!isHost && (
+        {!isHost && (
           <RsvpButtons
             status={rsvpStatus}
             onGoing={() => handleRsvp('going')}
@@ -270,11 +271,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
             loading={rsvpLoading}
           />
         )}
-        </div>
 
-
-
-        {/* Host: delete button */}
         {isHost && (
           <button
             type='button'

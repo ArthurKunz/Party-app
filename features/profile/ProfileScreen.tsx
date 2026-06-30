@@ -64,7 +64,7 @@ export default function ProfileScreen() {
 
       <div className='fixed inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
-      <div className='relative z-10 flex flex-col items-center px-6 pt-16 pb-safe-nav'>
+      <div className='relative z-10 flex flex-col items-center px-6 pt-7.5 pb-safe-nav'>
         <div
           className='flex h-24 w-24 items-center justify-center rounded-full overflow-hidden border border-border text-2xl font-semibold text-headline'
           style={{ backgroundColor: profile?.avatar_url ? 'transparent' : (profile?.avatar_color ?? '#A336FF') }}

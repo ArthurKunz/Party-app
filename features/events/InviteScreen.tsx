@@ -144,7 +144,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
 
       {/* ── HERO ── */}
       <div className='relative z-10 h-[45dvh]'>
-        <div className='flex h-full flex-col px-6 pt-14 pb-10'>
+        <div className='flex h-full flex-col px-6 pt-7.5 pb-10'>
           <div className='relative flex items-center justify-center'>
             <button
               onClick={() => window.history.length > 1 ? router.back() : router.push('/parties')}

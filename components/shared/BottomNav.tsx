@@ -42,7 +42,7 @@ export default function BottomNav() {
   if (pathname === '/create-event') return null
 
   return (
-    <nav className='fixed bottom-6 left-1/2 -translate-x-1/2 z-50 '>
+    <nav className='fixed bottom-safe-nav left-1/2 -translate-x-1/2 z-50'>
       <div className='flex items-center gap-1.5 rounded-full border border-glass bg-glass px-2 py-2 backdrop-blur-xl shadow-lg'>
         <Link
           href='/parties'

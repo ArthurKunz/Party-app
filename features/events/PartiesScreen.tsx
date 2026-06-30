@@ -62,7 +62,7 @@ export default function PartiesScreen() {
       : 'Du nimmst noch an keinem Event teil.'
 
   return (
-    <div className='relative w-screen min-h-screen overflow-hidden bg-background-main'>
+    <div className='relative w-full min-h-dvh overflow-hidden bg-background-main'>
       <div className='fixed inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {
           const size = radius * 2
@@ -84,7 +84,7 @@ export default function PartiesScreen() {
 
       <div className='fixed inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
-      <div className='relative z-10 flex flex-col items-center px-6 pt-16 pb-16'>
+      <div className='relative z-10 flex flex-col items-center px-6 pt-16 pb-safe-nav'>
         <div className='flex w-full items-center justify-between mb-8'>
           <Link href='/create-event' className='h-10 w-10 flex justify-center items-center'>
             <span className='text-4xl font-light text-headline'>+</span>

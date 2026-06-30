@@ -42,7 +42,7 @@ export default function ProfileScreen() {
   const name = [profile?.firstname, profile?.lastname].filter(Boolean).join(' ') || 'Unbekannt'
 
   return (
-    <div className='relative w-screen min-h-screen overflow-hidden bg-background-main'>
+    <div className='relative w-full min-h-dvh overflow-hidden bg-background-main'>
       <div className='fixed inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {
           const size = radius * 2
@@ -64,7 +64,7 @@ export default function ProfileScreen() {
 
       <div className='fixed inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
-      <div className='relative z-10 flex flex-col items-center px-6 py-16'>
+      <div className='relative z-10 flex flex-col items-center px-6 pt-16 pb-safe-nav'>
         <div
           className='flex h-24 w-24 items-center justify-center rounded-full overflow-hidden border border-border text-2xl font-semibold text-headline'
           style={{ backgroundColor: profile?.avatar_url ? 'transparent' : (profile?.avatar_color ?? '#A336FF') }}

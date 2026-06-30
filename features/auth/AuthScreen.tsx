@@ -42,7 +42,7 @@ export default function AuthPage() {
   const activeDot = effectiveStep === 'verify' ? 1 : 0
 
   return (
-    <div className='relative w-screen h-screen overflow-hidden bg-background-main'>
+    <div className='relative w-full h-dvh overflow-hidden bg-background-main'>
       {/* Background — U-shape: left corner + right corner circles */}
       <div className='fixed inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {

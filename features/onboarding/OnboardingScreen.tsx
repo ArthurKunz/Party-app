@@ -60,7 +60,7 @@ export default function OnboardingScreen() {
   const stepIndex = STEPS.indexOf(step)
 
   return (
-    <div className='relative w-screen h-screen overflow-hidden bg-background-main'>
+    <div className='relative w-full h-dvh overflow-hidden bg-background-main'>
       <div className='fixed inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {
           const size = radius * 2

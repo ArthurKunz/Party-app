@@ -6,7 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function generateInviteCode(): string {
-  return crypto.randomUUID().replace(/-/g, '').slice(0, 8)
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID().replace(/-/g, '').slice(0, 8)
+  }
+  return Array.from({ length: 8 }, () => Math.floor(Math.random() * 16).toString(16)).join('')
 }
 
 export function calculateAge(birthday: string): number {

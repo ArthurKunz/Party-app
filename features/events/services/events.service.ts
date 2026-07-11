@@ -31,6 +31,7 @@ interface HostedRow {
   location: string
   invite_code: string
   background_url: string | null
+  max_guests: number | null
 }
 
 interface AttendedRsvpRow {
@@ -43,13 +44,14 @@ interface AttendedRsvpRow {
     invite_code: string
     background_url: string | null
     host_id: string
+    max_guests: number | null
   } | null
 }
 
 export async function getHostedEvents(userId: string): Promise<EventWithCount[]> {
   const { data, error } = await supabase
     .from('events')
-    .select('id, title, event_date, location, invite_code, background_url')
+    .select('id, title, event_date, location, invite_code, background_url, max_guests')
     .eq('host_id', userId)
     .order('event_date', { ascending: true })
   if (error || !data) return []
@@ -62,22 +64,24 @@ export async function getHostedEvents(userId: string): Promise<EventWithCount[]>
         location: e.location,
         invite_code: e.invite_code,
         background_url: e.background_url,
+        max_guests: e.max_guests,
       })
     )
   )
 }
 
 export async function getAttendedEvents(userId: string): Promise<EventWithCount[]> {
-  // Both 'going' and 'not_going' RSVPs appear under "Ich bin Gast"
+  // 'going', 'not_going' and 'maybe' RSVPs all appear under "Ich bin Gast"
   const { data, error } = await supabase
     .from('rsvps')
-    .select('status, events(id, title, event_date, location, invite_code, background_url, host_id)')
+    .select('status, events(id, title, event_date, location, invite_code, background_url, host_id, max_guests)')
     .eq('user_id', userId)
   if (error || !data) return []
 
   const rows = (data as unknown as AttendedRsvpRow[])
     .filter((r) => r.events !== null)
-    .map((r) => ({ status: r.status as 'going' | 'not_going', event: r.events! }))
+    .map((r) => ({ status: r.status as RsvpStatus, event: r.events! }))
+    .sort((a, b) => new Date(a.event.event_date).getTime() - new Date(b.event.event_date).getTime())
 
   if (rows.length === 0) return []
 
@@ -97,6 +101,7 @@ export async function getAttendedEvents(userId: string): Promise<EventWithCount[
         location: event.location,
         invite_code: event.invite_code,
         background_url: event.background_url,
+        max_guests: event.max_guests,
         attendee_count: countResult.data ?? 0,
         attendees: ((attendeesResult.data as Attendee[] | null) ?? []).slice(0, 10),
         rsvp_status: status,

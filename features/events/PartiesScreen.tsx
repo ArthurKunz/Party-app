@@ -55,7 +55,9 @@ export default function PartiesScreen() {
     })
   }, [router])
 
-  const currentList = tab === 'hosting' ? hosted : attended
+  const currentList = [...(tab === 'hosting' ? hosted : attended)].sort(
+    (a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
+  )
   const emptyMessage =
     tab === 'hosting'
       ? 'Du hostest noch keine Events.'
@@ -63,7 +65,7 @@ export default function PartiesScreen() {
 
   return (
     <div className='relative w-full min-h-dvh overflow-hidden bg-background-main'>
-      <div className='fixed inset-0 overflow-hidden'>
+      {/*<div className='fixed inset-0 overflow-hidden'>
         {CIRCLES.flatMap(({ color, radius }) => {
           const size = radius * 2
           const bottom = -(200 + radius)
@@ -80,54 +82,56 @@ export default function PartiesScreen() {
             />,
           ]
         })}
-      </div>
+      </div>*/} 
 
       <div className='fixed inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
-      <div className='relative z-10 flex flex-col items-center px-6 pt-7.5 pb-safe-nav'>
-        <div className='flex w-full items-center justify-between mb-8'>
-          <Link href='/create-event' className='h-10 w-10 flex justify-center items-center'>
-            <span className='text-4xl font-light text-headline'>+</span>
-          </Link>
-          <span className='text-3xl font-bold text-headline'>Events</span>
-          <div
-            className='h-10 w-10 shrink-0 rounded-full overflow-hidden flex items-center justify-center text-sm font-semibold text-body'
-            style={{ backgroundColor: profile?.avatar_color ?? '#2A2A2A' }}
-          >
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt='' className='h-full w-full object-cover' />
-            ) : (
-              getInitials(profile?.firstname ?? null, profile?.lastname ?? null)
-            )}
-          </div>
-        </div>
-
-        <div
-          role='tablist'
-          className='flex bg-background-secondary border border-border rounded-full p-1 mt-8 w-full h-13'
-        >
-          {(['attending', 'hosting'] as Tab[]).map((t) => (
-            <button
-              key={t}
-              role='tab'
-              aria-selected={tab === t}
-              onClick={() => setTab(t)}
-              className={`flex-1 py-2 rounded-full text-md font-medium transition-colors ${
-                tab === t ? 'bg-background-button text-button' : 'text-subheadline'
-              }`}
+      <div className='relative z-10 flex flex-col items-center gap-10 px-4 pt-7.5 pb-safe-nav'>
+        <div className='w-full flex flex-col gap-6'>
+          <div className='flex w-full items-center justify-between'>
+            <Link href='/create-event' className='h-10 w-10 flex justify-center items-center'>
+              <span className='text-4xl font-light text-headline'>+</span>
+            </Link>
+            <span className='text-3xl font-bold text-headline'>Events</span>
+            <div
+              className='h-10 w-10 shrink-0 rounded-full overflow-hidden flex items-center justify-center text-sm font-semibold text-body'
+              style={{ backgroundColor: profile?.avatar_color ?? '#2A2A2A' }}
             >
-              {t === 'hosting' ? 'Ich hoste' : 'Ich bin Gast'}
-            </button>
-          ))}
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt='' className='h-full w-full object-cover' />
+              ) : (
+                getInitials(profile?.firstname ?? null, profile?.lastname ?? null)
+              )}
+            </div>
+          </div>
+
+          <div
+            role='tablist'
+            className='flex bg-background-secondary border border-border rounded-full p-1 w-full h-13'
+          >
+            {(['attending', 'hosting'] as Tab[]).map((t) => (
+              <button
+                key={t}
+                role='tab'
+                aria-selected={tab === t}
+                onClick={() => setTab(t)}
+                className={`flex-1 py-2 rounded-full text-md font-medium transition-colors ${
+                  tab === t ? 'bg-background-button text-button' : 'text-subheadline'
+                }`}
+              >
+                {t === 'hosting' ? 'Ich hoste' : 'Ich bin Gast'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className='w-full max-w-md mt-6 flex flex-col gap-6'>
           {loading ? null : currentList.length === 0 ? (
             <span className='mt-8 block text-center text-sm text-hint'>{emptyMessage}</span>
           ) : (
-            currentList.map((event) => (
+            currentList.map((event, index) => (
               <Link key={event.id} href={`/parties/${event.id}`} className='block'>
-                <EventCard event={event} isHost={tab === 'hosting'} />
+                <EventCard event={event} isHost={tab === 'hosting'} featured={index === 0} />
               </Link>
             ))
           )}

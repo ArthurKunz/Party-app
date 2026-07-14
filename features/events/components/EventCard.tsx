@@ -107,24 +107,24 @@ export default function EventCard({
               <div className='w-full flex justify-between mb-2'>
                 <div className='flex flex-col items-center gap-1'>
                   <div className='flex items-center gap-1'>
-                    <div className='p-2 bg-background-tertiary rounded-full text-xs'>📅</div>
-                    <div className='p-2 bg-background-tertiary rounded-full text-xs text-headline font-md'>{formatShortDate(event.event_date)}</div>
+                    <div className='h-8 min-w-8 flex justify-center items-center bg-background-tertiary rounded-full text-xs'>📅</div>
+                    <div className='h-8 min-w-8 px-2 flex justify-center items-center bg-background-tertiary rounded-full text-xs text-headline font-md'>{formatShortDate(event.event_date)}</div>
                   </div>
                   <span className='text-[10px] text-hint font-light'>Datum</span>
                 </div>
 
                 <div className='flex flex-col items-center gap-1'>
                   <div className='flex items-center gap-1'>
-                    <div className='p-2 bg-background-tertiary rounded-full text-xs'>⏳</div>
-                    <div className='h-7.5 w-7.5 flex justify-center items-center bg-background-tertiary rounded-full text-xs text-headline font-md'>{String(value)}</div>
+                    <div className='h-8 min-w-8 flex justify-center items-center bg-background-tertiary rounded-full text-xs'>⏳</div>
+                    <div className='h-8 min-w-8 px-2 flex justify-center items-center bg-background-tertiary rounded-full text-xs text-headline font-md'>{String(value)}</div>
                   </div>
                   <span className='text-[10px] text-hint font-light'>{unit}</span>
                 </div>
 
                 <div className='flex flex-col items-center gap-1'>
                   <div className='flex items-center gap-1'>
-                    <div className='p-2 bg-background-tertiary rounded-full text-xs'>👥</div>
-                    <div className='p-2 bg-background-tertiary rounded-full text-xs text-headline font-md'>{guestStat}</div>
+                    <div className='h-8 min-w-8 flex justify-center items-center bg-background-tertiary rounded-full text-xs'>👥</div>
+                    <div className='h-8 min-w-8 px-2 flex justify-center items-center bg-background-tertiary rounded-full text-xs text-headline font-md'>{guestStat}</div>
                   </div>
                   <span className='text-[10px] text-hint font-light'>max. Gäste</span>
                 </div>
@@ -175,8 +175,8 @@ export default function EventCard({
                     </div>
                   )}
                   <div className='flex items-center gap-1'>
-                    <div className='p-2 bg-background-tertiary rounded-full text-xs'>⏳</div>
-                    <div className='h-8 w-8 flex justify-center items-center bg-background-tertiary rounded-full text-xs text-headline font-md'>{String(value)}</div>
+                    <div className='h-8 min-w-8 flex justify-center items-center bg-background-tertiary rounded-full text-xs'>⏳</div>
+                    <div className='h-8 min-w-8 flex justify-center items-center px-2 bg-background-tertiary rounded-full text-xs text-headline font-md'>{String(value)}</div>
                   </div>
                 </div>
               </div>

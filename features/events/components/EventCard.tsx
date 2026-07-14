@@ -52,7 +52,7 @@ export default function EventCard({
   return (
     // Outer wrapper: no overflow-hidden so circles can hang below; pb reserves space for them
     <div
-      className='relative transition-transform active:scale-[0.98]'
+      className={`relative transition-transform active:scale-[0.98] ${featured ? 'mb-3' : ''}`}
       style={{ paddingBottom: hasAttendees && featured ? 20 : 0 }}
     >
       {/* Card — overflow-hidden clips the blurred background image */}

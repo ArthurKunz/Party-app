@@ -93,7 +93,8 @@ export default function PartiesScreen() {
               <span className='text-4xl font-light text-headline'>+</span>
             </Link>
             <span className='text-3xl font-bold text-headline'>Events</span>
-            <div
+            <Link
+              href='/profile'
               className='h-10 w-10 shrink-0 rounded-full overflow-hidden flex items-center justify-center text-sm font-semibold text-body'
               style={{ backgroundColor: profile?.avatar_color ?? '#2A2A2A' }}
             >
@@ -102,7 +103,7 @@ export default function PartiesScreen() {
               ) : (
                 getInitials(profile?.firstname ?? null, profile?.lastname ?? null)
               )}
-            </div>
+            </Link>
           </div>
 
           <div
@@ -125,7 +126,7 @@ export default function PartiesScreen() {
           </div>
         </div>
 
-        <div className='w-full max-w-md mt-6 flex flex-col gap-6'>
+        <div className='w-full max-w-md flex flex-col gap-3'>
           {loading ? null : currentList.length === 0 ? (
             <span className='mt-8 block text-center text-sm text-hint'>{emptyMessage}</span>
           ) : (

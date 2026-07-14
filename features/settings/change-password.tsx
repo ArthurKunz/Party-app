@@ -56,7 +56,7 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
           <label className='text-sm text-label'>Neues Passwort</label>
           <input
             type='password'
-            placeholder='Neues Passwort'
+            placeholder='Gib das Passwort ein'
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             onKeyDown={handleNewPasswordKeyDown}
@@ -74,7 +74,7 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
           <input
             ref={confirmPasswordRef}
             type='password'
-            placeholder='Passwort bestätigen'
+            placeholder='Gib das Passwort erneut ein'
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { calculateAge, getInitials } from '@/lib/utils'
@@ -60,7 +61,7 @@ export default function ProfileScreen() {
         <span className='text-xs text-hint'>{email}</span>
 
         <div className='w-full mt-12.5 flex flex-col gap-2.5'>
-          <div className='w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
+          <Link href='/profile/name' className='block w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
             <div className='w-full h-full flex items-center justify-between'>
               <div className='w-50 h-full flex gap-3 items-center'>
                 <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
@@ -77,9 +78,9 @@ export default function ProfileScreen() {
                 </svg>
               </div>
             </div>
-          </div>
+          </Link>
 
-          <div className='w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
+          <Link href='/profile/age' className='block w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
             <div className='w-full h-full flex items-center justify-between'>
               <div className='w-50 h-full flex gap-3 items-center'>
                 <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
@@ -96,9 +97,9 @@ export default function ProfileScreen() {
                 </svg>
               </div>
             </div>
-          </div>
+          </Link>
 
-          <div className='w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
+          <Link href='/profile/picture' className='block w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
             <div className='w-full h-full flex items-center justify-between'>
               <div className='w-50 h-full flex gap-3 items-center'>
                 <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
@@ -112,9 +113,9 @@ export default function ProfileScreen() {
                 </svg>
               </div>
             </div>
-          </div>
+          </Link>
 
-          <div className='w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
+          <Link href='/profile/password' className='block w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
             <div className='w-full h-full flex items-center justify-between'>
               <div className='w-50 h-full flex gap-3 items-center'>
                 <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
@@ -128,9 +129,9 @@ export default function ProfileScreen() {
                 </svg>
               </div>
             </div>
-          </div>
+          </Link>
 
-          <div className='w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
+          <Link href='/profile/legal' className='block w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
             <div className='w-full h-full flex items-center justify-between'>
               <div className='w-50 h-full flex gap-3 items-center'>
                 <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
@@ -144,7 +145,7 @@ export default function ProfileScreen() {
                 </svg>
               </div>
             </div>
-          </div>
+          </Link>
 
         </div>
       </div>

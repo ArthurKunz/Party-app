@@ -38,6 +38,8 @@ export default function BottomNav() {
 
   // Hide on detail pages (e.g. /parties/[id]) that carry their own bottom actions
   if (/^\/parties\/.+/.test(pathname)) return null
+  // Hide on profile sub-pages (e.g. /profile/name) that carry their own back button
+  if (/^\/profile\/.+/.test(pathname)) return null
   // Hide during the create-event flow, which has its own bottom progress bar
   if (pathname === '/create-event') return null
 

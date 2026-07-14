@@ -103,8 +103,8 @@ export default function EventCard({
 
               </div>
 
-              <div className='w-full flex justify-between mb-2'>
-                <div className='flex flex-col items-center gap-1'>
+              <div className='w-full grid grid-cols-3 mb-2'>
+                <div className='flex flex-col items-center gap-1 justify-self-start'>
                   <div className='flex items-center gap-1'>
                     <div className='h-8 min-w-8 flex justify-center items-center bg-background-tertiary rounded-full text-xs'>📅</div>
                     <div className='h-8 min-w-8 px-2 flex justify-center items-center bg-background-tertiary rounded-full text-xs text-headline font-md'>{formatShortDate(event.event_date)}</div>
@@ -112,7 +112,7 @@ export default function EventCard({
                   <span className='text-[10px] text-hint font-light'>Datum</span>
                 </div>
 
-                <div className='flex flex-col items-center gap-1'>
+                <div className='flex flex-col items-center gap-1 justify-self-center'>
                   <div className='flex items-center gap-1'>
                     <div className='h-8 min-w-8 flex justify-center items-center bg-background-tertiary rounded-full text-xs'>⏳</div>
                     <div className='h-8 min-w-8 px-2 flex justify-center items-center bg-background-tertiary rounded-full text-xs text-headline font-md'>{String(value)}</div>
@@ -121,7 +121,7 @@ export default function EventCard({
                 </div>
 
                 {event.max_guests && (
-                  <div className='flex flex-col items-center gap-1'>
+                  <div className='flex flex-col items-center gap-1 justify-self-end'>
                     <div className='flex items-center gap-1'>
                       <div className='h-8 min-w-8 flex justify-center items-center bg-background-tertiary rounded-full text-xs'>👥</div>
                       <div className='h-8 min-w-8 px-2 flex justify-center items-center bg-background-tertiary rounded-full text-xs text-headline font-md'>{`${event.attendee_count}/${event.max_guests}`}</div>

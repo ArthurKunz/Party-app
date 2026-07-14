@@ -47,7 +47,6 @@ export default function EventCard({
   const overflow = event.attendee_count - visible
   const hostName = [event.host_firstname, event.host_lastname].filter(Boolean).join(' ')
   const hasAttendees = event.attendee_count > 0
-  const guestStat = event.max_guests ? `${event.attendee_count}/${event.max_guests}` : `${event.attendee_count}`
 
   return (
     // Outer wrapper: no overflow-hidden so circles can hang below; pb reserves space for them
@@ -121,13 +120,15 @@ export default function EventCard({
                   <span className='text-[10px] text-hint font-light'>{unit}</span>
                 </div>
 
-                <div className='flex flex-col items-center gap-1'>
-                  <div className='flex items-center gap-1'>
-                    <div className='h-8 min-w-8 flex justify-center items-center bg-background-tertiary rounded-full text-xs'>👥</div>
-                    <div className='h-8 min-w-8 px-2 flex justify-center items-center bg-background-tertiary rounded-full text-xs text-headline font-md'>{guestStat}</div>
+                {event.max_guests && (
+                  <div className='flex flex-col items-center gap-1'>
+                    <div className='flex items-center gap-1'>
+                      <div className='h-8 min-w-8 flex justify-center items-center bg-background-tertiary rounded-full text-xs'>👥</div>
+                      <div className='h-8 min-w-8 px-2 flex justify-center items-center bg-background-tertiary rounded-full text-xs text-headline font-md'>{`${event.attendee_count}/${event.max_guests}`}</div>
+                    </div>
+                    <span className='text-[10px] text-hint font-light'>max. Gäste</span>
                   </div>
-                  <span className='text-[10px] text-hint font-light'>max. Gäste</span>
-                </div>
+                )}
               </div>
             </>
           ) : (

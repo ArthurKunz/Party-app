@@ -19,6 +19,7 @@ const CIRCLES = [
 export default function ProfileScreen() {
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export default function ProfileScreen() {
         return
       }
       setProfile(await getMyProfile(session.user.id))
+      setEmail(session.user.email ?? '')
       setLoading(false)
     })
   }, [router])
@@ -43,28 +45,7 @@ export default function ProfileScreen() {
 
   return (
     <div className='relative w-full min-h-dvh overflow-hidden bg-background-main'>
-      <div className='fixed inset-0 overflow-hidden'>
-        {CIRCLES.flatMap(({ color, radius }) => {
-          const size = radius * 2
-          const bottom = -(200 + radius)
-          return [
-            <div
-              key={`L-${color}`}
-              className='absolute rounded-full'
-              style={{ backgroundColor: color, width: size, height: size, bottom, left: -radius }}
-            />,
-            <div
-              key={`R-${color}`}
-              className='absolute rounded-full'
-              style={{ backgroundColor: color, width: size, height: size, bottom, right: -radius }}
-            />,
-          ]
-        })}
-      </div>
-
-      <div className='fixed inset-0 bg-background-main/10 backdrop-blur-[80px]' />
-
-      <div className='relative z-10 flex flex-col items-center px-6 pt-7.5 pb-safe-nav'>
+      <div className='relative z-10 flex flex-col items-center px-4 pt-10 pb-safe-nav'>
         <div
           className='flex h-24 w-24 items-center justify-center rounded-full overflow-hidden border border-border text-2xl font-semibold text-headline'
           style={{ backgroundColor: profile?.avatar_url ? 'transparent' : (profile?.avatar_color ?? '#A336FF') }}
@@ -75,42 +56,96 @@ export default function ProfileScreen() {
             getInitials(profile?.firstname ?? null, profile?.lastname ?? null)
           )}
         </div>
-        <span className='mt-4 block text-2xl font-bold text-headline'>{name}</span>
-        {profile?.birthday && (
-          <span className='mt-1 block text-sm text-subheadline'>{calculateAge(profile.birthday)} Jahre alt</span>
-        )}
+        <span className='mt-4 block text-3xl font-bold text-headline'>{name}</span>
+        <span className='text-xs text-hint'>{email}</span>
 
-        <div className='mt-10 w-full max-w-md overflow-hidden rounded-2xl border border-border bg-background-secondary'>
-          <button className='flex w-full items-center gap-3 px-4 py-3.5 text-left'>
-            <span className='flex h-6 w-6 items-center justify-center rounded-md bg-glass text-body'>
-              <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
-                <circle cx='12' cy='7' r='4' />
-                <path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' />
-              </svg>
-            </span>
-            <span className='text-sm text-body'>Konto verwalten</span>
-          </button>
+        <div className='w-full mt-12.5 flex flex-col gap-2.5'>
+          <div className='w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
+            <div className='w-full h-full flex items-center justify-between'>
+              <div className='w-50 h-full flex gap-3 items-center'>
+                <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
+                  👤
+                </div>
+                <div className='flex flex-col'>
+                  <span className='text-headline text-md text-semibold'>Name</span>
+                  <span className='text-xs text-hint'>{name}</span>
+                </div>
+              </div>
+              <div className='h-7.5 w-7.5 rounded-full flex items-center justify-center'>
+                <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-hint'>
+                  <path d='m9 18 6-6-6-6' />
+                </svg>
+              </div>
+            </div>
+          </div>
 
-          <div className='mx-4 h-px bg-background-spacer' />
+          <div className='w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
+            <div className='w-full h-full flex items-center justify-between'>
+              <div className='w-50 h-full flex gap-3 items-center'>
+                <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
+                  🎂
+                </div>
+                <div className='flex flex-col'>
+                  <span className='text-headline text-md text-semibold'>Alter</span>
+                  <span className='text-xs text-hint'>{profile?.birthday ? `${calculateAge(profile.birthday)} Jahre` : '—'}</span>
+                </div>
+              </div>
+              <div className='h-7.5 w-7.5 rounded-full flex items-center justify-center'>
+                <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-hint'>
+                  <path d='m9 18 6-6-6-6' />
+                </svg>
+              </div>
+            </div>
+          </div>
 
-          <button className='flex w-full items-center gap-3 px-4 py-3.5 text-left'>
-            <span className='flex h-6 w-6 items-center justify-center rounded-md bg-glass text-body'>
-              <svg width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
-                <path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' />
-                <polyline points='14 2 14 8 20 8' />
-              </svg>
-            </span>
-            <span className='text-sm text-body'>Rechtliche Informationen</span>
-          </button>
+          <div className='w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
+            <div className='w-full h-full flex items-center justify-between'>
+              <div className='w-50 h-full flex gap-3 items-center'>
+                <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
+                  📸
+                </div>
+                <span className='text-headline text-md text-semibold'>Profilbild</span>
+              </div>
+              <div className='h-7.5 w-7.5 rounded-full flex items-center justify-center'>
+                <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-hint'>
+                  <path d='m9 18 6-6-6-6' />
+                </svg>
+              </div>
+            </div>
+          </div>
 
-          <div className='mx-4 h-px bg-background-spacer' />
+          <div className='w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
+            <div className='w-full h-full flex items-center justify-between'>
+              <div className='w-50 h-full flex gap-3 items-center'>
+                <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
+                  🤫
+                </div>
+                <span className='text-headline text-md text-semibold'>Passwort</span>
+              </div>
+              <div className='h-7.5 w-7.5 rounded-full flex items-center justify-center'>
+                <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-hint'>
+                  <path d='m9 18 6-6-6-6' />
+                </svg>
+              </div>
+            </div>
+          </div>
 
-          <button
-            onClick={handleSignOut}
-            className='flex w-full items-center px-4 py-3.5 text-left text-sm font-medium text-warning'
-          >
-            Abmelden
-          </button>
+          <div className='w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
+            <div className='w-full h-full flex items-center justify-between'>
+              <div className='w-50 h-full flex gap-3 items-center'>
+                <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
+                  👨🏻‍⚖️
+                </div>
+                <span className='text-headline text-md text-semibold'>Rechtliches</span>
+              </div>
+              <div className='h-7.5 w-7.5 rounded-full flex items-center justify-center'>
+                <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-hint'>
+                  <path d='m9 18 6-6-6-6' />
+                </svg>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

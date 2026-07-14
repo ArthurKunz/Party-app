@@ -241,26 +241,6 @@ export default function CreateEventScreen() {
 
   return (
     <div className='relative w-full h-dvh overflow-hidden bg-background-main'>
-      <div className='fixed inset-0 overflow-hidden'>
-        {CIRCLES.flatMap(({ color, radius }) => {
-          const size = radius * 2
-          const bottom = -(200 + radius)
-          return [
-            <div
-              key={`L-${color}`}
-              className='absolute rounded-full'
-              style={{ backgroundColor: color, width: size, height: size, bottom, left: -radius }}
-            />,
-            <div
-              key={`R-${color}`}
-              className='absolute rounded-full'
-              style={{ backgroundColor: color, width: size, height: size, bottom, right: -radius }}
-            />,
-          ]
-        })}
-      </div>
-
-      <div className='fixed inset-0 bg-background-main/10 backdrop-blur-[80px]' />
 
       <button
         type='button'
@@ -339,7 +319,7 @@ export default function CreateEventScreen() {
                 <label className='text-sm text-label'>Name</label>
                 <input
                   type='text'
-                  placeholder='z.B. Dachterrassen-Party'
+                  placeholder='z.B. Hausparty'
                   value={values.title}
                   onChange={(e) => setField('title', e.target.value)}
                   onKeyDown={handleEnterAdvance}
@@ -417,16 +397,28 @@ export default function CreateEventScreen() {
             {step === 'background' && (
               <div className='flex flex-col gap-3'>
                 <label className='cursor-pointer block w-full'>
-                  <div className='w-full aspect-video rounded-xl overflow-hidden bg-background-input flex items-center justify-center'>
-                    {bgPreviewUrl ? (
+                  {bgPreviewUrl ? (
+                    <div className='w-full aspect-video rounded-xl overflow-hidden bg-background-input'>
                       <img src={bgPreviewUrl} alt='Hintergrundbild' className='w-full h-full object-cover' />
-                    ) : (
-                      <svg width='36' height='36' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' className='text-subheadline'>
-                        <path d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z' />
-                        <circle cx='12' cy='13' r='4' />
-                      </svg>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className='w-full rounded-xl border border-dashed border-border-input flex flex-col items-center gap-4 px-6 py-10'>
+                      <div className='flex h-14 w-14 items-center justify-center rounded-full bg-background-tertiary'>
+                        <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' className='text-subheadline'>
+                          <path d='M7 18a4.5 4.5 0 0 1-.6-8.96A5.5 5.5 0 0 1 17.4 8.02 4 4 0 0 1 17 16H16' />
+                          <path d='M12 12v9' />
+                          <path d='M9 15l3-3 3 3' />
+                        </svg>
+                      </div>
+                      <div className='flex flex-col items-center gap-1 text-center'>
+                        <span className='text-sm font-semibold text-label'>Datei auswählen oder hierher ziehen</span>
+                        <span className='text-xs text-subheadline'>JPG, PNG bis 10 MB</span>
+                      </div>
+                      <span className='h-10 flex items-center justify-center rounded-full border border-border-input px-5 text-sm font-semibold text-label'>
+                        Datei durchsuchen
+                      </span>
+                    </div>
+                  )}
                   <input
                     type='file'
                     accept='image/*'
@@ -434,7 +426,6 @@ export default function CreateEventScreen() {
                     onChange={(e) => handlePickBg(e.target.files?.[0] ?? null)}
                   />
                 </label>
-                <span className='text-xs text-center text-subheadline'>Tippe auf das Bild um ein Foto auszuwählen</span>
                 {bgError && <span className='text-sm text-warning text-center' role='alert'>{bgError}</span>}
               </div>
             )}

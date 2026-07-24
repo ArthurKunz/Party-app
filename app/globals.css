@@ -7,7 +7,7 @@
     --color-brand-blue: #161BFA;
 
     /* BASE COLORS */
-    --color-background-main: #09090B;
+    --color-background-main: #000;
     --color-background-secondary: #151515;
     --color-background-tertiary: #2A2A2A;
 
@@ -48,7 +48,7 @@
 
 @layer base {
     html {
-        background-color: #09090B;
+        background-color: #000;
         min-height: 100%;
         overflow-x: hidden;
     }

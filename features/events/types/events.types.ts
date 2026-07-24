@@ -99,3 +99,10 @@ export type Pool = {
   options: PoolOption[]
   responses: PoolResponse[]
 }
+
+export type PoolDraft = {
+  id: string
+  question: string
+  description: string | null
+  options: string[]
+}

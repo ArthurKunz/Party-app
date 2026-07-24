@@ -1,22 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import { createPool, addPoolOption } from '../services/pools.service'
+import type { PoolDraft } from '../types/events.types'
 
 type Props = {
-  eventId: string
-  onCreated: (pool: { id: string; question: string; options: string[] }) => void
+  onCreated: (pool: PoolDraft) => void
   onCancel: () => void
 }
 
 const inputClass =
   'w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
 
-export default function CreatePoolForm({ eventId, onCreated, onCancel }: Props) {
+export default function CreatePoolForm({ onCreated, onCancel }: Props) {
   const [question, setQuestion] = useState('')
   const [description, setDescription] = useState('')
   const [options, setOptions] = useState(['', ''])
-  const [saving, setSaving] = useState(false)
 
   const validOptions = options.filter((o) => o.trim())
   const canSubmit = question.trim().length > 0 && validOptions.length >= 2
@@ -24,27 +22,14 @@ export default function CreatePoolForm({ eventId, onCreated, onCancel }: Props) 
   const updateOption = (index: number, value: string) =>
     setOptions((prev) => prev.map((o, i) => (i === index ? value : o)))
 
-  const handleSubmit = async () => {
-    if (!canSubmit || saving) return
-    setSaving(true)
-
-    const { data, error } = await createPool({
-      event_id: eventId,
+  const handleSubmit = () => {
+    if (!canSubmit) return
+    onCreated({
+      id: crypto.randomUUID(),
       question: question.trim(),
       description: description.trim() || null,
-      type: 'options',
-      allow_text_response: false,
+      options: validOptions.map((o) => o.trim()),
     })
-
-    if (error || !data) {
-      setSaving(false)
-      return
-    }
-
-    await Promise.all(validOptions.map((label, i) => addPoolOption(data.id, label.trim(), i)))
-
-    setSaving(false)
-    onCreated({ id: data.id, question: question.trim(), options: validOptions })
   }
 
   return (
@@ -117,10 +102,10 @@ export default function CreatePoolForm({ eventId, onCreated, onCancel }: Props) 
         <button
           type='button'
           onClick={handleSubmit}
-          disabled={!canSubmit || saving}
+          disabled={!canSubmit}
           className='flex-1 h-11 rounded-full bg-background-button text-button text-sm font-semibold disabled:opacity-40'
         >
-          {saving ? 'Erstellen …' : 'Erstellen'}
+          Erstellen
         </button>
       </div>
     </div>

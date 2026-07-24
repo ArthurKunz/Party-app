@@ -8,7 +8,8 @@ import DateTimePicker from './components/DateTimePicker'
 import StepProgress from './components/StepProgress'
 import CreatePoolForm from './components/CreatePoolForm'
 import { createEvent } from './services/events.service'
-import type { CreateEventFormValues } from './types/events.types'
+import { createPool, addPoolOption } from './services/pools.service'
+import type { CreateEventFormValues, PoolDraft } from './types/events.types'
 
 const CIRCLES = [
   { color: '#161BFA', radius: 700 },
@@ -48,12 +49,10 @@ export default function CreateEventScreen() {
   const [step, setStep] = useState<StepId>('name')
   const [creating, setCreating] = useState(false)
   const [created, setCreated] = useState(false)
-  const [uploading, setUploading] = useState(false)
   const [inviteCode, setInviteCode] = useState('')
-  const [eventId, setEventId] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [showPoolForm, setShowPoolForm] = useState(false)
-  const [localPools, setLocalPools] = useState<Array<{ id: string; question: string; options: string[] }>>([])
+  const [localPools, setLocalPools] = useState<PoolDraft[]>([])
   const [bgFile, setBgFile] = useState<File | null>(null)
   const [bgPreviewUrl, setBgPreviewUrl] = useState<string | null>(null)
   const [bgError, setBgError] = useState<string | null>(null)
@@ -112,7 +111,25 @@ export default function CreateEventScreen() {
     }
   })()
 
-  const handleCreate = async () => {
+  const handlePickBg = (picked: File | null) => {
+    setBgError(null)
+    if (!picked) return
+    if (!picked.type.startsWith('image/')) {
+      setBgError('Bitte ein Bild (JPG, PNG, …) auswählen.')
+      return
+    }
+    if (picked.size > BG_MAX_BYTES) {
+      setBgError('Die Datei darf höchstens 10 MB groß sein.')
+      return
+    }
+    setBgFile(picked)
+    setBgPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return URL.createObjectURL(picked)
+    })
+  }
+
+  const handleFinish = async () => {
     if (!userId || creating) return
     setCreating(true)
 
@@ -136,67 +153,43 @@ export default function CreateEventScreen() {
       return
     }
 
+    const newEventId = data.id
+
+    if (bgFile) {
+      const ext = bgFile.name.split('.').pop()?.toLowerCase() || 'jpg'
+      const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'jpg'
+      const path = `${userId}/${newEventId}/background.${safeExt}`
+      const { error: uploadError } = await supabase.storage
+        .from('event-backgrounds')
+        .upload(path, bgFile, { cacheControl: '3600', upsert: true })
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from('event-backgrounds').getPublicUrl(path)
+        await supabase.from('events').update({ background_url: urlData.publicUrl }).eq('id', newEventId)
+      }
+    }
+
+    for (const pool of localPools) {
+      const { data: poolData } = await createPool({
+        event_id: newEventId,
+        question: pool.question,
+        description: pool.description,
+        type: 'options',
+        allow_text_response: false,
+      })
+      if (poolData) {
+        await Promise.all(pool.options.map((label, i) => addPoolOption(poolData.id, label, i)))
+      }
+    }
+
     setInviteCode(code)
-    setEventId(data.id)
     setCreated(true)
     setCreating(false)
-    setStep('background')
-  }
-
-  const handlePickBg = (picked: File | null) => {
-    setBgError(null)
-    if (!picked) return
-    if (!picked.type.startsWith('image/')) {
-      setBgError('Bitte ein Bild (JPG, PNG, …) auswählen.')
-      return
-    }
-    if (picked.size > BG_MAX_BYTES) {
-      setBgError('Die Datei darf höchstens 10 MB groß sein.')
-      return
-    }
-    setBgFile(picked)
-    setBgPreviewUrl((prev) => {
-      if (prev) URL.revokeObjectURL(prev)
-      return URL.createObjectURL(picked)
-    })
-  }
-
-  const handleUploadBackground = async () => {
-    if (!bgFile || !eventId || !userId) {
-      setStep('pools')
-      return
-    }
-    setBgError(null)
-    setUploading(true)
-
-    const ext = bgFile.name.split('.').pop()?.toLowerCase() || 'jpg'
-    const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'jpg'
-    const path = `${userId}/${eventId}/background.${safeExt}`
-
-    const { error: uploadError } = await supabase.storage
-      .from('event-backgrounds')
-      .upload(path, bgFile, { cacheControl: '3600', upsert: true })
-
-    if (uploadError) {
-      setBgError(uploadError.message)
-      setUploading(false)
-      return
-    }
-
-    const { data: urlData } = supabase.storage.from('event-backgrounds').getPublicUrl(path)
-    await supabase.from('events').update({ background_url: urlData.publicUrl }).eq('id', eventId)
-
-    setUploading(false)
-    setStep('pools')
+    setStep('done')
   }
 
   const handleNext = () => {
-    if (step === 'guests') {
-      void handleCreate()
-      return
-    }
-    if (step === 'background') {
-      void handleUploadBackground()
+    if (step === 'pools') {
+      void handleFinish()
       return
     }
     setStep(STEPS[stepIndex + 1])
@@ -276,7 +269,6 @@ export default function CreateEventScreen() {
                 ))}
                 {showPoolForm ? (
                   <CreatePoolForm
-                    eventId={eventId!}
                     onCreated={(pool) => { setLocalPools((prev) => [...prev, pool]); setShowPoolForm(false) }}
                     onCancel={() => setShowPoolForm(false)}
                   />
@@ -295,9 +287,10 @@ export default function CreateEventScreen() {
                   <button
                     type='button'
                     onClick={handleNext}
-                    className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-7.5'
+                    disabled={creating}
+                    className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-7.5 disabled:opacity-40'
                   >
-                    erstellen
+                    {creating ? 'Wird erstellt…' : 'weiter'}
                   </button>
                 </div>
               )}
@@ -453,29 +446,11 @@ export default function CreateEventScreen() {
                 >
                   Fertig
                 </button>
-              ) : step === 'background' ? (
-                <div className='flex flex-col items-center gap-4 w-full'>
-                  <button
-                    type='button'
-                    onClick={handleNext}
-                    disabled={!bgFile || uploading}
-                    className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-7.5 disabled:opacity-40'
-                  >
-                    {uploading ? 'Wird hochgeladen…' : 'weiter'}
-                  </button>
-                  <button
-                    type='button'
-                    onClick={() => setStep('pools')}
-                    className='text-sm text-subheadline'
-                  >
-                    Überspringen →
-                  </button>
-                </div>
               ) : (
                 <button
                   type='button'
                   onClick={handleNext}
-                  disabled={!canContinue || creating}
+                  disabled={!canContinue}
                   className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-7.5 disabled:opacity-40'
                 >
                   weiter

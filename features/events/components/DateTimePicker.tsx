@@ -8,10 +8,11 @@ const MONTHS_DE = [
   'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
 ]
 
-const TIME_SLOTS = Array.from({ length: 96 }, (_, i) => ({
+const TIME_SLOTS_ASC = Array.from({ length: 96 }, (_, i) => ({
   hour: Math.floor(i / 4).toString().padStart(2, '0'),
   minute: ((i % 4) * 15).toString().padStart(2, '0'),
 }))
+const TIME_SLOTS = [TIME_SLOTS_ASC[0], ...TIME_SLOTS_ASC.slice(1).reverse()]
 
 interface DateTimePickerProps {
   day: string

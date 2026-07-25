@@ -11,16 +11,6 @@ import { createEvent } from './services/events.service'
 import { createPool, addPoolOption } from './services/pools.service'
 import type { CreateEventFormValues, PoolDraft } from './types/events.types'
 
-const CIRCLES = [
-  { color: '#161BFA', radius: 700 },
-  { color: '#5684FF', radius: 630 },
-  { color: '#AE4FFF', radius: 560 },
-  { color: '#A336FF', radius: 490 },
-  { color: '#D47AFF', radius: 420 },
-  { color: '#E224A1', radius: 350 },
-  { color: '#FF0090', radius: 280 },
-]
-
 const inputClass =
   'w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
 

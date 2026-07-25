@@ -7,16 +7,6 @@ import { supabase } from '@/lib/supabase/client'
 import { calculateAge, getInitials } from '@/lib/utils'
 import { getMyProfile, type Profile } from './services/profile.service'
 
-const CIRCLES = [
-  { color: '#161BFA', radius: 700 },
-  { color: '#5684FF', radius: 630 },
-  { color: '#AE4FFF', radius: 560 },
-  { color: '#A336FF', radius: 490 },
-  { color: '#D47AFF', radius: 420 },
-  { color: '#E224A1', radius: 350 },
-  { color: '#FF0090', radius: 280 },
-]
-
 export default function ProfileScreen() {
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)

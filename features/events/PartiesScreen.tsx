@@ -18,16 +18,6 @@ type Profile = {
 
 type Tab = 'hosting' | 'attending'
 
-const CIRCLES = [
-  { color: '#161BFA', radius: 700 },
-  { color: '#5684FF', radius: 630 },
-  { color: '#AE4FFF', radius: 560 },
-  { color: '#A336FF', radius: 490 },
-  { color: '#D47AFF', radius: 420 },
-  { color: '#E224A1', radius: 350 },
-  { color: '#FF0090', radius: 280 },
-]
-
 export default function PartiesScreen() {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('attending')
@@ -65,27 +55,6 @@ export default function PartiesScreen() {
 
   return (
     <div className='relative w-full min-h-dvh overflow-hidden bg-background-main'>
-      {/*<div className='fixed inset-0 overflow-hidden'>
-        {CIRCLES.flatMap(({ color, radius }) => {
-          const size = radius * 2
-          const bottom = -(200 + radius)
-          return [
-            <div
-              key={`L-${color}`}
-              className='absolute rounded-full'
-              style={{ backgroundColor: color, width: size, height: size, bottom, left: -radius }}
-            />,
-            <div
-              key={`R-${color}`}
-              className='absolute rounded-full'
-              style={{ backgroundColor: color, width: size, height: size, bottom, right: -radius }}
-            />,
-          ]
-        })}
-      </div>*/} 
-
-      <div className='fixed inset-0 bg-background-main/10 backdrop-blur-[80px]' />
-
       <div className='relative z-10 flex flex-col items-center gap-10 px-4 pt-7.5 pb-safe-nav'>
         <div className='w-full flex flex-col gap-6'>
           <div className='flex w-full items-center justify-between'>

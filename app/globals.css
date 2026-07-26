@@ -7,43 +7,35 @@
     --color-brand-blue: #161BFA;
 
     /* BASE COLORS */
-    --color-background-main: #000;
-    --color-background-secondary: #151515;
-    --color-background-tertiary: #2A2A2A;
+    --color-main: #000;
+    --color-secondary: rgba(118, 118, 128, 0.25);
+    --color-tertiary: rgba(255, 255, 255, 0.25);
+    --color-quaternary: rgba(29, 29, 29, 0.9);
+
+    /*COMPONENTS*/
+    --color-arrow: rgba(127, 127, 127, 0.9);
 
     /* TEXT */
-    --color-headline: #fff;
-    --color-subheadline: #949494;
-    --color-explanation: #fff;
-    --color-body: #fff;
-    --color-hint: #949494;
-    --color-placeholder: #A2A2A2;
-    --color-label: #fff;
-    --color-input: #fff;
-    --color-button: #000;
+    --color-heading: rgba(255, 255, 255, 0.9);
+    --color-subheading: rgba(148, 148, 148, 0.9);
+    --color-label-large: rgba(255, 255, 255, 0.9);
+    --color-label-small: rgba(204, 204, 204, 0.5);
+    --color-body: rgba(111, 111, 111, 0.9);
 
-    /* ELEMENTS */
-    --color-background-input: #0F0F0F;
-    --color-background-spacer: #323232;
-    --color-background-button: #fff;
-    --color-background-profilpicture: #151515;
-    --color-background-icon: #949494;
+    /* TEXT SIZES */
+    --text-heading-1: 35px;
+    --text-heading-2: 30px;
+    --text-heading-3: 25px;
+    --text-heading-4: 20px;
 
-    /* GLASS (translucent surfaces over the blurred gradient) */
-    --color-glass: rgba(255, 255, 255, 0.1);
-    --color-glass-strong: rgba(255, 255, 255, 0.2);
+    --text-subheading-1: 15px;
 
-    /* SEMANTIC */
-    --color-warning: #FF0000;
-    --color-success: #09FF00;
-    --color-maybe: #FFA500;
+    --text-label-1: 13px;
+    --text-label-2: 12px;
 
-    /* BORDERS & RADIUS */
-    --color-border: #404040;
-    --color-border-input: #3D3D3D;
-    --color-border-button: #;
+    --text-body-1: 12px;
 
-    /* SPACING SCALE */
+    --text-button: 16px;
 }
 
 @layer base {
@@ -53,6 +45,7 @@
         overflow-x: hidden;
     }
     body {
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
         min-height: 100%;
         overflow-x: hidden;
     }

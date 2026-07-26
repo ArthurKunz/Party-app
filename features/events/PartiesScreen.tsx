@@ -54,18 +54,20 @@ export default function PartiesScreen() {
       : 'Du nimmst noch an keinem Event teil.'
 
   return (
-    <div className='relative w-full min-h-dvh overflow-hidden bg-background-main'>
+    <div className='relative w-full min-h-dvh bg-background-main'>
       <div className='relative z-10 flex flex-col items-center gap-10 px-4 pt-7.5 pb-safe-nav'>
         <div className='w-full flex flex-col gap-6'>
           <div className='flex w-full items-center justify-between'>
-            <Link href='/create-event' className='h-10 w-10 flex justify-center items-center'>
-              <span className='text-4xl font-light text-headline'>+</span>
+            <Link href='/create-event' className='h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center'>
+              <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='4' strokeLinecap='round' className='text-white'>
+                <line x1='12' y1='6' x2='12' y2='18' />
+                <line x1='6' y1='12' x2='18' y2='12' />
+              </svg>
             </Link>
-            <span className='text-3xl font-bold text-headline'>Events</span>
+            <span className='font-bold text-heading-2 text-heading'>Events</span>
             <Link
               href='/profile'
-              className='h-10 w-10 shrink-0 rounded-full overflow-hidden flex items-center justify-center text-sm font-semibold text-body'
-              style={{ backgroundColor: profile?.avatar_color ?? '#2A2A2A' }}
+              className='h-11.25 w-11.25 rounded-full overflow-hidden flex items-center justify-center bg-secondary text-white/90 font-bold text-5'
             >
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt='' className='h-full w-full object-cover' />
@@ -77,7 +79,7 @@ export default function PartiesScreen() {
 
           <div
             role='tablist'
-            className='flex bg-background-secondary border border-border rounded-full p-1 w-full h-13'
+            className='flex bg-secondary rounded-full p-1 w-full h-12.5'
           >
             {(['attending', 'hosting'] as Tab[]).map((t) => (
               <button
@@ -85,25 +87,66 @@ export default function PartiesScreen() {
                 role='tab'
                 aria-selected={tab === t}
                 onClick={() => setTab(t)}
-                className={`flex-1 py-2 rounded-full text-md font-medium transition-colors ${
-                  tab === t ? 'bg-background-button text-button' : 'text-subheadline'
+                className={`flex-1 py-2 rounded-full text-button font-medium transition-colors text-white/90 ${
+                  tab === t ? 'bg-white/25 ' : ''
                 }`}
               >
-                {t === 'hosting' ? 'Ich hoste' : 'Ich bin Gast'}
+                {t === 'hosting' ? 'Gastgeber' : 'Gast'}
               </button>
             ))}
           </div>
         </div>
 
-        <div className='w-full max-w-md flex flex-col gap-3'>
+        <div className='w-full max-w-md flex flex-col gap-4'>
           {loading ? null : currentList.length === 0 ? (
-            <span className='mt-8 block text-center text-sm text-hint'>{emptyMessage}</span>
+            tab === 'hosting' ? (
+              <div className='mt-6 flex flex-col items-center gap-8'>
+                <div className='relative h-36 w-64'>
+                  <div className='absolute left-0 top-0 h-28 w-28 rounded-2xl bg-tertiary' />
+                  <div className='absolute left-14 top-8 h-24 w-48 rounded-2xl bg-secondary' />
+                  <div className='absolute left-0 top-32 flex flex-col gap-1.5'>
+                    <div className='h-2 w-14 rounded-full bg-white/80' />
+                    <div className='h-2 w-10 rounded-full bg-white/30' />
+                  </div>
+                  <div className='absolute left-16 top-[8.5rem] flex flex-col gap-1.5'>
+                    <div className='h-2 w-24 rounded-full bg-white/80' />
+                    <div className='h-2 w-14 rounded-full bg-white/30' />
+                  </div>
+                </div>
+
+                <div className='flex w-full flex-col items-center gap-2 px-4 text-center'>
+                  <span className='font-bold text-heading-4 text-heading'>
+                    Starte jetzt mit &ldquo;{profile?.firstname || 'dir'}&rdquo;
+                  </span>
+                  <span className='text-subheading-1 text-subheading'>
+                    Erstelle eine Party, lade Freunde ein und schaffe eine unvergessliche Zeit
+                  </span>
+                </div>
+
+                <svg width='130' height='130' viewBox='0 0 200 200' fill='none' stroke='currentColor' strokeWidth='4' strokeLinecap='round' strokeLinejoin='round' className='text-arrow'>
+                  <path d='M62,12 C32,28 30,62 52,82 C80,105 125,98 138,125 C148,145 100,155 100,165 L100,193' />
+                  <path d='M100,193 L89,180 M100,193 L111,180' />
+                </svg>
+              </div>
+            ) : (
+              <span className='mt-8 block text-center text-body-1 text-body'>{emptyMessage}</span>
+            )
           ) : (
-            currentList.map((event, index) => (
-              <Link key={event.id} href={`/parties/${event.id}`} className='block'>
-                <EventCard event={event} isHost={tab === 'hosting'} featured={index === 0} />
+            <>
+              <Link href={`/parties/${currentList[0].id}`} className='block'>
+                <EventCard event={currentList[0]} isHost={tab === 'hosting'} featured />
               </Link>
-            ))
+
+              {currentList.length > 1 && (
+                <div className='grid grid-cols-2 gap-3'>
+                  {currentList.slice(1).map((event) => (
+                    <Link key={event.id} href={`/parties/${event.id}`} className='block'>
+                      <EventCard event={event} isHost={tab === 'hosting'} />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -9,7 +9,7 @@ type Props = {
 }
 
 const inputClass =
-  'w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+  'w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
 
 export default function CreatePoolForm({ onCreated, onCancel }: Props) {
   const [question, setQuestion] = useState('')
@@ -33,9 +33,9 @@ export default function CreatePoolForm({ onCreated, onCancel }: Props) {
   }
 
   return (
-    <div className='rounded-2xl border border-border bg-background-secondary p-5 flex flex-col gap-4'>
+    <div className='rounded-2xl border border-border bg-secondary p-5 flex flex-col gap-4'>
       <div className='flex flex-col gap-2'>
-        <label className='text-xs font-semibold uppercase tracking-wide text-label'>Frage *</label>
+        <label className='text-xs font-semibold uppercase tracking-wide text-label-small'>Frage *</label>
         <input
           type='text'
           placeholder='z.B. Bringst du etwas mit?'
@@ -46,7 +46,7 @@ export default function CreatePoolForm({ onCreated, onCancel }: Props) {
       </div>
 
       <div className='flex flex-col gap-2'>
-        <label className='text-xs font-semibold uppercase tracking-wide text-label'>
+        <label className='text-xs font-semibold uppercase tracking-wide text-label-small'>
           Beschreibung (optional)
         </label>
         <textarea
@@ -54,12 +54,12 @@ export default function CreatePoolForm({ onCreated, onCancel }: Props) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={2}
-          className='w-full px-4 py-3 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder resize-none'
+          className='w-full px-4 py-3 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small resize-none'
         />
       </div>
 
       <div className='flex flex-col gap-2'>
-        <label className='text-xs font-semibold uppercase tracking-wide text-label'>
+        <label className='text-xs font-semibold uppercase tracking-wide text-label-small'>
           Optionen (min. 2)
         </label>
         {options.map((opt, i) => (
@@ -69,13 +69,13 @@ export default function CreatePoolForm({ onCreated, onCancel }: Props) {
               placeholder={`Option ${i + 1}`}
               value={opt}
               onChange={(e) => updateOption(i, e.target.value)}
-              className='flex-1 px-4 h-11 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+              className='flex-1 px-4 h-11 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
             />
             {options.length > 2 && (
               <button
                 type='button'
                 onClick={() => setOptions((prev) => prev.filter((_, j) => j !== i))}
-                className='h-11 w-11 flex items-center justify-center rounded-xl border border-border-input bg-background-input text-hint shrink-0'
+                className='h-11 w-11 flex items-center justify-center rounded-xl border border-border-input bg-secondary text-label-small shrink-0'
               >
                 ✕
               </button>
@@ -85,7 +85,7 @@ export default function CreatePoolForm({ onCreated, onCancel }: Props) {
         <button
           type='button'
           onClick={() => setOptions((prev) => [...prev, ''])}
-          className='h-11 rounded-xl border border-border-input bg-background-input text-sm text-hint'
+          className='h-11 rounded-xl border border-border-input bg-secondary text-sm text-label-small'
         >
           + Option hinzufügen
         </button>
@@ -95,7 +95,7 @@ export default function CreatePoolForm({ onCreated, onCancel }: Props) {
         <button
           type='button'
           onClick={onCancel}
-          className='flex-1 h-11 rounded-full border border-border-input bg-background-input text-sm text-hint'
+          className='flex-1 h-11 rounded-full border border-border-input bg-secondary text-sm text-label-small'
         >
           Abbrechen
         </button>
@@ -103,7 +103,7 @@ export default function CreatePoolForm({ onCreated, onCancel }: Props) {
           type='button'
           onClick={handleSubmit}
           disabled={!canSubmit}
-          className='flex-1 h-11 rounded-full bg-background-button text-button text-sm font-semibold disabled:opacity-40'
+          className='flex-1 h-11 rounded-full bg-tertiary text-button text-sm font-semibold text-heading disabled:opacity-40'
         >
           Erstellen
         </button>

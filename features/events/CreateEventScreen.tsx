@@ -12,7 +12,7 @@ import { createPool, addPoolOption } from './services/pools.service'
 import type { CreateEventFormValues, PoolDraft } from './types/events.types'
 
 const inputClass =
-  'w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+  'w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
 
 const BG_MAX_BYTES = 10 * 1024 * 1024
 
@@ -223,13 +223,13 @@ export default function CreateEventScreen() {
   if (!userId) return null
 
   return (
-    <div className='relative w-full h-dvh overflow-hidden bg-background-main'>
+    <div className='relative w-full h-dvh overflow-hidden bg-main'>
 
       <button
         type='button'
         onClick={() => router.push('/parties')}
         aria-label='Abbrechen'
-        className='absolute top-6 right-6 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-glass bg-glass text-body backdrop-blur-xl transition-transform hover:scale-105'
+        className='absolute top-6 right-6 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-heading transition-transform hover:scale-105'
       >
         <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
           <line x1='18' y1='6' x2='6' y2='18' />
@@ -241,16 +241,16 @@ export default function CreateEventScreen() {
         <div className='relative z-10 h-full overflow-y-auto scrollbar-none px-6'>
           <div className='min-h-full flex flex-col items-center justify-center py-24'>
             <div className='w-full max-w-sm flex flex-col gap-8'>
-              <span className='block text-center text-4xl font-bold text-headline'>
+              <span className='block text-center text-4xl font-bold text-heading'>
                 {HEADLINES.pools}
               </span>
               <div className='flex flex-col gap-3'>
                 {localPools.map((pool) => (
-                  <div key={pool.id} className='rounded-xl bg-background-input border border-border-input px-4 py-3 flex flex-col gap-2'>
-                    <span className='text-sm font-semibold text-input'>{pool.question}</span>
+                  <div key={pool.id} className='rounded-xl bg-secondary border border-border-input px-4 py-3 flex flex-col gap-2'>
+                    <span className='text-sm font-semibold text-heading'>{pool.question}</span>
                     <div className='flex flex-wrap gap-1.5'>
                       {pool.options.map((opt, i) => (
-                        <span key={i} className='text-xs text-subheadline bg-background-tertiary px-2.5 py-1 rounded-full'>
+                        <span key={i} className='text-xs text-subheading bg-tertiary px-2.5 py-1 rounded-full'>
                           {opt}
                         </span>
                       ))}
@@ -266,7 +266,7 @@ export default function CreateEventScreen() {
                   <button
                     type='button'
                     onClick={() => setShowPoolForm(true)}
-                    className='text-sm text-hint'
+                    className='text-sm text-label-small'
                   >
                     + Hinzufügen
                   </button>
@@ -278,7 +278,7 @@ export default function CreateEventScreen() {
                     type='button'
                     onClick={handleNext}
                     disabled={creating}
-                    className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-7.5 disabled:opacity-40'
+                    className='h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading px-7.5 disabled:opacity-40'
                   >
                     {creating ? 'Wird erstellt…' : 'weiter'}
                   </button>
@@ -293,13 +293,13 @@ export default function CreateEventScreen() {
       ) : (
         <div className='relative z-10 flex h-full flex-col items-center justify-center px-6'>
           <div className='w-full max-w-sm flex flex-col gap-10'>
-            <span className='block text-center text-4xl font-bold text-headline'>
+            <span className='block text-center text-4xl font-bold text-heading'>
               {HEADLINES[step]}
             </span>
 
             {step === 'name' && (
               <div className='flex flex-col gap-2'>
-                <label className='text-sm text-label'>Name</label>
+                <label className='text-sm text-label-small'>Name</label>
                 <input
                   type='text'
                   placeholder='z.B. Hausparty'
@@ -313,14 +313,14 @@ export default function CreateEventScreen() {
 
             {step === 'description' && (
               <div className='flex flex-col gap-2'>
-                <label className='text-sm text-label'>Beschreibung (optional)</label>
+                <label className='text-sm text-label-small'>Beschreibung (optional)</label>
                 <textarea
                   placeholder='Was erwartet die Gäste?'
                   value={values.description}
                   onChange={(e) => setField('description', e.target.value)}
                   onKeyDown={handleTextareaEnterAdvance}
                   rows={3}
-                  className='w-full px-4 py-3 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder resize-none'
+                  className='w-full px-4 py-3 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small resize-none'
                 />
               </div>
             )}
@@ -339,7 +339,7 @@ export default function CreateEventScreen() {
             {step === 'location' && (
               <div className='flex flex-col gap-3'>
                 <div className='flex flex-col gap-2'>
-                  <label className='text-sm text-label'>Straße & Hausnummer</label>
+                  <label className='text-sm text-label-small'>Straße & Hausnummer</label>
                   <input
                     type='text'
                     placeholder='z.B. Musterstraße 14'
@@ -349,7 +349,7 @@ export default function CreateEventScreen() {
                   />
                 </div>
                 <div className='flex flex-col gap-2'>
-                  <label className='text-sm text-label'>Stadt</label>
+                  <label className='text-sm text-label-small'>Stadt</label>
                   <input
                     type='text'
                     placeholder='z.B. Berlin'
@@ -364,7 +364,7 @@ export default function CreateEventScreen() {
 
             {step === 'guests' && (
               <div className='flex flex-col gap-2'>
-                <label className='text-sm text-label'>Max. Gäste (optional)</label>
+                <label className='text-sm text-label-small'>Max. Gäste (optional)</label>
                 <input
                   type='number'
                   placeholder='z.B. 30'
@@ -381,23 +381,23 @@ export default function CreateEventScreen() {
               <div className='flex flex-col gap-3'>
                 <label className='cursor-pointer block w-full'>
                   {bgPreviewUrl ? (
-                    <div className='w-full aspect-video rounded-xl overflow-hidden bg-background-input'>
+                    <div className='w-full aspect-video rounded-xl overflow-hidden bg-secondary'>
                       <img src={bgPreviewUrl} alt='Hintergrundbild' className='w-full h-full object-cover' />
                     </div>
                   ) : (
                     <div className='w-full rounded-xl border border-dashed border-border-input flex flex-col items-center gap-4 px-6 py-10'>
-                      <div className='flex h-14 w-14 items-center justify-center rounded-full bg-background-tertiary'>
-                        <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' className='text-subheadline'>
+                      <div className='flex h-14 w-14 items-center justify-center rounded-full bg-tertiary'>
+                        <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' className='text-subheading'>
                           <path d='M7 18a4.5 4.5 0 0 1-.6-8.96A5.5 5.5 0 0 1 17.4 8.02 4 4 0 0 1 17 16H16' />
                           <path d='M12 12v9' />
                           <path d='M9 15l3-3 3 3' />
                         </svg>
                       </div>
                       <div className='flex flex-col items-center gap-1 text-center'>
-                        <span className='text-sm font-semibold text-label'>Datei auswählen oder hierher ziehen</span>
-                        <span className='text-xs text-subheadline'>JPG, PNG bis 10 MB</span>
+                        <span className='text-sm font-semibold text-label-small'>Datei auswählen oder hierher ziehen</span>
+                        <span className='text-xs text-subheading'>JPG, PNG bis 10 MB</span>
                       </div>
-                      <span className='h-10 flex items-center justify-center rounded-full border border-border-input px-5 text-sm font-semibold text-label'>
+                      <span className='h-10 flex items-center justify-center rounded-full border border-border-input px-5 text-sm font-semibold text-label-small'>
                         Datei durchsuchen
                       </span>
                     </div>
@@ -415,14 +415,14 @@ export default function CreateEventScreen() {
 
             {step === 'done' && (
               <div className='flex flex-col gap-3'>
-                <label className='text-sm text-label'>Einladungs-Link</label>
+                <label className='text-sm text-label-small'>Einladungs-Link</label>
                 <button
                   type='button'
                   onClick={handleCopy}
-                  className='w-full px-4 h-14 flex items-center justify-between gap-3 bg-background-input border border-border-input rounded-xl text-input text-sm'
+                  className='w-full px-4 h-14 flex items-center justify-between gap-3 bg-secondary border border-border-input rounded-xl text-heading text-sm'
                 >
                   <span className='truncate'>{shareLink}</span>
-                  <span className='shrink-0 text-subheadline'>{copied ? 'Kopiert ✓' : 'Kopieren'}</span>
+                  <span className='shrink-0 text-subheading'>{copied ? 'Kopiert ✓' : 'Kopieren'}</span>
                 </button>
               </div>
             )}
@@ -432,7 +432,7 @@ export default function CreateEventScreen() {
                 <button
                   type='button'
                   onClick={() => router.push('/parties')}
-                  className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-7.5'
+                  className='h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading px-7.5'
                 >
                   Fertig
                 </button>
@@ -441,7 +441,7 @@ export default function CreateEventScreen() {
                   type='button'
                   onClick={handleNext}
                   disabled={!canContinue}
-                  className='h-12 rounded-full bg-background-button text-button text-sm font-semibold px-7.5 disabled:opacity-40'
+                  className='h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading px-7.5 disabled:opacity-40'
                 >
                   weiter
                 </button>

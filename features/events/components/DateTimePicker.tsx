@@ -84,14 +84,14 @@ export default function DateTimePicker({ day, month, year, hour, minute, onChang
 
   return (
     <div className='flex flex-col gap-3'>
-      <div className='flex rounded-2xl overflow-hidden border border-border-input bg-background-secondary'>
+      <div className='flex rounded-2xl overflow-hidden border border-border-input bg-secondary'>
         {/* Calendar */}
         <div className='flex-1 min-w-0 p-3 flex flex-col gap-2'>
           <div className='flex items-center justify-between'>
             <button
               type='button'
               onClick={prevMonth}
-              className='h-7 w-7 flex items-center justify-center rounded-lg text-subheadline hover:text-body hover:bg-background-tertiary transition-colors text-lg leading-none'
+              className='h-7 w-7 flex items-center justify-center rounded-lg text-subheading hover:text-body hover:bg-tertiary transition-colors text-lg leading-none'
             >
               ‹
             </button>
@@ -101,7 +101,7 @@ export default function DateTimePicker({ day, month, year, hour, minute, onChang
             <button
               type='button'
               onClick={nextMonth}
-              className='h-7 w-7 flex items-center justify-center rounded-lg text-subheadline hover:text-body hover:bg-background-tertiary transition-colors text-lg leading-none'
+              className='h-7 w-7 flex items-center justify-center rounded-lg text-subheading hover:text-body hover:bg-tertiary transition-colors text-lg leading-none'
             >
               ›
             </button>
@@ -109,7 +109,7 @@ export default function DateTimePicker({ day, month, year, hour, minute, onChang
 
           <div className='grid grid-cols-7'>
             {DAYS_DE.map((d) => (
-              <div key={d} className='text-center text-xs text-subheadline py-1'>
+              <div key={d} className='text-center text-xs text-subheading py-1'>
                 {d}
               </div>
             ))}
@@ -126,10 +126,10 @@ export default function DateTimePicker({ day, month, year, hour, minute, onChang
                 className={[
                   'relative h-8 rounded-lg text-sm flex items-center justify-center transition-colors',
                   isSelected(d)
-                    ? 'bg-background-button text-button font-semibold'
+                    ? 'bg-tertiary text-button font-semibold text-heading'
                     : isPast(d)
-                    ? 'text-subheadline line-through opacity-40 cursor-not-allowed'
-                    : 'text-body hover:bg-background-tertiary cursor-pointer',
+                    ? 'text-subheading line-through opacity-40 cursor-not-allowed'
+                    : 'text-body hover:bg-tertiary cursor-pointer',
                 ].join(' ')}
               >
                 {d}
@@ -141,7 +141,7 @@ export default function DateTimePicker({ day, month, year, hour, minute, onChang
           </div>
         </div>
 
-        <div className='w-px bg-border-input shrink-0' />
+        <div className='w-px bg-tertiary shrink-0' />
 
         {/* Time picker */}
         <div
@@ -156,8 +156,8 @@ export default function DateTimePicker({ day, month, year, hour, minute, onChang
               className={[
                 'shrink-0 h-10 w-full rounded-xl text-sm font-medium transition-colors',
                 h === hour && m === minute
-                  ? 'bg-background-button text-button'
-                  : 'bg-background-tertiary text-body hover:bg-background-spacer',
+                  ? 'bg-tertiary text-button text-heading'
+                  : 'bg-tertiary/50 text-body hover:bg-tertiary',
               ].join(' ')}
             >
               {h}:{m}
@@ -167,7 +167,7 @@ export default function DateTimePicker({ day, month, year, hour, minute, onChang
       </div>
 
       {selectedDateLabel && hour && minute && (
-        <p className='text-center text-sm text-subheadline'>
+        <p className='text-center text-sm text-subheading'>
           <span className='text-body'>{selectedDateLabel}</span>
           {' um '}
           <span className='text-body font-medium'>{hour}:{minute}</span>

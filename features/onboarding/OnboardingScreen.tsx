@@ -50,7 +50,7 @@ export default function OnboardingScreen() {
   const stepIndex = STEPS.indexOf(step)
 
   return (
-    <div className='relative w-full h-dvh overflow-hidden bg-background-main'>
+    <div className='relative w-full h-dvh overflow-hidden bg-main'>
       <div className='relative z-10 w-full h-full flex flex-col items-center justify-center px-6'>
         <div className='w-full max-w-sm'>
           {step === 'name' && <PersonalDataForm onSuccess={handleNameDone} />}

@@ -49,11 +49,11 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
 
   return (
     <form onSubmit={handleChangePassword} className='w-full flex flex-col gap-8'>
-      <span className='block text-center text-3xl font-bold text-headline'>Neues Passwort</span>
+      <span className='block text-center text-3xl font-bold text-heading'>Neues Passwort</span>
 
       <div className='flex flex-col gap-4'>
         <div className='flex flex-col gap-2'>
-          <label className='text-sm text-label'>Neues Passwort</label>
+          <label className='text-sm text-label-small'>Neues Passwort</label>
           <input
             type='password'
             placeholder='Gib das Passwort ein'
@@ -61,7 +61,7 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
             onChange={(e) => setNewPassword(e.target.value)}
             onKeyDown={handleNewPasswordKeyDown}
             required
-            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
           />
           {showPasswordWarning && (
             <span className='text-xs text-red-400' role='alert'>
@@ -70,7 +70,7 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
           )}
         </div>
         <div className='flex flex-col gap-2'>
-          <label className='text-sm text-label'>Passwort bestätigen</label>
+          <label className='text-sm text-label-small'>Passwort bestätigen</label>
           <input
             ref={confirmPasswordRef}
             type='password'
@@ -78,14 +78,14 @@ export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProp
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
           />
         </div>
       </div>
 
       <button
         type='submit'
-        className='w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
+        className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading'
       >
         Speichern
       </button>

@@ -20,10 +20,10 @@ export default function VerifyOtpForm({ email, onSuccess }: VerifyProps) {
 
   return (
     <div className='w-full flex flex-col gap-8'>
-      <span className='block text-center text-3xl font-bold text-headline'>Verifizierung</span>
+      <span className='block text-center text-3xl font-bold text-heading'>Verifizierung</span>
 
       <div className='flex flex-col gap-2'>
-        <label className='text-sm text-label'>Verifizierungs-code</label>
+        <label className='text-sm text-label-small'>Verifizierungs-code</label>
         <div className='w-full flex justify-between gap-2'>
           {digits.map((digit, index) => (
             <input
@@ -43,14 +43,14 @@ export default function VerifyOtpForm({ email, onSuccess }: VerifyProps) {
                 else if (code.length === digits.length) handleVerify(e)
               }}
               onPaste={handlePaste}
-              className='w-full text-center h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+              className='w-full text-center h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
             />
           ))}
         </div>
       </div>
 
       <button
-        className='w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
+        className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading'
         onClick={handleVerify}
       >
         Verify

@@ -58,24 +58,24 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
   if (step === 'forgot') {
     return (
       <div className='w-full flex flex-col gap-8'>
-        <span className='block text-center text-3xl font-bold text-headline'>Password zurücksetzen</span>
+        <span className='block text-center text-3xl font-bold text-heading'>Password zurücksetzen</span>
 
         <div className='flex flex-col gap-2'>
-          <label className='text-sm text-label'>Email</label>
+          <label className='text-sm text-label-small'>Email</label>
           <input
             type='email'
             placeholder='Email'
             value={resetEmail}
             onChange={(e) => setResetEmail(e.target.value)}
             onKeyDown={handleResetEmailKeyDown}
-            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
           />
         </div>
 
         <button
           type='button'
           onClick={handleForgotPassword}
-          className='w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
+          className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading'
         >
           Weiter
         </button>
@@ -86,9 +86,9 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
   if (step === 'forgot-sent') {
     return (
       <div className='w-full flex flex-col gap-8'>
-        <span className='text-3xl text-center font-bold text-headline'>Passwort zurücksetzen</span>
+        <span className='text-3xl text-center font-bold text-heading'>Passwort zurücksetzen</span>
 
-        <span className='block text-center text-xs text-hint'>
+        <span className='block text-center text-xs text-label-small'>
           Wir haben einen Link an{' '}
           <span className='text-body font-semibold'>{resetEmail}</span>{' '}
           gesendet
@@ -99,32 +99,32 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
 
   return (
     <div className='w-full flex flex-col gap-8'>
-      <span className='block text-center text-3xl font-bold text-headline'>Login</span>
+      <span className='block text-center text-3xl font-bold text-heading'>Login</span>
 
       <form className='flex flex-col gap-4' onSubmit={handleSignIn} noValidate>
         <div className='flex flex-col gap-2'>
-          <label className='text-sm text-label'>Email</label>
+          <label className='text-sm text-label-small'>Email</label>
           <input
             type='email'
             placeholder='max.mustermann@example.com'
-            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={handleEmailKeyDown}
           />
         </div>
         <div className='flex flex-col gap-2'>
-          <label className='text-sm text-label'>Passwort</label>
+          <label className='text-sm text-label-small'>Passwort</label>
           <input
             ref={passwordRef}
             type='password'
             placeholder='Gib dein Passwort ein'
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className='w-full px-4 h-14 bg-background-input border border-border-input rounded-xl text-input text-sm focus:outline-none placeholder:text-placeholder'
+            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
           />
           <span
-            className='text-xs text-hint cursor-pointer'
+            className='text-xs text-label-small cursor-pointer'
             onClick={() => setStep('forgot')}
           >
             Passwort vergessen?
@@ -134,19 +134,19 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
         <div className='flex flex-col gap-4 mt-4'>
           <button
             type='submit'
-            className='w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
+            className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading'
           >
             Login
           </button>
           <div className='flex items-center gap-3'>
-            <div className='flex-1 h-px bg-glass' />
-            <span className='text-xs text-subheadline'>or</span>
-            <div className='flex-1 h-px bg-glass' />
+            <div className='flex-1 h-px bg-tertiary' />
+            <span className='text-xs text-subheading'>or</span>
+            <div className='flex-1 h-px bg-tertiary' />
           </div>
           <button
             type='button'
             onClick={handleGoogleSignIn}
-            className='flex w-full items-center justify-center gap-2 w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold'
+            className='flex w-full items-center justify-center gap-2 w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading'
           >
             <Image src='/icons/Google.png' alt='' width={18} height={18} className='shrink-0' />
             Google
@@ -154,7 +154,7 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
         </div>
       </form>
 
-      <span className='block text-center text-xs text-hint'>
+      <span className='block text-center text-xs text-label-small'>
         Noch kein Account?{' '}
         <span className='text-body font-semibold cursor-pointer' onClick={onGoToSignUp}>
           Sign Up

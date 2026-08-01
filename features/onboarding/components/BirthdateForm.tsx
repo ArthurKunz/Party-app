@@ -41,10 +41,10 @@ export default function BirthdateForm({ onSuccess }: BirthdateFormProps) {
 
   return (
     <div className='w-full flex flex-col gap-8'>
-      <span className='block text-center text-3xl font-bold text-headline'>Wie alt bist du?</span>
+      <span className='block text-center text-3xl font-bold text-heading'>Wie alt bist du?</span>
 
       <div className='flex flex-col gap-2'>
-        <label className='text-sm text-label'>Geburtstag</label>
+        <label className='text-sm text-label-small'>Geburtstag</label>
         <div className='flex gap-2'>
           <Selectbox
             options={DAY_OPTIONS}
@@ -75,7 +75,7 @@ export default function BirthdateForm({ onSuccess }: BirthdateFormProps) {
       <button
         onClick={handleSubmit}
         disabled={!day || !month || !year}
-        className='w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold disabled:opacity-40'
+        className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading disabled:opacity-40'
       >
         Fertig
       </button>

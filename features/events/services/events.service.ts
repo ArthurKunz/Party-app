@@ -149,7 +149,7 @@ export async function getAttendedEvents(userId: string): Promise<EventWithCount[
   )
 }
 
-const EVENT_DETAIL_COLUMNS = 'id, host_id, title, description, event_date, location, invite_code, background_url'
+const EVENT_DETAIL_COLUMNS = 'id, host_id, title, description, event_date, location, invite_code, background_url, max_guests'
 
 export async function getEventById(eventId: string): Promise<EventDetail | null> {
   const { data, error } = await supabase

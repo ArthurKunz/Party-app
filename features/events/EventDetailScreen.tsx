@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import { eventCoverGradient } from '@/lib/utils'
+import { getInitials } from '@/lib/utils'
 import {
   getEventById,
   getEventAttendees,
@@ -13,17 +13,23 @@ import {
   deleteEvent,
   getRsvpCountsByStatus,
 } from './services/events.service'
+import { getEventPools } from './services/pools.service'
 import HostRow from './components/HostRow'
 import RsvpButtons from './components/RsvpButtons'
 import PoolsSection from './components/PoolsSection'
 import AttendeeList from './components/AttendeeList'
 import EventMap from './components/EventMap'
-import type { EventDetail, Attendee, EventHost, RsvpStatus } from './types/events.types'
+import type { EventDetail, Attendee, EventHost, RsvpStatus, Pool } from './types/events.types'
 
 const BackIcon = (
-  <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
-    <line x1='19' y1='12' x2='5' y2='12' />
-    <polyline points='12 19 5 12 12 5' />
+  <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='4' strokeLinecap='round' strokeLinejoin='round' className='text-white'>
+    <polyline points='9 6 15 12 9 18' transform='rotate(180 12 12)' />
+  </svg>
+)
+
+const ChevronRightIcon = (
+  <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='4' strokeLinecap='round' strokeLinejoin='round' className='text-heading'>
+    <polyline points='9 6 15 12 9 18' />
   </svg>
 )
 
@@ -57,6 +63,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
   const [rsvpLoading, setRsvpLoading] = useState(false)
   const [origin, setOrigin] = useState('')
   const [descExpanded, setDescExpanded] = useState(false)
+  const [pools, setPools] = useState<Pool[]>([])
 
   useEffect(() => {
     setOrigin(window.location.origin)
@@ -64,12 +71,13 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
       if (!session) { router.push('/login'); return }
       const uid = session.user.id
       setUserId(uid)
-      const [eventData, attendeeData, hostData, status, countData] = await Promise.all([
+      const [eventData, attendeeData, hostData, status, countData, poolData] = await Promise.all([
         getEventById(eventId),
         getEventAttendees(eventId),
         getEventHost(eventId),
         getMyRsvpStatus(eventId, uid),
         getRsvpCountsByStatus(eventId),
+        getEventPools(eventId),
       ])
       if (!eventData) { router.push('/parties'); return }
       setEvent(eventData)
@@ -78,6 +86,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
       setIsHost(eventData.host_id === uid)
       setRsvpStatus(status)
       setCounts(countData)
+      setPools(poolData)
       setLoading(false)
     })
   }, [eventId, router])
@@ -136,151 +145,109 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
   const TRUNCATE_AT = 160
   const isLong = desc.length > TRUNCATE_AT
 
+  const shortDate = new Date(event.event_date).toLocaleDateString('de-DE', {
+    day: '2-digit', month: '2-digit', year: '2-digit',
+  })
+
+  const stats: { label: string; value: string }[] = [
+    { label: 'Datum', value: shortDate },
+    { label: 'Uhrzeit', value: formattedTime },
+    ...(event.max_guests != null ? [{ label: 'Max. Gäste', value: String(event.max_guests) }] : []),
+    { label: 'zugesagt', value: String(counts.going) },
+    { label: 'abgesagt', value: String(counts.not_going) },
+    { label: 'vielleicht', value: String(counts.maybe) },
+  ]
+
+  const locationCommaIndex = event.location.lastIndexOf(',')
+  const address = locationCommaIndex === -1 ? event.location : event.location.slice(0, locationCommaIndex).trim()
+  const city = locationCommaIndex === -1 ? '' : event.location.slice(locationCommaIndex + 1).trim()
+
   return (
-    <div className='relative min-h-screen'>
+    <div className='relative w-full bg-white'>
 
-      {/* ── FIXED FULL-PAGE BACKGROUND ── */}
-      <div className='fixed inset-0 overflow-hidden'>
-        {event.background_url ? (
-          <img
-            src={event.background_url}
-            alt=''
-            aria-hidden='true'
-            className='h-full w-full object-cover'
-            style={{ filter: 'blur(2px)', transform: 'scale(1.15)' }}
-          />
-        ) : (
-          <div className={`absolute inset-0 bg-gradient-to-br ${eventCoverGradient(event.id)} opacity-20`} />
-        )}
-      </div>
-      <div className='fixed inset-0 bg-background-main/50' />
-
-      {/* ── HERO ── */}
-      <div className='relative z-10 h-[45dvh]'>
-        <div className='flex h-full flex-col px-6 pt-7.5 pb-10'>
-          {/* Header */}
-          <div className='relative flex items-center justify-center'>
-            <button
-              onClick={() => router.push('/parties')}
-              aria-label='Zurück'
-              className='absolute left-0 flex h-11 w-11 items-center justify-center rounded-full border border-glass bg-glass text-body backdrop-blur-xl'
-            >
-              {BackIcon}
-            </button>
-            <span className='text-3xl font-bold text-headline'>{event.title}</span>
-          </div>
-
-          {/* Host */}
-          <div className='mt-2 flex justify-center'>
-            <HostRow host={host} />
-          </div>
-
-          <div className='flex-1' />
-
-          {/* Countdown */}
-          <div className='flex flex-col items-center'>
-            <span className='text-[90px] font-bold leading-none text-headline'>{value}</span>
-            <span className='mt-1 text-sm font-light text-headline'>{unit}</span>
-          </div>
+      <div className='px-4 py-7.5 relative w-full h-100 bg-green-500'>
+        <div className='relative w-full bg-blue-500 h-10'>
+          <button
+            onClick={() => router.push('/parties')}
+            aria-label='Zurück'
+            className='absolute left-0 top-0 h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center'
+          >
+            {BackIcon}
+          </button>
         </div>
       </div>
 
       {/* ── CONTENT ── */}
-      <div className='relative z-10 mx-auto w-full max-w-md px-6 pt-6 pb-12 flex flex-col gap-7.5'>
+      <div className='relative px-4 pb-7.5 bg-main flex flex-col gap-12.5'>
 
-        {isHost && (
-          <button
-            onClick={handleCopy}
-            className='flex h-14 w-full items-center justify-between gap-3 rounded-2xl border border-border bg-background-secondary px-4'
-          >
-            <span className='flex items-center gap-3 truncate text-hint text-sm'>
-              <span className='shrink-0 text-background-icon'>{CopyIcon}</span>
-              <span className='truncate'>{shareLink}</span>
-            </span>
-            <span className='shrink-0 text-body text-xs'>{copied ? 'Kopiert ✓' : 'Kopieren'}</span>
-          </button>
-        )}
-
-        <div className='flex flex-col gap-2'>
-          <div className='flex gap-2'>
-            <div className='w-full h-15 flex items-center justify-center rounded-2xl border border-border bg-background-secondary'>
-              <span className='text-md font-medium text-body text-center'>{formattedDate}</span>
+        <div className='w-full flex flex-col gap-5'>
+          <div className='w-full flex flex-col gap-3'>
+            <div className='w-full flex flex-col'>
+              <span className='text-heading-1 font-semibold text-heading'>{event.title}</span>
+              <div className='flex items-center gap-2'>
+                <div className='w-6.25 h-6.25 rounded-full overflow-hidden flex items-center justify-center bg-secondary text-white/90 font-bold text-5'>
+                  {host?.avatar_url ? (
+                    <img src={host.avatar_url} alt='' className='h-full w-full object-cover' />
+                  ) : (
+                    getInitials(host?.firstname ?? null, host?.lastname ?? null)
+                  )}
+                </div>
+                <span className='text-[14px] text-label-large'>{`${host?.firstname ?? null} ${host?.lastname ?? null}`}</span>
+              </div>
             </div>
-            <div className='w-full h-15 flex items-center justify-center rounded-2xl border border-border bg-background-secondary'>
-              <span className='text-md font-medium text-body'>{formattedTime}</span>
-            </div>
-          </div>
-          <EventMap location={event.location} />
-
-          {desc ? (
-            <div className='rounded-2xl border border-border bg-background-secondary p-4'>
-              <span className='text-sm leading-none font-light text-hint'>
-                {isLong && !descExpanded ? desc.slice(0, TRUNCATE_AT) + '…' : desc}
-                {isLong && !descExpanded && (
-                  <button onClick={() => setDescExpanded(true)} className='ml-1 text-xs font-semibold text-brand-pink'>
-                    mehr lesen
-                  </button>
-                )}
-                {isLong && descExpanded && (
-                  <button onClick={() => setDescExpanded(false)} className='ml-1 text-xs font-semibold text-brand-pink'>
-                    weniger lesen
-                  </button>
-                )}
-              </span>
-            </div>
-          ) : null}
-        </div>
-
-
-
-
-        {/* Pools */}
-        {userId && (
-          <PoolsSection eventId={eventId} isHost={isHost} userId={userId} />
-        )}
-
-
-
-        <div className='flex flex-col gap-2'>
-          {/* Stats */}
-          <div className='flex gap-2'>
-            <div className='flex-1 flex flex-col items-center gap-0.5 rounded-2xl border border-border bg-background-secondary p-3'>
-              <span className='text-2xl font-bold text-headline'>{counts.going}</span>
-              <span className='text-xs text-hint text-success'>zugesagt</span>
-            </div>
-            <div className='flex-1 flex flex-col items-center gap-0.5 rounded-2xl border border-border bg-background-secondary p-3'>
-              <span className='text-2xl font-bold text-headline'>{counts.maybe}</span>
-              <span className='text-xs text-hint text-maybe'>vielleicht</span>
-            </div>
-            <div className='flex-1 flex flex-col items-center gap-0.5 rounded-2xl border border-border bg-background-secondary p-3'>
-              <span className='text-2xl font-bold text-headline'>{counts.not_going}</span>
-              <span className='text-xs text-hint text-warning'>abgesagt</span>
-            </div>
+            <span className='text-body text-body-1'>{event?.description}</span>
           </div>
 
-          {/* Attendee list */}
-          <AttendeeList attendees={attendees} />
+          <div className='w-full h-0.25 bg-[#161616]'/>
+
+          <div className='w-full overflow-x-auto scroll-smooth scrollbar-none [-webkit-overflow-scrolling:touch]'>
+            <div className='flex w-max gap-6'>
+              {stats.map((stat) => (
+                <div key={stat.label} className='flex flex-col gap-1'>
+                  <span className='text-label-2 font-medium text-label-small'>{stat.label}</span>
+                  <span className='text-label-1 font-semibold text-label-large'>{stat.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {!isHost && (
-          <RsvpButtons
-            status={rsvpStatus}
-            onGoing={() => handleRsvp('going')}
-            onMaybe={() => handleRsvp('maybe')}
-            onNotGoing={() => handleRsvp('not_going')}
-            loading={rsvpLoading}
-          />
+        <div className='w-full flex flex-col gap-4'>
+          <div className='flex items-center gap-0.5'>
+            <span className='text-heading-4 text-heading font-semibold'>Location</span>
+            {ChevronRightIcon}
+          </div>
+          <div className='w-full '>
+            <EventMap location={event.location} />
+            <div className='flex flex-col mt-2'>
+              <span className='truncate font-md text-label-1 text-label-large'>{address}</span>
+              <span className='truncate text-label-2 text-label-small'>{city && `in ${city}`}</span>
+            </div>
+          </div>
+        </div>
+
+        {pools.length > 0 && (
+          <div className='w-full flex flex-col gap-4'>
+            <div className='flex items-center gap-0.5'>
+              <span className='text-heading-4 text-heading font-semibold'>Umfragen</span>
+              {ChevronRightIcon}
+            </div>
+            <div>
+              {userId && (
+                <PoolsSection eventId={eventId} isHost={isHost} userId={userId} />
+              )}
+            </div>
+          </div>
         )}
 
-        {isHost && (
-          <button
-            type='button'
-            onClick={handleDelete}
-            disabled={deleting}
-            className='w-full rounded-full bg-warning py-3 font-semibold text-body disabled:opacity-50'
-          >
-            {deleting ? 'Wird gelöscht…' : 'Event löschen'}
-          </button>
+        {attendees.length > 0 && (
+          <div className='w-full flex flex-col gap-4'>
+            <div className='flex items-center gap-0.5'>
+              <span className='text-heading-4 text-heading font-semibold'>Gäste</span>
+              {ChevronRightIcon}
+            </div>
+            <AttendeeList attendees={attendees} />
+          </div>
         )}
 
       </div>

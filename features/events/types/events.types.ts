@@ -47,6 +47,7 @@ export type EventDetail = {
   location: string
   invite_code: string
   background_url?: string | null
+  max_guests: number | null
 }
 
 export type Attendee = {

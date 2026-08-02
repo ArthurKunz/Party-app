@@ -23,7 +23,7 @@ export default function AttendeeList({ attendees }: { attendees: Attendee[] }) {
             <div className='flex items-center gap-3 py-3'>
               <div
                 className='flex h-12.5 w-12.5 shrink-0 items-center justify-center overflow-hidden rounded-full text-subheading-1 font-semibold text-heading'
-                style={{ backgroundColor: a.avatar_color ?? '#2A2A2A' }}
+                style={{ backgroundColor: a.avatar_url ? 'transparent' : (a.avatar_color ?? '#2A2A2A') }}
               >
                 {a.avatar_url ? (
                   <img src={a.avatar_url} alt='' className='h-full w-full object-cover' />

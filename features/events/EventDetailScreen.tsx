@@ -11,6 +11,7 @@ import {
   getMyRsvpStatus,
   setRsvp,
   deleteEvent,
+  deleteRsvp,
   getRsvpCountsByStatus,
 } from './services/events.service'
 import { getEventPools } from './services/pools.service'
@@ -40,6 +41,20 @@ const CopyIcon = (
   </svg>
 )
 
+const MoreIcon = (
+  <svg width='20' height='20' viewBox='0 0 24 24' fill='currentColor' className='text-heading'>
+    <circle cx='5' cy='12' r='2.25' />
+    <circle cx='12' cy='12' r='2.25' />
+    <circle cx='19' cy='12' r='2.25' />
+  </svg>
+)
+
+const RSVP_MENU: { status: RsvpStatus; label: string; icon: string }[] = [
+  { status: 'going', label: 'zugesagt', icon: '✅' },
+  { status: 'maybe', label: 'vielleicht', icon: '🤔' },
+  { status: 'not_going', label: 'abgesagt', icon: '❌' },
+]
+
 function getCountdown(dateString: string): { value: number; unit: string } {
   const diffMs = new Date(dateString).getTime() - Date.now()
   if (diffMs <= 0) return { value: 0, unit: 'Tage' }
@@ -61,6 +76,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
   const [copied, setCopied] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [rsvpLoading, setRsvpLoading] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [origin, setOrigin] = useState('')
   const [descExpanded, setDescExpanded] = useState(false)
   const [pools, setPools] = useState<Pool[]>([])
@@ -110,6 +126,15 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
     setDeleting(true)
     const { error } = await deleteEvent(event.id)
     if (error) { alert(error.message); setDeleting(false); return }
+    router.push('/parties')
+  }
+
+  const handleLeaveEvent = async () => {
+    if (!event || !userId) return
+    if (!confirm('Event für dich löschen? Du kannst über den Einladungslink jederzeit wieder beitreten.')) return
+    setMenuOpen(false)
+    const { error } = await deleteRsvp(event.id, userId)
+    if (error) { alert(error.message); return }
     router.push('/parties')
   }
 
@@ -191,6 +216,49 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
               >
                 {copied ? <span className='text-label-1 text-heading'>✓</span> : CopyIcon}
               </button>
+            )}
+
+            {!isHost && (
+              <div className='absolute right-0 top-0'>
+                <button
+                  onClick={() => setMenuOpen((v) => !v)}
+                  aria-label='Mehr Optionen'
+                  className='h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center'
+                >
+                  {MoreIcon}
+                </button>
+
+                {menuOpen && (
+                  <>
+                    <div className='fixed inset-0 z-10' onClick={() => setMenuOpen(false)} />
+                    <div className='absolute right-0 top-13 z-20 w-56.25 rounded-3xl bg-quaternary/50 backdrop-blur-xl p-2 flex flex-col'>
+                      {RSVP_MENU.map(({ status, label, icon }) => (
+                        <button
+                          key={status}
+                          type='button'
+                          onClick={() => { handleRsvp(status); setMenuOpen(false) }}
+                          disabled={rsvpLoading}
+                          className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left ${
+                            rsvpStatus === status ? 'bg-tertiary' : ''
+                          }`}
+                        >
+                          <span className='text-md'>{icon}</span>
+                          <span className='text-label-1 text-label-large'>{label}</span>
+                        </button>
+                      ))}
+                      <div className='h-0.25 w-full bg-[#3D3D3D] my-2' />
+                      <button
+                        type='button'
+                        onClick={handleLeaveEvent}
+                        className='flex items-center gap-3 w-full px-4 py-3'
+                      >
+                        <span className='text-lg text-warning'>🗑️</span>
+                        <span className='text-label-1 font-semibold text-[#FF0000]'>Löschen</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             )}
           </div>
         </div>

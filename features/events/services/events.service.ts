@@ -211,3 +211,7 @@ export async function setRsvp(eventId: string, userId: string, status: RsvpStatu
 export async function deleteEvent(eventId: string) {
   return supabase.from('events').delete().eq('id', eventId)
 }
+
+export async function deleteRsvp(eventId: string, userId: string) {
+  return supabase.from('rsvps').delete().eq('event_id', eventId).eq('user_id', userId)
+}

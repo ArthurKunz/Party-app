@@ -22,7 +22,7 @@ export default function AttendeeList({ attendees }: { attendees: Attendee[] }) {
           <div key={a.user_id}>
             <div className='flex items-center gap-3 py-3'>
               <div
-                className='flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full text-subheading-1 font-semibold text-heading'
+                className='flex h-12.5 w-12.5 shrink-0 items-center justify-center overflow-hidden rounded-full text-subheading-1 font-semibold text-heading'
                 style={{ backgroundColor: a.avatar_color ?? '#2A2A2A' }}
               >
                 {a.avatar_url ? (
@@ -32,19 +32,24 @@ export default function AttendeeList({ attendees }: { attendees: Attendee[] }) {
                 )}
               </div>
               <div className='min-w-0 flex-1'>
-                <span className='block truncate text-subheading-1 font-semibold text-heading'>
+                <span className='block truncate text-label-1 font-md text-heading'>
                   {[a.firstname, a.lastname].filter(Boolean).join(' ') || 'Unbekannt'}
                 </span>
                 {a.birthday && (
                   <span className='block text-label-2 text-label-small'>{calculateAge(a.birthday)} Jahre alt</span>
                 )}
               </div>
-              <span className={`flex items-center gap-1.5 rounded-full h-7.5 px-2 text-label-2 text-heading ${status.color}`}>
+              <span className={`flex items-center gap-1.5 rounded-full h-7.5 px-2.5 text-label-2 text-heading ${status.color}`}>
                 <span>{status.icon}</span>
                 {status.label}
               </span>
             </div>
-            {i < attendees.length - 1 && <div className='h-0.25 w-full bg-[#161616]' />}
+            {i < attendees.length - 1 && (
+              <div className='flex items-center gap-3'>
+                <div className='w-12.5 shrink-0' />
+                <div className='h-0.25 flex-1 bg-[#161616] rounded-full' />
+              </div>
+            )}
           </div>
         )
       })}

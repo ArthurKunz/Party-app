@@ -87,6 +87,8 @@ export type PoolResponse = {
   created_at: string
   firstname: string | null
   lastname: string | null
+  avatar_url: string | null
+  avatar_color: string | null
 }
 
 export type Pool = {

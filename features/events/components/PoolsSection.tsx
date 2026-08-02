@@ -21,7 +21,7 @@ export default function PoolsSection({ eventId, isHost, userId }: Props) {
   const refresh = () => void getEventPools(eventId).then(setPools)
 
   return (
-    <div className='flex flex-col gap-2'>
+    <div className='flex flex-col gap-4'>
       {pools.map((pool) => (
         <PoolCard
           key={pool.id}

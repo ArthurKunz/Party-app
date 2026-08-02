@@ -34,7 +34,7 @@ const ChevronRightIcon = (
 )
 
 const CopyIcon = (
-  <svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+  <svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-heading'>
     <rect x='9' y='9' width='13' height='13' rx='2' />
     <path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' />
   </svg>
@@ -141,10 +141,6 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
     hour: '2-digit', minute: '2-digit',
   }) + ' Uhr'
 
-  const desc = event.description?.trim() ?? ''
-  const TRUNCATE_AT = 160
-  const isLong = desc.length > TRUNCATE_AT
-
   const shortDate = new Date(event.event_date).toLocaleDateString('de-DE', {
     day: '2-digit', month: '2-digit', year: '2-digit',
   })
@@ -165,15 +161,34 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
   return (
     <div className='relative w-full bg-white'>
 
-      <div className='px-4 py-7.5 relative w-full h-100 bg-green-500'>
-        <div className='relative w-full bg-blue-500 h-10'>
-          <button
-            onClick={() => router.push('/parties')}
-            aria-label='Zurück'
-            className='absolute left-0 top-0 h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center'
-          >
-            {BackIcon}
-          </button>
+      <div className='relative w-full h-100 overflow-hidden'>
+        {event.background_url ? (
+          <img src={event.background_url} alt='' className='absolute inset-0 h-full w-full object-cover' />
+        ) : (
+          <div className='absolute inset-0 bg-secondary' />
+        )}
+        <div className='absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-main to-transparent pointer-events-none' />
+
+        <div className='relative z-10 px-4 py-7.5'>
+          <div className='relative w-full h-10'>
+            <button
+              onClick={() => router.push('/parties')}
+              aria-label='Zurück'
+              className='absolute left-0 top-0 h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center'
+            >
+              {BackIcon}
+            </button>
+
+            {isHost && (
+              <button
+                onClick={handleCopy}
+                aria-label='Link kopieren'
+                className='absolute right-0 top-0 h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center'
+              >
+                {copied ? <span className='text-label-1 text-heading'>✓</span> : CopyIcon}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

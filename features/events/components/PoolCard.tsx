@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { getInitials } from '@/lib/utils'
 import { upsertPoolResponse } from '../services/pools.service'
 import type { Pool } from '../types/events.types'
 
@@ -15,22 +16,18 @@ export default function PoolCard({ pool, userId, onRefresh }: Props) {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(myResponse?.option_id ?? null)
   const [submitting, setSubmitting] = useState(false)
 
-  const hasVoted = myResponse != null
-  const totalVotes = pool.responses.length
-
   return (
-    <div className='rounded-2xl border border-border bg-background-secondary p-5 flex flex-col gap-4'>
+    <div className='flex flex-col gap-4'>
       <div>
-        <span className='block text-sm font-semibold text-headline'>{pool.question}</span>
+        <span className='block text-subheading-1 font-semibold text-heading'>{pool.question}</span>
         {pool.description && (
-          <span className='block mt-1 text-xs text-hint'>{pool.description}</span>
+          <span className='block mt-1 text-body-1 text-body'>{pool.description}</span>
         )}
       </div>
 
       <div className='flex flex-col gap-2'>
         {pool.options.map((opt) => {
-          const count = pool.responses.filter((r) => r.option_id === opt.id).length
-          const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0
+          const voters = pool.responses.filter((r) => r.option_id === opt.id)
           const isSelected = selectedOptionId === opt.id
 
           return (
@@ -47,17 +44,42 @@ export default function PoolCard({ pool, userId, onRefresh }: Props) {
                 })
               }}
               disabled={submitting}
-              className={`h-11 rounded-xl border px-4 text-sm text-left flex items-center justify-between ${
-                isSelected
-                  ? 'bg-background-button text-button border-transparent'
-                  : 'bg-background-input border-border-input text-input'
+              className={`h-12.5 rounded-full pl-3 pr-3 flex items-center justify-between gap-3 ${
+                isSelected ? 'bg-tertiary' : 'bg-secondary'
               }`}
             >
-              <span>{opt.label}</span>
-              {hasVoted && (
-                <span className={`shrink-0 ml-2 text-xs font-semibold ${isSelected ? 'text-button/70' : 'text-hint'}`}>
-                  {percentage}%
-                </span>
+              <div className='flex items-center gap-3 min-w-0'>
+                <div
+                  className={`h-6 w-6 shrink-0 rounded-full border-2 flex items-center justify-center ${
+                    isSelected ? 'border-heading' : 'border-label-small'
+                  }`}
+                >
+                  {isSelected && <div className='h-3 w-3 rounded-full bg-heading' />}
+                </div>
+                <span className='truncate text-label-1 text-heading'>{opt.label}</span>
+              </div>
+
+              {voters.length > 0 && (
+                <div className='flex items-center -space-x-2 shrink-0'>
+                  {voters.slice(0, 3).map((v) => (
+                    <div
+                      key={v.id}
+                      className={`h-6 w-6 rounded-full overflow-hidden border ${isSelected ? 'border-tertiary' : 'border-secondary'} flex items-center justify-center text-[9px] font-semibold text-heading`}
+                      style={{ backgroundColor: v.avatar_color ?? '#2A2A2A' }}
+                    >
+                      {v.avatar_url ? (
+                        <img src={v.avatar_url} alt='' className='h-full w-full object-cover' />
+                      ) : (
+                        getInitials(v.firstname, v.lastname)
+                      )}
+                    </div>
+                  ))}
+                  {voters.length > 3 && (
+                    <div className='h-6 w-6 rounded-full bg-quaternary ring-2 ring-main flex items-center justify-center text-[9px] font-semibold text-heading'>
+                      +{voters.length - 3}
+                    </div>
+                  )}
+                </div>
               )}
             </button>
           )

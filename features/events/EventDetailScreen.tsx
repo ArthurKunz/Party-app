@@ -64,6 +64,10 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
   const [origin, setOrigin] = useState('')
   const [descExpanded, setDescExpanded] = useState(false)
   const [pools, setPools] = useState<Pool[]>([])
+  const [openSections, setOpenSections] = useState({ location: true, polls: true, guests: true })
+
+  const toggleSection = (key: keyof typeof openSections) =>
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }))
 
   useEffect(() => {
     setOrigin(window.location.origin)
@@ -227,43 +231,67 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
           </div>
         </div>
 
-        <div className='w-full flex flex-col gap-4'>
-          <div className='flex items-center gap-0.5'>
-            <span className='text-heading-4 text-heading font-semibold'>Location</span>
-            {ChevronRightIcon}
-          </div>
-          <div className='w-full '>
-            <EventMap location={event.location} />
-            <div className='flex flex-col mt-2'>
-              <span className='truncate font-md text-label-1 text-label-large'>{address}</span>
-              <span className='truncate text-label-2 text-label-small'>{city && `in ${city}`}</span>
-            </div>
-          </div>
-        </div>
-
-        {pools.length > 0 && (
+        <div className='relative flex flex-col gap-5'>
           <div className='w-full flex flex-col gap-4'>
-            <div className='flex items-center gap-0.5'>
-              <span className='text-heading-4 text-heading font-semibold'>Umfragen</span>
-              {ChevronRightIcon}
-            </div>
-            <div>
-              {userId && (
-                <PoolsSection eventId={eventId} isHost={isHost} userId={userId} />
+            <button
+              type='button'
+              onClick={() => toggleSection('location')}
+              className='flex items-center gap-0.5 w-full'
+            >
+              <span className='text-heading-4 text-heading font-semibold'>Location</span>
+              <span className={`transition-transform duration-200 ${openSections.location ? 'rotate-90' : ''}`}>
+                {ChevronRightIcon}
+              </span>
+            </button>
+            {openSections.location && (
+              <div className='w-full mb-7.5'>
+                <EventMap location={event.location} />
+                <div className='flex flex-col mt-2'>
+                  <span className='truncate font-md text-label-1 text-label-large'>{address}</span>
+                  <span className='truncate text-label-2 text-label-small'>{city && `in ${city}`}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {pools.length > 0 && (
+            <div className='w-full flex flex-col gap-4'>
+              <button
+                type='button'
+                onClick={() => toggleSection('polls')}
+                className='flex items-center gap-0.5 w-full'
+              >
+                <span className='text-heading-4 text-heading font-semibold'>Umfragen</span>
+                <span className={`transition-transform duration-200 ${openSections.polls ? 'rotate-90' : ''}`}>
+                  {ChevronRightIcon}
+                </span>
+              </button>
+              {openSections.polls && (
+                <div className='mb-7.5'>
+                  {userId && (
+                    <PoolsSection eventId={eventId} isHost={isHost} userId={userId} />
+                  )}
+                </div>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {attendees.length > 0 && (
-          <div className='w-full flex flex-col gap-4'>
-            <div className='flex items-center gap-0.5'>
-              <span className='text-heading-4 text-heading font-semibold'>Gäste</span>
-              {ChevronRightIcon}
+          {attendees.length > 0 && (
+            <div className='w-full flex flex-col gap-4'>
+              <button
+                type='button'
+                onClick={() => toggleSection('guests')}
+                className='flex items-center gap-0.5 w-full'
+              >
+                <span className='text-heading-4 text-heading font-semibold'>Gäste</span>
+                <span className={`transition-transform duration-200 ${openSections.guests ? 'rotate-90' : ''}`}>
+                  {ChevronRightIcon}
+                </span>
+              </button>
+              {openSections.guests && <AttendeeList attendees={attendees} />}
             </div>
-            <AttendeeList attendees={attendees} />
-          </div>
-        )}
+          )}
+        </div>
 
       </div>
     </div>

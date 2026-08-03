@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, ChevronLeft, ChevronRight, Copy, MoreHorizontal, Trash2 } from 'lucide-react'
+import { Check, ChevronLeft, Copy, MoreHorizontal, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { alertError, getInitials, getOrigin } from '@/lib/utils'
 import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
@@ -17,14 +17,13 @@ import {
   getRsvpCountsByStatus,
 } from './services/events.service'
 import { getEventPools } from './services/pools.service'
+import Section from './components/Section'
 import PoolsSection from './components/PoolsSection'
 import AttendeeList from './components/AttendeeList'
 import EventMap from './components/EventMap'
 import type { EventDetail, Attendee, EventHost, RsvpStatus, Pool } from './types/events.types'
 
 const BackIcon = <ChevronLeft size={24} strokeWidth={3} className='text-white' />
-
-const ChevronRightIcon = <ChevronRight size={24} strokeWidth={3} className='text-heading' />
 
 const CopyIcon = <Copy size={15} strokeWidth={2} className='text-heading' />
 
@@ -44,44 +43,6 @@ const iconButtonClass = 'h-11.25 w-11.25 bg-secondary rounded-full flex justify-
 
 const menuPanelClass =
   'absolute right-0 top-13 z-20 w-56.25 origin-top-right rounded-3xl bg-quaternary/50 backdrop-blur-xs p-2 flex flex-col transition-all duration-150 ease-out'
-
-function Section({
-  title,
-  open,
-  onToggle,
-  children,
-}: {
-  title: string
-  open: boolean
-  onToggle: () => void
-  children: ReactNode
-}) {
-  return (
-    <div className='w-full flex flex-col'>
-      <button
-        type='button'
-        onClick={onToggle}
-        aria-expanded={open}
-        className='flex items-center gap-0.5 w-full'
-      >
-        <span className='text-heading-4 text-heading font-semibold'>{title}</span>
-        <span className={`transition-transform duration-200 ${open ? 'rotate-90' : ''}`}>
-          {ChevronRightIcon}
-        </span>
-      </button>
-      {/* 0fr → 1fr animates to the content's natural height without having to measure it. */}
-      <div
-        className={`grid transition-[grid-template-rows] duration-200 ease-out ${
-          open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-        }`}
-      >
-        <div className='overflow-hidden'>
-          <div className='pt-4'>{children}</div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export default function EventDetailScreen({ eventId }: { eventId: string }) {
   const router = useRouter()

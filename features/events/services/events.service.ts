@@ -81,7 +81,8 @@ export async function getAttendedEvents(userId: string): Promise<EventWithCount[
   if (error || !data) return []
 
   const rows = (data as unknown as AttendedRsvpRow[])
-    .filter((r) => r.events !== null)
+    // You are never a guest at your own party — it belongs on the 'Gastgeber' tab only.
+    .filter((r) => r.events !== null && r.events.host_id !== userId)
     .map((r) => ({ status: r.status as RsvpStatus, event: r.events! }))
     .sort((a, b) => new Date(a.event.event_date).getTime() - new Date(b.event.event_date).getTime())
 

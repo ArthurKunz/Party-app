@@ -22,10 +22,10 @@
     --color-label-small: rgba(204, 204, 204, 0.5);
     --color-body: rgba(111, 111, 111, 0.9);
 
-    /* RSVP STATUS */
-    --color-success: #2F9E44;
-    --color-maybe: #A6901F;
-    --color-warning: #8B2E2E;
+    /* RSVP STATUS (Apple dark-mode system colors) */
+    --color-success: #30D158;
+    --color-maybe: #FFD60A;
+    --color-warning: #FF453A;
 
     /* TEXT SIZES */
     --text-heading-1: 35px;

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { ChevronLeft, ChevronRight, Copy, MoreHorizontal, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { getInitials } from '@/lib/utils'
 import {
@@ -22,32 +23,15 @@ import AttendeeList from './components/AttendeeList'
 import EventMap from './components/EventMap'
 import type { EventDetail, Attendee, EventHost, RsvpStatus, Pool } from './types/events.types'
 
-const BackIcon = (
-  <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='4' strokeLinecap='round' strokeLinejoin='round' className='text-white'>
-    <polyline points='9 6 15 12 9 18' transform='rotate(180 12 12)' />
-  </svg>
-)
+const BackIcon = <ChevronLeft size={24} strokeWidth={3} className='text-white' />
 
-const ChevronRightIcon = (
-  <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='4' strokeLinecap='round' strokeLinejoin='round' className='text-heading'>
-    <polyline points='9 6 15 12 9 18' />
-  </svg>
-)
+const ChevronRightIcon = <ChevronRight size={24} strokeWidth={3} className='text-heading' />
 
-const CopyIcon = (
-  <svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-heading'>
-    <rect x='9' y='9' width='13' height='13' rx='2' />
-    <path d='M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' />
-  </svg>
-)
+const CopyIcon = <Copy size={15} strokeWidth={2} className='text-heading' />
 
-const MoreIcon = (
-  <svg width='20' height='20' viewBox='0 0 24 24' fill='currentColor' className='text-heading'>
-    <circle cx='5' cy='12' r='2.25' />
-    <circle cx='12' cy='12' r='2.25' />
-    <circle cx='19' cy='12' r='2.25' />
-  </svg>
-)
+const MoreIcon = <MoreHorizontal size={20} strokeWidth={2.5} className='text-heading' />
+
+const TrashIcon = <Trash2 size={20} strokeWidth={2.5} className='text-warning' />
 
 const RSVP_MENU: { status: RsvpStatus; label: string; icon: string }[] = [
   { status: 'going', label: 'zugesagt', icon: '✅' },
@@ -203,7 +187,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
             <button
               onClick={() => router.push('/parties')}
               aria-label='Zurück'
-              className='absolute left-0 top-0 h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center'
+              className='absolute left-0 top-0 h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center backdrop-blur-xs'
             >
               {BackIcon}
             </button>
@@ -223,7 +207,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
                 <button
                   onClick={() => setMenuOpen((v) => !v)}
                   aria-label='Mehr Optionen'
-                  className='h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center'
+                  className='h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center backdrop-blur-xs'
                 >
                   {MoreIcon}
                 </button>
@@ -231,7 +215,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
                 {menuOpen && (
                   <>
                     <div className='fixed inset-0 z-10' onClick={() => setMenuOpen(false)} />
-                    <div className='absolute right-0 top-13 z-20 w-56.25 rounded-3xl bg-quaternary/50 backdrop-blur-xl p-2 flex flex-col'>
+                    <div className='absolute right-0 top-13 z-20 w-56.25 rounded-3xl bg-quaternary/50 backdrop-blur-xs p-2 flex flex-col'>
                       {RSVP_MENU.map(({ status, label, icon }) => (
                         <button
                           key={status}
@@ -242,7 +226,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
                             rsvpStatus === status ? 'bg-tertiary' : ''
                           }`}
                         >
-                          <span className='text-md'>{icon}</span>
+                          <span className='w-5 h-5 flex items-center justify-center text-md'>{icon}</span>
                           <span className='text-label-1 text-label-large'>{label}</span>
                         </button>
                       ))}
@@ -250,10 +234,10 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
                       <button
                         type='button'
                         onClick={handleLeaveEvent}
-                        className='flex items-center gap-3 w-full px-4 py-3'
+                        className='flex items-center gap-3.25 w-full px-4 py-3'
                       >
-                        <span className='text-lg text-warning'>🗑️</span>
-                        <span className='text-label-1 font-semibold text-[#FF0000]'>Löschen</span>
+                        <span className='w-5 h-5 flex items-center justify-center'>{TrashIcon}</span>
+                        <span className='text-label-1 font-semibold text-warning'>Löschen</span>
                       </button>
                     </div>
                   </>

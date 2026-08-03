@@ -4,23 +4,43 @@ import { useState } from 'react'
 
 export default function EventMap({ location }: { location: string }) {
   const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY
-  const src = `https://www.google.com/maps/embed/v1/place?key=${key}&q=${encodeURIComponent(location)}`
-  // The embed is cross-origin, so onLoad is the only signal we get that Google answered.
+  const query = encodeURIComponent(location)
+  // A static PNG decodes before onLoad fires, unlike the old iframe embed whose
+  // onLoad only meant Google's JS bootstrap had arrived — the tiles came seconds later.
+  const src = `https://maps.googleapis.com/maps/api/staticmap?center=${query}&zoom=15&size=640x246&scale=2&markers=color:0xFF0090%7C${query}&key=${key}`
+  const href = `https://www.google.com/maps/search/?api=1&query=${query}`
+
   const [loaded, setLoaded] = useState(false)
+  const [failed, setFailed] = useState(false)
 
   return (
-    <div className='relative overflow-hidden rounded-2xl border border-border h-33 w-full'>
-      <iframe
-        src={src}
-        width='100%'
-        height='100%'
-        style={{ border: 0 }}
-        loading='lazy'
-        referrerPolicy='no-referrer-when-downgrade'
-        onLoad={() => setLoaded(true)}
-        className={`transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-      />
-      {!loaded && <div className='absolute inset-0 skeleton' />}
-    </div>
+    <a
+      href={href}
+      target='_blank'
+      rel='noopener noreferrer'
+      aria-label={`${location} in Google Maps öffnen`}
+      className='relative block overflow-hidden rounded-2xl border border-border h-33 w-full'
+    >
+      {failed ? (
+        // Keeps the block tappable if the Static Maps API is off or the key is missing,
+        // rather than leaving a skeleton shimmering forever.
+        <div className='absolute inset-0 bg-secondary flex items-center justify-center'>
+          <span className='text-label-2 text-label-small'>In Google Maps öffnen</span>
+        </div>
+      ) : (
+        <>
+          <img
+            src={src}
+            alt=''
+            onLoad={() => setLoaded(true)}
+            onError={() => setFailed(true)}
+            className={`h-full w-full object-cover transition-opacity duration-500 ${
+              loaded ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+          {!loaded && <div className='absolute inset-0 skeleton' />}
+        </>
+      )}
+    </a>
   )
 }

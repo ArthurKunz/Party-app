@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { eventCoverGradient } from '@/lib/utils'
+import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
 import {
   getEventByInviteCode,
   getEventAttendees,
@@ -48,6 +49,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   const [rsvpLoading, setRsvpLoading] = useState(false)
   const [descExpanded, setDescExpanded] = useState(false)
   const [pools, setPools] = useState<Pool[]>([])
+  const [myProfile, setMyProfile] = useState<Profile | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -69,6 +71,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
         getEventPools(eventData.id),
       ])
       const rsvp = uid ? await getMyRsvpStatus(eventData.id, uid) : null
+      if (uid) setMyProfile(await getMyProfile(uid))
 
       setEvent(eventData)
       setAttendees(attendeeData)
@@ -210,6 +213,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
           <PoolsSection
             pools={pools}
             userId={userId}
+            myProfile={myProfile}
             onRefresh={() => void getEventPools(event.id).then(setPools)}
           />
         )}

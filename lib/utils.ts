@@ -5,6 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// Browser-native alerts only: readable German line + the raw technical detail underneath.
+export function alertError(message: string, detail?: string) {
+  alert(detail ? `${message}\n\n${detail}` : message)
+}
+
 // Empty string during SSR; callers only build absolute links on the client.
 export function getOrigin(): string {
   return typeof window === 'undefined' ? '' : window.location.origin

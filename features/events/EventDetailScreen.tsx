@@ -4,7 +4,8 @@ import { useState, useEffect, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, ChevronLeft, ChevronRight, Copy, MoreHorizontal, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
-import { getInitials, getOrigin } from '@/lib/utils'
+import { alertError, getInitials, getOrigin } from '@/lib/utils'
+import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
 import {
   getEventById,
   getEventAttendees,
@@ -38,11 +39,6 @@ const RSVP_MENU: { status: RsvpStatus; label: string; icon: string }[] = [
   { status: 'maybe', label: 'vielleicht', icon: '🤔' },
   { status: 'not_going', label: 'abgesagt', icon: '❌' },
 ]
-
-// Browser-native alerts only: readable German line + the raw Supabase detail underneath.
-function alertError(message: string, detail?: string) {
-  alert(detail ? `${message}\n\n${detail}` : message)
-}
 
 const iconButtonClass = 'h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center backdrop-blur-xs'
 
@@ -100,6 +96,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
   const [rsvpLoading, setRsvpLoading] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [pools, setPools] = useState<Pool[]>([])
+  const [myProfile, setMyProfile] = useState<Profile | null>(null)
   const [heroLoaded, setHeroLoaded] = useState(false)
   const [openSections, setOpenSections] = useState({ location: true, polls: true, guests: true })
 
@@ -155,6 +152,11 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
         if (cancelled) return
         setPools(data)
         setPoolsLoading(false)
+      })
+
+      // Needed so my own avatar can be rendered optimistically when I vote in a poll.
+      void getMyProfile(uid).then((data) => {
+        if (!cancelled) setMyProfile(data)
       })
     })
 
@@ -440,7 +442,12 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
           ) : pools.length > 0 && userId ? (
             <Section title='Umfragen' open={openSections.polls} onToggle={() => toggleSection('polls')}>
               <div className='pb-7.5'>
-                <PoolsSection pools={pools} userId={userId} onRefresh={refreshPools} />
+                <PoolsSection
+                  pools={pools}
+                  userId={userId}
+                  myProfile={myProfile}
+                  onRefresh={refreshPools}
+                />
               </div>
             </Section>
           ) : null}

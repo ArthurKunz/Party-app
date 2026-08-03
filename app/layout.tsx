@@ -30,8 +30,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='de'>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
+    // Google Translate and similar tools rewrite attributes on these two elements
+    // before React hydrates, which React reports as a hydration mismatch.
+    <html lang='de' suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans`} suppressHydrationWarning>
         {children}
       </body>
     </html>

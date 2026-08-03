@@ -27,6 +27,13 @@
     --color-maybe: #FFD60A;
     --color-warning: #FF453A;
 
+    /* LIGHT SURFACE (the sign-up sheet over the invite page — the only light UI in the app) */
+    --color-sheet: #FFFFFF;
+    --color-sheet-heading: #0A0A0A;
+    --color-sheet-body: #8A8A8E;
+    --color-button-primary: #000000;
+    --color-button-secondary: #E9E9EB;
+
     /* SKELETON (loading placeholders) */
     --color-skeleton: rgba(118, 118, 128, 0.25);
     --color-skeleton-sheen: rgba(255, 255, 255, 0.08);

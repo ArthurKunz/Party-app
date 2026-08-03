@@ -33,6 +33,19 @@ const TrashIcon = <Trash2 size={20} strokeWidth={2.5} className='text-warning' /
 
 const CheckIcon = <Check size={18} strokeWidth={3} className='text-heading' />
 
+// lucide dropped brand marks, so the two provider logos are inline paths.
+const AppleIcon = (
+  <svg width='20' height='20' viewBox='0 0 384 512' fill='currentColor' aria-hidden='true'>
+    <path d='M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z' />
+  </svg>
+)
+
+const GoogleIcon = (
+  <svg width='20' height='20' viewBox='0 0 24 24' fill='currentColor' aria-hidden='true'>
+    <path d='M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.344-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z' />
+  </svg>
+)
+
 const RSVP_MENU: { status: RsvpStatus; label: string; icon: string }[] = [
   { status: 'going', label: 'zugesagt', icon: '✅' },
   { status: 'maybe', label: 'vielleicht', icon: '🤔' },
@@ -70,6 +83,24 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
 
   const toggleSection = (key: keyof typeof openSections) =>
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }))
+
+  // The gate only goes up once we know there is no session — otherwise it would
+  // flash over the skeletons on every load.
+  const showAuthGate = !eventLoading && !userId
+
+  // Clipping the page container is not enough: the document itself stays
+  // scrollable, and mobile Safari scrolls it right through a fixed overlay.
+  useEffect(() => {
+    if (!showAuthGate) return
+    const { body, documentElement: html } = document
+    const previous = { body: body.style.overflow, html: html.style.overflow }
+    body.style.overflow = 'hidden'
+    html.style.overflow = 'hidden'
+    return () => {
+      body.style.overflow = previous.body
+      html.style.overflow = previous.html
+    }
+  }, [showAuthGate])
 
   useEffect(() => {
     let cancelled = false
@@ -227,7 +258,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   const city = !event || locationCommaIndex === -1 ? '' : event.location.slice(locationCommaIndex + 1).trim()
 
   return (
-    <div className='relative w-full bg-main'>
+    <div className={`relative w-full bg-main ${showAuthGate ? 'h-dvh overflow-hidden' : ''}`}>
 
       <div className='relative w-full h-100 overflow-hidden'>
         {event?.background_url ? (
@@ -461,18 +492,64 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
           ) : null}
         </div>
 
-        {/* The ••• menu is not an obvious call to action for someone who just opened a link. */}
-        {!eventLoading && !userId && (
-          <button
-            type='button'
-            onClick={() => router.push('/login')}
-            className='h-12 w-full rounded-full bg-tertiary text-button font-semibold text-heading'
-          >
-            Anmelden & zusagen
-          </button>
-        )}
-
       </div>
+
+      {/* Anonymous visitors see the event through a blur, but cannot act on it without an account. */}
+      {showAuthGate && (
+        <>
+          <div className='fixed inset-0 z-30 touch-none overscroll-none bg-main/30 backdrop-blur-xl' />
+
+          <div className='fixed inset-x-0 bottom-0 z-40 flex flex-col gap-5 rounded-t-[2.5rem] bg-sheet px-7.5 pt-7.5 pb-10'>
+            {/* Placeholder — a logo goes in here later. */}
+            <div className='h-15 w-15 rounded-full bg-button-primary' />
+
+            <div className='flex flex-col gap-1.5'>
+              <span className='text-heading-3 font-semibold text-sheet-heading'>Sign up oder login</span>
+              <span className='text-subheading-1 text-sheet-body'>
+                Um an einer Party teilnehmen zu können brauchst du einen Account.
+              </span>
+            </div>
+
+            <div className='flex flex-col gap-1.5'>
+              <button
+                type='button'
+                onClick={() => router.push('/login')}
+                className='h-14 w-full rounded-2xl bg-button-primary text-button font-semibold text-sheet'
+              >
+                Erstelle ein Account
+              </button>
+
+              <button
+                type='button'
+                onClick={() => router.push('/login')}
+                className='h-14 w-full rounded-2xl bg-button-secondary text-button font-semibold text-sheet-heading'
+              >
+                Bei Account Anmelden
+              </button>
+
+              {/* Not wired up yet — Arthur is adding the OAuth providers later. */}
+              <div className='flex gap-1.5'>
+                <button
+                  type='button'
+                  disabled
+                  aria-label='Mit Apple fortfahren'
+                  className='h-14 flex-1 flex items-center justify-center rounded-2xl bg-button-secondary text-sheet-heading'
+                >
+                  {AppleIcon}
+                </button>
+                <button
+                  type='button'
+                  disabled
+                  aria-label='Mit Google fortfahren'
+                  className='h-14 flex-1 flex items-center justify-center rounded-2xl bg-button-secondary text-sheet-heading'
+                >
+                  {GoogleIcon}
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

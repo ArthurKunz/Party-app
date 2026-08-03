@@ -12,12 +12,13 @@ import {
   setRsvp,
   getRsvpCountsByStatus,
 } from './services/events.service'
+import { getEventPools } from './services/pools.service'
 import HostRow from './components/HostRow'
 import RsvpButtons from './components/RsvpButtons'
 import PoolsSection from './components/PoolsSection'
 import AttendeeList from './components/AttendeeList'
 import EventMap from './components/EventMap'
-import type { EventDetail, Attendee, EventHost, RsvpStatus } from './types/events.types'
+import type { EventDetail, Attendee, EventHost, RsvpStatus, Pool } from './types/events.types'
 
 const BackIcon = (
   <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
@@ -46,6 +47,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   const [notFound, setNotFound] = useState(false)
   const [rsvpLoading, setRsvpLoading] = useState(false)
   const [descExpanded, setDescExpanded] = useState(false)
+  const [pools, setPools] = useState<Pool[]>([])
 
   useEffect(() => {
     async function load() {
@@ -60,10 +62,11 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
       const uid = session?.user.id ?? null
       setUserId(uid)
 
-      const [attendeeData, hostData, countData] = await Promise.all([
+      const [attendeeData, hostData, countData, poolData] = await Promise.all([
         getEventAttendees(eventData.id),
         getEventHost(eventData.id),
         getRsvpCountsByStatus(eventData.id),
+        getEventPools(eventData.id),
       ])
       const rsvp = uid ? await getMyRsvpStatus(eventData.id, uid) : null
 
@@ -71,6 +74,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
       setAttendees(attendeeData)
       setHost(hostData)
       setCounts(countData)
+      setPools(poolData)
       setRsvpStatus(rsvp)
       setLoading(false)
     }
@@ -202,8 +206,12 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
           ) : null}
         </div>
 
-        {userId && (
-          <PoolsSection eventId={event.id} isHost={false} userId={userId} />
+        {userId && pools.length > 0 && (
+          <PoolsSection
+            pools={pools}
+            userId={userId}
+            onRefresh={() => void getEventPools(event.id).then(setPools)}
+          />
         )}
 
         <div className='flex flex-col gap-2'>

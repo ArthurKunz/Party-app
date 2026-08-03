@@ -88,6 +88,9 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   // flash over the skeletons on every load.
   const showAuthGate = !eventLoading && !userId
 
+  // Signing up from an invite has to come back to that invite, not to /home.
+  const loginHref = `/login?next=${encodeURIComponent(`/e/${inviteCode}`)}`
+
   // Clipping the page container is not enough: the document itself stays
   // scrollable, and mobile Safari scrolls it right through a fixed overlay.
   useEffect(() => {
@@ -197,7 +200,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   const handleRsvp = async (status: RsvpStatus) => {
     if (!event) return
     // Anonymous visitors have to sign up before they can answer.
-    if (!userId) { router.push('/login'); return }
+    if (!userId) { router.push(loginHref); return }
     setRsvpLoading(true)
     const { error } = await setRsvp(event.id, userId, status)
     if (error) {
@@ -513,7 +516,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
             <div className='flex flex-col gap-1.5'>
               <button
                 type='button'
-                onClick={() => router.push('/login')}
+                onClick={() => router.push(loginHref)}
                 className='h-14 w-full rounded-2xl bg-button-primary text-button font-semibold text-sheet'
               >
                 Erstelle ein Account
@@ -521,7 +524,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
 
               <button
                 type='button'
-                onClick={() => router.push('/login')}
+                onClick={() => router.push(loginHref)}
                 className='h-14 w-full rounded-2xl bg-button-secondary text-button font-semibold text-sheet-heading'
               >
                 Bei Account Anmelden

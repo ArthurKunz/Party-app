@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { sanitizeNextPath } from '@/lib/utils'
 
 export async function GET(request: Request) {
     const requestUrl = new URL(request.url)
@@ -42,5 +43,8 @@ export async function GET(request: Request) {
         if (error) alert(error.message)
     }
 
-    return NextResponse.redirect(`${requestUrl.origin}/home`)
+    // Set when the flow started from an invite link; falls back to /home.
+    const next = sanitizeNextPath(requestUrl.searchParams.get('next'))
+
+    return NextResponse.redirect(`${requestUrl.origin}${next ?? '/home'}`)
 }

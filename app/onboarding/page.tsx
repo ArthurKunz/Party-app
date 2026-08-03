@@ -1,5 +1,10 @@
+import { Suspense } from 'react'
 import OnboardingScreen from '@/features/onboarding/OnboardingScreen'
 
 export default function Onboarding() {
-    return <OnboardingScreen />;
+    return (
+        <Suspense>
+            <OnboardingScreen />
+        </Suspense>
+    );
 }

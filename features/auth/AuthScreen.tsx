@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { sanitizeNextPath } from '@/lib/utils'
 import SignInForm from './components/SignInForm'
 import SignUpForm from './components/SignUpForm'
 import VerifyOtpForm from './components/VerifyOtpForm'
@@ -11,15 +12,19 @@ export default function AuthPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const stepParam = searchParams.get('step')
+  // Set when the flow was entered from somewhere specific (an invite link), so
+  // every exit below returns there instead of dumping the user on /home.
+  const next = sanitizeNextPath(searchParams.get('next'))
+  const onboardingHref = next ? `/onboarding?next=${encodeURIComponent(next)}` : '/onboarding'
 
   const [step, setStep] = useState<'signup' | 'signin' | 'verify'>('signup')
   const [signupEmail, setSignupEmail] = useState('')
 
   useEffect(() => {
     if (stepParam === 'onboarding') {
-      router.push('/onboarding')
+      router.push(onboardingHref)
     }
-  }, [router, stepParam])
+  }, [router, stepParam, onboardingHref])
 
   const effectiveStep = stepParam === 'reset-password' ? ('reset-password' as const) : step
   const activeDot = effectiveStep === 'verify' ? 1 : 0
@@ -40,12 +45,12 @@ export default function AuthPage() {
           )}
 
           {effectiveStep === 'verify' && (
-            <VerifyOtpForm email={signupEmail} onSuccess={() => router.push('/onboarding')} />
+            <VerifyOtpForm email={signupEmail} onSuccess={() => router.push(onboardingHref)} />
           )}
 
           {effectiveStep === 'signin' && (
             <SignInForm
-              onSuccess={() => router.push('/home')}
+              onSuccess={() => router.push(next ?? '/home')}
               onGoToSignUp={() => setStep('signup')}
             />
           )}

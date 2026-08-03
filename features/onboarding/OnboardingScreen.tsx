@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
+import { sanitizeNextPath } from '@/lib/utils'
 import { getSession } from './services/onboarding.service'
 import PersonalDataForm from './components/PersonalDataForm'
 import BirthdateForm from './components/BirthdateForm'
@@ -14,6 +15,9 @@ const STEPS: Step[] = ['name', 'birthday', 'picture']
 
 export default function OnboardingScreen() {
   const router = useRouter()
+  // Carried over from the auth flow, so a user who started on an invite link
+  // lands back on that event once their profile exists.
+  const next = sanitizeNextPath(useSearchParams().get('next'))
   const [step, setStep] = useState<Step>('name')
   const [firstname, setFirstname] = useState('')
   const [lastname, setLastname] = useState('')
@@ -44,7 +48,7 @@ export default function OnboardingScreen() {
     })
 
     if (error) alert(error.message)
-    else router.push('/home')
+    else router.push(next ?? '/home')
   }
 
   const stepIndex = STEPS.indexOf(step)

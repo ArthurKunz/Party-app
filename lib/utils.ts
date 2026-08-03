@@ -15,6 +15,13 @@ export function getOrigin(): string {
   return typeof window === 'undefined' ? '' : window.location.origin
 }
 
+// Where to land after auth/onboarding. Only same-site paths are accepted, so a
+// crafted ?next=https://evil.example cannot turn the login flow into a redirector.
+export function sanitizeNextPath(next: string | null | undefined): string | null {
+  if (!next || !next.startsWith('/') || next.startsWith('//')) return null
+  return next
+}
+
 export function generateInviteCode(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID().replace(/-/g, '').slice(0, 8)

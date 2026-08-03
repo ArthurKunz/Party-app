@@ -82,15 +82,3 @@ export async function upsertPoolResponse(
       { onConflict: 'pool_id,user_id' }
     )
 }
-
-export async function deletePoolResponse(poolId: string, userId: string) {
-  return supabase
-    .from('pool_responses')
-    .delete()
-    .eq('pool_id', poolId)
-    .eq('user_id', userId)
-}
-
-export async function deletePool(poolId: string) {
-  return supabase.from('pools').delete().eq('id', poolId)
-}

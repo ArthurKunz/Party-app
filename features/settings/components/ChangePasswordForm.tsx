@@ -9,7 +9,7 @@ interface ChangePasswordFormProps {
   onSuccess?: () => void
 }
 
-export default function ChangePasswordPage({ onSuccess }: ChangePasswordFormProps) {
+export default function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const { passwordWarning, isPasswordValid } = usePasswordValidation(newPassword)

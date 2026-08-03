@@ -5,6 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// Empty string during SSR; callers only build absolute links on the client.
+export function getOrigin(): string {
+  return typeof window === 'undefined' ? '' : window.location.origin
+}
+
 export function generateInviteCode(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID().replace(/-/g, '').slice(0, 8)

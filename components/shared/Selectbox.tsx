@@ -214,7 +214,6 @@ export default function Selectbox<Value extends string = string>({
           ) : (
             options.map((opt, index) => {
               const isSelected = opt.value === value
-              const isHighlighted = index === highlightedIndex
               return (
                 <li
                   key={String(opt.value)}

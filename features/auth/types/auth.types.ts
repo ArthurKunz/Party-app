@@ -1,5 +1,3 @@
-export type AuthStep = 'signup' | 'signin' | 'verify' | 'onboarding' | 'reset-password'
-
 export interface SignInProps {
   onSuccess: () => void
   onGoToSignUp: () => void

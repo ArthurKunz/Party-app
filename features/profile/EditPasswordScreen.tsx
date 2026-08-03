@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import ChangePasswordPage from '@/features/settings/change-password'
+import ChangePasswordForm from '@/features/settings/components/ChangePasswordForm'
 
 const BackIcon = (
   <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
@@ -41,7 +41,7 @@ export default function EditPasswordScreen() {
           </button>
         </div>
 
-        <ChangePasswordPage onSuccess={() => router.push('/profile')} />
+        <ChangePasswordForm onSuccess={() => router.push('/profile')} />
       </div>
     </div>
   )

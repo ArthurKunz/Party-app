@@ -25,11 +25,6 @@ export default function ProfileScreen() {
     })
   }, [router])
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
-
   if (loading) return null
 
   const name = [profile?.firstname, profile?.lastname].filter(Boolean).join(' ') || 'Unbekannt'

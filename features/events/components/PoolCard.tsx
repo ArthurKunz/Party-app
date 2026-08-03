@@ -64,7 +64,7 @@ export default function PoolCard({ pool, userId, onRefresh }: Props) {
                   {voters.slice(0, 3).map((v) => (
                     <div
                       key={v.id}
-                      className={`h-6 w-6 rounded-full overflow-hidden flex items-center justify-center text-[9px] font-semibold text-heading`}
+                      className='h-6 w-6 rounded-full overflow-hidden flex items-center justify-center text-[9px] font-semibold text-heading'
                       style={{ backgroundColor: v.avatar_url ? 'transparent' : (v.avatar_color ?? '#2A2A2A') }}
                     >
                       {v.avatar_url ? (

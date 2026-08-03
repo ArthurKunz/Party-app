@@ -3,7 +3,7 @@
 import { useState, useEffect, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import { generateInviteCode } from '@/lib/utils'
+import { generateInviteCode, getOrigin } from '@/lib/utils'
 import DateTimePicker from './components/DateTimePicker'
 import StepProgress from './components/StepProgress'
 import CreatePoolForm from './components/CreatePoolForm'
@@ -35,7 +35,6 @@ const HEADLINES: Record<StepId, string> = {
 export default function CreateEventScreen() {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
-  const [origin, setOrigin] = useState('')
   const [step, setStep] = useState<StepId>('name')
   const [creating, setCreating] = useState(false)
   const [created, setCreated] = useState(false)
@@ -78,12 +77,8 @@ export default function CreateEventScreen() {
     })
   }, [router])
 
-  useEffect(() => {
-    setOrigin(window.location.origin)
-  }, [])
-
   const stepIndex = STEPS.indexOf(step)
-  const shareLink = inviteCode ? `${origin}/e/${inviteCode}` : ''
+  const shareLink = inviteCode ? `${getOrigin()}/e/${inviteCode}` : ''
 
   const setField = (field: keyof CreateEventFormValues, value: string) =>
     setValues((v) => ({ ...v, [field]: value }))

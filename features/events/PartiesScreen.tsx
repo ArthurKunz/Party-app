@@ -5,16 +5,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { getHostedEvents, getAttendedEvents } from './services/events.service'
+import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
 import EventCard from './components/EventCard'
 import { getInitials } from '@/lib/utils'
 import type { EventWithCount } from './types/events.types'
-
-type Profile = {
-  firstname: string | null
-  lastname: string | null
-  avatar_url: string | null
-  avatar_color: string | null
-}
 
 type Tab = 'hosting' | 'attending'
 
@@ -33,14 +27,14 @@ export default function PartiesScreen() {
         return
       }
       const userId = session.user.id
-      const [hostedEvents, attendedEvents, profileResult] = await Promise.all([
+      const [hostedEvents, attendedEvents, myProfile] = await Promise.all([
         getHostedEvents(userId),
         getAttendedEvents(userId),
-        supabase.from('profiles').select('firstname, lastname, avatar_url, avatar_color').eq('id', userId).maybeSingle(),
+        getMyProfile(userId),
       ])
       setHosted(hostedEvents)
       setAttended(attendedEvents)
-      if (profileResult.data) setProfile(profileResult.data as Profile)
+      setProfile(myProfile)
       setLoading(false)
     })
   }, [router])

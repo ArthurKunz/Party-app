@@ -4,20 +4,17 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, Copy, MoreHorizontal, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
-import { getInitials } from '@/lib/utils'
+import { getInitials, getOrigin } from '@/lib/utils'
 import {
   getEventById,
   getEventAttendees,
   getEventHost,
   getMyRsvpStatus,
   setRsvp,
-  deleteEvent,
   deleteRsvp,
   getRsvpCountsByStatus,
 } from './services/events.service'
 import { getEventPools } from './services/pools.service'
-import HostRow from './components/HostRow'
-import RsvpButtons from './components/RsvpButtons'
 import PoolsSection from './components/PoolsSection'
 import AttendeeList from './components/AttendeeList'
 import EventMap from './components/EventMap'
@@ -39,14 +36,6 @@ const RSVP_MENU: { status: RsvpStatus; label: string; icon: string }[] = [
   { status: 'not_going', label: 'abgesagt', icon: '❌' },
 ]
 
-function getCountdown(dateString: string): { value: number; unit: string } {
-  const diffMs = new Date(dateString).getTime() - Date.now()
-  if (diffMs <= 0) return { value: 0, unit: 'Tage' }
-  const hours = Math.floor(diffMs / 36e5)
-  if (hours < 24) return { value: hours, unit: 'Stunden' }
-  return { value: Math.floor(hours / 24), unit: 'Tage' }
-}
-
 export default function EventDetailScreen({ eventId }: { eventId: string }) {
   const router = useRouter()
   const [event, setEvent] = useState<EventDetail | null>(null)
@@ -58,11 +47,8 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
   const [counts, setCounts] = useState({ going: 0, maybe: 0, not_going: 0 })
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
-  const [deleting, setDeleting] = useState(false)
   const [rsvpLoading, setRsvpLoading] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [origin, setOrigin] = useState('')
-  const [descExpanded, setDescExpanded] = useState(false)
   const [pools, setPools] = useState<Pool[]>([])
   const [openSections, setOpenSections] = useState({ location: true, polls: true, guests: true })
 
@@ -70,7 +56,6 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }))
 
   useEffect(() => {
-    setOrigin(window.location.origin)
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) { router.push('/login'); return }
       const uid = session.user.id
@@ -95,22 +80,11 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
     })
   }, [eventId, router])
 
-  const shareLink = event ? `${origin}/e/${event.invite_code}` : ''
-
   const handleCopy = async () => {
-    if (!shareLink) return
-    await navigator.clipboard.writeText(shareLink)
+    if (!event) return
+    await navigator.clipboard.writeText(`${getOrigin()}/e/${event.invite_code}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-  }
-
-  const handleDelete = async () => {
-    if (!event) return
-    if (!confirm('Event wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return
-    setDeleting(true)
-    const { error } = await deleteEvent(event.id)
-    if (error) { alert(error.message); setDeleting(false); return }
-    router.push('/parties')
   }
 
   const handleLeaveEvent = async () => {
@@ -146,10 +120,6 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
 
   if (loading || !event) return null
 
-  const { value, unit } = getCountdown(event.event_date)
-  const formattedDate = new Date(event.event_date).toLocaleDateString('de-DE', {
-    weekday: 'long', day: '2-digit', month: '2-digit', year: '2-digit',
-  })
   const formattedTime = new Date(event.event_date).toLocaleTimeString('de-DE', {
     hour: '2-digit', minute: '2-digit',
   }) + ' Uhr'

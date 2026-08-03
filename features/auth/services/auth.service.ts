@@ -1,9 +1,6 @@
 import { supabase } from '@/lib/supabase/client'
+import { getOrigin } from '@/lib/utils'
 import { AUTH_CALLBACK_PATH } from '../constants/auth.constants'
-
-function getOrigin() {
-  return typeof window === 'undefined' ? '' : window.location.origin
-}
 
 export async function signInWithPassword(email: string, password: string) {
   return supabase.auth.signInWithPassword({ email, password })

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import SignInForm from './components/SignInForm'
 import SignUpForm from './components/SignUpForm'
 import VerifyOtpForm from './components/VerifyOtpForm'
-import ChangePasswordPage from '@/features/settings/change-password'
+import ChangePasswordForm from '@/features/settings/components/ChangePasswordForm'
 
 export default function AuthPage() {
   const router = useRouter()
@@ -51,7 +51,7 @@ export default function AuthPage() {
           )}
 
           {effectiveStep === 'reset-password' && (
-            <ChangePasswordPage onSuccess={() => router.push('/home')} />
+            <ChangePasswordForm onSuccess={() => router.push('/home')} />
           )}
         </div>
 

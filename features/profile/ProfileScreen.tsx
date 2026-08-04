@@ -3,9 +3,21 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { calculateAge, getInitials } from '@/lib/utils'
+import FloatingEmojis from '@/features/events/components/FloatingEmojis'
 import { getMyProfile, type Profile } from './services/profile.service'
+
+const ChevronIcon = <ChevronRight size={20} strokeWidth={2.5} className='text-subheading' />
+
+// Rows are 50px tall, grouped into rounded translucent cards like iOS settings.
+// Radius is half a row's 50px height, so a one-row card is a full pill and the
+// two-row card keeps the identical corners without becoming one.
+const cardClass = 'w-full rounded-[25px] bg-secondary backdrop-blur-xl overflow-hidden'
+const rowClass = 'flex h-12.5 w-full items-center gap-3 px-4'
+const rowLabelClass = 'text-button text-label-large'
+const rowValueClass = 'text-button text-subheading'
 
 export default function ProfileScreen() {
   const router = useRouter()
@@ -25,114 +37,101 @@ export default function ProfileScreen() {
     })
   }, [router])
 
-  if (loading) return null
-
   const name = [profile?.firstname, profile?.lastname].filter(Boolean).join(' ') || 'Unbekannt'
 
   return (
-    <div className='relative w-full min-h-dvh overflow-hidden bg-background-main'>
+    <div className='relative w-full min-h-dvh bg-main'>
+      <FloatingEmojis active={!loading} />
+
       <div className='relative z-10 flex flex-col items-center px-4 pt-10 pb-safe-nav'>
-        <div
-          className='flex h-24 w-24 items-center justify-center rounded-full overflow-hidden border border-border text-2xl font-semibold text-headline'
-          style={{ backgroundColor: profile?.avatar_url ? 'transparent' : (profile?.avatar_color ?? '#A336FF') }}
-        >
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt='Profilbild' className='w-full h-full object-cover' />
-          ) : (
-            getInitials(profile?.firstname ?? null, profile?.lastname ?? null)
-          )}
-        </div>
-        <span className='mt-4 block text-3xl font-bold text-headline'>{name}</span>
-        <span className='text-xs text-hint'>{email}</span>
+        {loading ? (
+          <>
+            <div className='h-31.25 w-31.25 rounded-full skeleton' />
+            <div className='mt-4 h-7 w-48 rounded-full skeleton' />
+            <div className='mt-2 h-4 w-56 rounded-full skeleton' />
+            <div className='mt-12.5 flex w-full flex-col gap-3'>
+              <div className='h-25 w-full rounded-[25px] skeleton' />
+              {[0, 1, 2].map((i) => (
+                <div key={i} className='h-12.5 w-full rounded-[25px] skeleton' />
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <div
+              className='flex h-31.25 w-31.25 items-center justify-center overflow-hidden rounded-full text-heading-3 font-semibold text-heading'
+              style={{ backgroundColor: profile?.avatar_url ? 'transparent' : (profile?.avatar_color ?? '#A336FF') }}
+            >
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt='Profilbild' className='h-full w-full object-cover' />
+              ) : (
+                getInitials(profile?.firstname ?? null, profile?.lastname ?? null)
+              )}
+            </div>
 
-        <div className='w-full mt-12.5 flex flex-col gap-2.5'>
-          <Link href='/profile/name' className='block w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
-            <div className='w-full h-full flex items-center justify-between'>
-              <div className='w-50 h-full flex gap-3 items-center'>
-                <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
-                  👤
+            <span className='mt-4 text-heading-3 font-bold text-heading'>{name}</span>
+            <span className='text-subheading-1 text-subheading'>{email}</span>
+
+            <div className='mt-12.5 flex w-full flex-col gap-3'>
+              {/* Name and Alter share one card: they show their current value instead
+                  of a chevron, so the divider is inset to line up with the labels. */}
+              <div className={cardClass}>
+                <Link href='/profile/name' className={rowClass}>
+                  <span className='text-xl leading-none'>👤</span>
+                  <span className={rowLabelClass}>Name</span>
+                  <span className={`ml-auto truncate ${rowValueClass}`}>{name}</span>
+                </Link>
+
+                <div className='flex px-4'>
+                  {/* Invisible spacer matching the emoji column, so the hairline always
+                      starts under the label however the emoji is sized. */}
+                  <div className='w-6 shrink-0' />
+                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10' />
                 </div>
-                <div className='flex flex-col'>
-                  <span className='text-headline text-md text-semibold'>Name</span>
-                  <span className='text-xs text-hint'>{name}</span>
-                </div>
+
+                <Link href='/profile/age' className={rowClass}>
+                  <span className='text-xl leading-none'>🎂</span>
+                  <span className={rowLabelClass}>Alter</span>
+                  <span className={`ml-auto ${rowValueClass}`}>
+                    {profile?.birthday ? calculateAge(profile.birthday) : '—'}
+                  </span>
+                </Link>
               </div>
-              <div className='h-7.5 w-7.5 rounded-full flex items-center justify-center'>
-                <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-hint'>
-                  <path d='m9 18 6-6-6-6' />
-                </svg>
+
+              <div className={cardClass}>
+                <Link href='/profile/picture' className={rowClass}>
+                  <span className='text-xl leading-none'>📸</span>
+                  <span className={rowLabelClass}>Profilbild</span>
+                  <div
+                    className='ml-auto h-7.5 w-7.5 shrink-0 overflow-hidden rounded-full'
+                    style={{ backgroundColor: profile?.avatar_url ? 'transparent' : (profile?.avatar_color ?? '#A336FF') }}
+                  >
+                    {profile?.avatar_url && (
+                      <img src={profile.avatar_url} alt='' className='h-full w-full object-cover' />
+                    )}
+                  </div>
+                  {ChevronIcon}
+                </Link>
+              </div>
+
+              <div className={cardClass}>
+                <Link href='/profile/password' className={rowClass}>
+                  <span className='text-xl leading-none'>🤫</span>
+                  <span className={rowLabelClass}>Passwort</span>
+                  <span className='ml-auto flex items-center'>{ChevronIcon}</span>
+                </Link>
+              </div>
+
+              <div className={cardClass}>
+                <Link href='/profile/legal' className={rowClass}>
+                  <span className='text-xl leading-none'>👨🏻‍⚖️</span>
+                  <span className={rowLabelClass}>Rechtliches</span>
+                  <span className='ml-auto flex items-center'>{ChevronIcon}</span>
+                </Link>
               </div>
             </div>
-          </Link>
-
-          <Link href='/profile/age' className='block w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
-            <div className='w-full h-full flex items-center justify-between'>
-              <div className='w-50 h-full flex gap-3 items-center'>
-                <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
-                  🎂
-                </div>
-                <div className='flex flex-col'>
-                  <span className='text-headline text-md text-semibold'>Alter</span>
-                  <span className='text-xs text-hint'>{profile?.birthday ? `${calculateAge(profile.birthday)} Jahre` : '—'}</span>
-                </div>
-              </div>
-              <div className='h-7.5 w-7.5 rounded-full flex items-center justify-center'>
-                <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-hint'>
-                  <path d='m9 18 6-6-6-6' />
-                </svg>
-              </div>
-            </div>
-          </Link>
-
-          <Link href='/profile/picture' className='block w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
-            <div className='w-full h-full flex items-center justify-between'>
-              <div className='w-50 h-full flex gap-3 items-center'>
-                <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
-                  📸
-                </div>
-                <span className='text-headline text-md text-semibold'>Profilbild</span>
-              </div>
-              <div className='h-7.5 w-7.5 rounded-full flex items-center justify-center'>
-                <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-hint'>
-                  <path d='m9 18 6-6-6-6' />
-                </svg>
-              </div>
-            </div>
-          </Link>
-
-          <Link href='/profile/password' className='block w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
-            <div className='w-full h-full flex items-center justify-between'>
-              <div className='w-50 h-full flex gap-3 items-center'>
-                <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
-                  🤫
-                </div>
-                <span className='text-headline text-md text-semibold'>Passwort</span>
-              </div>
-              <div className='h-7.5 w-7.5 rounded-full flex items-center justify-center'>
-                <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-hint'>
-                  <path d='m9 18 6-6-6-6' />
-                </svg>
-              </div>
-            </div>
-          </Link>
-
-          <Link href='/profile/legal' className='block w-full h-17.5 bg-background-secondary rounded-2xl border border-border px-3 py-3'>
-            <div className='w-full h-full flex items-center justify-between'>
-              <div className='w-50 h-full flex gap-3 items-center'>
-                <div className='h-full aspect-square rounded-full flex justify-center items-center text-3xl'>
-                  👨🏻‍⚖️
-                </div>
-                <span className='text-headline text-md text-semibold'>Rechtliches</span>
-              </div>
-              <div className='h-7.5 w-7.5 rounded-full flex items-center justify-center'>
-                <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='text-hint'>
-                  <path d='m9 18 6-6-6-6' />
-                </svg>
-              </div>
-            </div>
-          </Link>
-
-        </div>
+          </>
+        )}
       </div>
     </div>
   )

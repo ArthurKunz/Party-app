@@ -55,7 +55,7 @@ const RSVP_MENU: { status: RsvpStatus; label: string; icon: string }[] = [
   { status: 'not_going', label: 'abgesagt', icon: '❌' },
 ]
 
-const iconButtonClass = 'h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center backdrop-blur-xs'
+const iconButtonClass = 'h-11.25 w-11.25 bg-main/50 rounded-full flex justify-center items-center backdrop-blur-xs'
 
 const menuPanelClass =
   'absolute right-0 top-13 z-20 w-56.25 origin-top-right rounded-3xl bg-quaternary/50 backdrop-blur-xs p-2 flex flex-col transition-all duration-150 ease-out'

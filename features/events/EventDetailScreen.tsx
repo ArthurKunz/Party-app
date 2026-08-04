@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, ChevronLeft, Copy, MoreHorizontal, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
@@ -42,8 +42,16 @@ const RSVP_MENU: { status: RsvpStatus; label: string; icon: string }[] = [
 
 const iconButtonClass = 'h-11.25 w-11.25 bg-main/50 rounded-full flex justify-center items-center backdrop-blur-xs'
 
-const menuPanelClass =
-  'absolute right-0 top-13 z-20 w-56.25 origin-top-right rounded-3xl bg-quaternary/50 backdrop-blur-xs p-2 flex flex-col transition-all duration-150 ease-out'
+// The ••• button and the menu are ONE element: closed it is the 45px circle, open
+// it grows into the panel from the same top-right corner.
+const MENU_CLOSED_SIZE = 45
+
+// The radius is CONSTANT at half the closed size, so the circle is a real circle and
+// the open panel keeps the same corners — animating rounded-full (9999px) to a small
+// radius looks like a pop, because the corner only stops being a semicircle in the
+// last frames, once the value drops under half the height.
+const menuContainerClass =
+  'absolute right-0 top-0 z-20 overflow-hidden rounded-[22.5px] bg-main/50 backdrop-blur-xs transition-[width,height] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]'
 
 export default function EventDetailScreen({ eventId }: { eventId: string }) {
   const router = useRouter()
@@ -57,6 +65,8 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
   const [copied, setCopied] = useState(false)
   const [rsvpLoading, setRsvpLoading] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [menuHeight, setMenuHeight] = useState(MENU_CLOSED_SIZE)
+  const menuContentRef = useRef<HTMLDivElement>(null)
   const [pools, setPools] = useState<Pool[]>([])
   const [myProfile, setMyProfile] = useState<Profile | null>(null)
   const [heroLoaded, setHeroLoaded] = useState(false)
@@ -127,6 +137,14 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
 
   const refreshPools = () => {
     void getEventPools(eventId).then(setPools)
+  }
+
+  // Measured on open (the rows are static, so this is read lazily rather than watched)
+  // because an explicit px height animates evenly — a min-height would hold the box at
+  // 45px for the first part of the growth and only then start moving.
+  const openMenu = () => {
+    setMenuHeight(menuContentRef.current?.scrollHeight ?? MENU_CLOSED_SIZE)
+    setMenuOpen(true)
   }
 
   const handleCopy = async () => {
@@ -243,65 +261,81 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
             {/* Role is unknown until the event loads, so hold the spot with a skeleton circle. */}
             {eventLoading && <div className='absolute right-0 top-0 h-11.25 w-11.25 rounded-full skeleton' />}
 
+            {/* The panel expands over this spot, so the copy button steps aside. */}
             {!eventLoading && isHost && (
               <button
                 onClick={handleCopy}
                 aria-label='Link kopieren'
-                className={`absolute right-13.75 top-0 ${iconButtonClass}`}
+                aria-hidden={menuOpen}
+                tabIndex={menuOpen ? -1 : 0}
+                className={`absolute right-13.75 top-0 ${iconButtonClass} transition-opacity duration-150 ${
+                  menuOpen ? 'pointer-events-none opacity-0' : 'opacity-100 delay-150'
+                }`}
               >
                 {copied ? <span className='text-label-1 text-heading'>✓</span> : CopyIcon}
               </button>
             )}
 
             {!eventLoading && (
-              <div className='absolute right-0 top-0'>
-                <button
-                  onClick={() => setMenuOpen((v) => !v)}
-                  aria-label='Mehr Optionen'
-                  aria-expanded={menuOpen}
-                  className={iconButtonClass}
-                >
-                  {MoreIcon}
-                </button>
-
+              <>
                 {menuOpen && <div className='fixed inset-0 z-10' onClick={() => setMenuOpen(false)} />}
 
                 <div
-                  aria-hidden={!menuOpen}
-                  className={`${menuPanelClass} ${
-                    menuOpen ? 'opacity-100 scale-100' : 'pointer-events-none opacity-0 scale-95'
-                  }`}
+                  style={{ height: menuOpen ? menuHeight : MENU_CLOSED_SIZE }}
+                  className={`${menuContainerClass} ${menuOpen ? 'w-56.25' : 'w-11.25'}`}
                 >
-                  {!isHost && (
-                    <>
-                      {RSVP_MENU.map(({ status, label, icon }) => (
-                        <button
-                          key={status}
-                          type='button'
-                          onClick={() => handleRsvp(status)}
-                          disabled={rsvpLoading}
-                          className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left ${
-                            rsvpStatus === status ? 'bg-tertiary' : ''
-                          }`}
-                        >
-                          <span className='w-5 h-5 flex items-center justify-center text-md'>{icon}</span>
-                          <span className='text-label-1 text-label-large'>{label}</span>
-                          {rsvpStatus === status && <span className='ml-auto flex items-center'>{CheckIcon}</span>}
-                        </button>
-                      ))}
-                      <div className='h-0.25 w-full bg-[#3D3D3D] my-2' />
-                    </>
-                  )}
                   <button
-                    type='button'
-                    onClick={isHost ? handleDeleteEvent : handleLeaveEvent}
-                    className='flex items-center gap-3.25 w-full px-4 py-3'
+                    onClick={openMenu}
+                    aria-label='Mehr Optionen'
+                    aria-expanded={menuOpen}
+                    aria-hidden={menuOpen}
+                    tabIndex={menuOpen ? -1 : 0}
+                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 ${
+                      menuOpen ? 'pointer-events-none opacity-0' : 'opacity-100 delay-150'
+                    }`}
                   >
-                    <span className='w-5 h-5 flex items-center justify-center'>{TrashIcon}</span>
-                    <span className='text-label-1 font-semibold text-warning'>Löschen</span>
+                    {MoreIcon}
                   </button>
+
+                  {/* Fixed width, so the labels never reflow while the box is still narrow. */}
+                  <div
+                    ref={menuContentRef}
+                    aria-hidden={!menuOpen}
+                    className={`w-56.25 p-2 flex flex-col transition-opacity duration-150 ${
+                      menuOpen ? 'opacity-100 delay-150' : 'pointer-events-none opacity-0'
+                    }`}
+                  >
+                    {!isHost && (
+                      <>
+                        {RSVP_MENU.map(({ status, label, icon }) => (
+                          <button
+                            key={status}
+                            type='button'
+                            onClick={() => handleRsvp(status)}
+                            disabled={rsvpLoading}
+                            className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left ${
+                              rsvpStatus === status ? 'bg-tertiary' : ''
+                            }`}
+                          >
+                            <span className='w-5 h-5 flex items-center justify-center text-md'>{icon}</span>
+                            <span className='text-label-1 text-label-large'>{label}</span>
+                            {rsvpStatus === status && <span className='ml-auto flex items-center'>{CheckIcon}</span>}
+                          </button>
+                        ))}
+                        <div className='h-0.25 w-full bg-[#3D3D3D] my-2' />
+                      </>
+                    )}
+                    <button
+                      type='button'
+                      onClick={isHost ? handleDeleteEvent : handleLeaveEvent}
+                      className='flex items-center gap-3.25 w-full px-4 py-3'
+                    >
+                      <span className='w-5 h-5 flex items-center justify-center'>{TrashIcon}</span>
+                      <span className='text-label-1 font-semibold text-warning'>Löschen</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
         </div>

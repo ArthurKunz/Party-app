@@ -18,6 +18,7 @@ import {
 } from './services/events.service'
 import { getEventPools } from './services/pools.service'
 import Section from './components/Section'
+import CapacityWarning, { isNearlyFull } from './components/CapacityWarning'
 import EventDescription from './components/EventDescription'
 import PoolsSection from './components/PoolsSection'
 import AttendeeList from './components/AttendeeList'
@@ -264,7 +265,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
 
   const statsLoading = eventLoading || countsLoading
 
-  const stats: { label: string; value: string }[] = event
+  const stats: { label: string; value: string; warn?: boolean }[] = event
     ? [
         {
           label: 'Datum',
@@ -278,7 +279,14 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
             hour: '2-digit', minute: '2-digit',
           }) + ' Uhr',
         },
-        ...(event.max_guests != null ? [{ label: 'Max. Gäste', value: String(event.max_guests) }] : []),
+        // Occupancy, not just the cap: "10/50" reads as zugesagt out of max.
+        ...(event.max_guests != null
+          ? [{
+              label: 'Max. Gäste',
+              value: `${counts.going}/${event.max_guests}`,
+              warn: isNearlyFull(counts.going, event.max_guests),
+            }]
+          : []),
         { label: 'zugesagt', value: String(counts.going) },
         { label: 'vielleicht', value: String(counts.maybe) },
         { label: 'abgesagt', value: String(counts.not_going) },
@@ -468,12 +476,16 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                 {stats.map((stat) => (
                   <div key={stat.label} className='flex flex-col gap-1'>
                     <span className='text-label-2 font-medium text-label-small'>{stat.label}</span>
-                    <span className='text-label-1 font-semibold text-label-large'>{stat.value}</span>
+                    <span className={`text-label-1 font-semibold ${stat.warn ? 'text-warning' : 'text-label-large'}`}>
+                      {stat.value}
+                    </span>
                   </div>
                 ))}
               </div>
             )}
           </div>
+
+          {!statsLoading && <CapacityWarning going={counts.going} maxGuests={event?.max_guests ?? null} />}
         </div>
 
         <div className='relative flex flex-col gap-5'>

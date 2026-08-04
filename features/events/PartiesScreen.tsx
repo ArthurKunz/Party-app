@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase/client'
 import { getHostedEvents, getAttendedEvents } from './services/events.service'
 import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
 import EventCard from './components/EventCard'
+import FloatingEmojis from './components/FloatingEmojis'
 import { getInitials } from '@/lib/utils'
 import type { EventWithCount } from './types/events.types'
 
@@ -18,7 +19,7 @@ const PlusIcon = <Plus size={24} strokeWidth={3} className='text-white' />
 // Same 45px circle as the detail page header; the fill stays bg-secondary because
 // there is no hero image behind these to make bg-main/50 readable.
 const iconButtonClass =
-  'h-11.25 w-11.25 bg-secondary rounded-full flex justify-center items-center transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+  'h-11.25 w-11.25 backdrop-blur-xl bg-secondary rounded-full flex justify-center items-center transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
 
 // One card placeholder, shaped exactly like the real card it replaces.
 function CardSkeleton({ featured = false }: { featured?: boolean }) {
@@ -77,7 +78,11 @@ export default function PartiesScreen() {
 
   return (
     <div className='relative w-full min-h-dvh bg-main'>
-      <div className='relative z-10 flex flex-col items-center gap-10 px-4 pt-7.5 pb-safe-nav'>
+      <FloatingEmojis active={!loading} />
+
+      {/* min-h-dvh gives the list block below something to grow into, so an empty
+          state can centre itself in the space left under the tabs. */}
+      <div className='relative z-10 flex min-h-dvh flex-col items-center gap-10 px-4 pt-7.5 pb-safe-nav'>
         <div className='w-full flex flex-col gap-6'>
           <div className='flex w-full items-center justify-between'>
             <Link href='/create-event' aria-label='Event erstellen' className={iconButtonClass}>
@@ -103,7 +108,7 @@ export default function PartiesScreen() {
 
           {/* The highlight is one element that slides, instead of a background
               jumping between the two buttons. */}
-          <div role='tablist' className='relative flex w-full h-12.5 rounded-full bg-secondary p-1'>
+          <div role='tablist' className='relative flex w-full h-12.5 rounded-full bg-secondary p-1 backdrop-blur-xl'>
             <div
               aria-hidden='true'
               className={`absolute top-1 bottom-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-white/25 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
@@ -126,7 +131,7 @@ export default function PartiesScreen() {
 
         {/* Keyed so the block replays its enter animation both when the real cards
             replace the skeletons and on every tab switch. */}
-        <div key={loading ? 'loading' : tab} className='w-full max-w-md flex flex-col gap-4 animate-fade-in-up'>
+        <div key={loading ? 'loading' : tab} className='w-full max-w-md flex flex-1 flex-col gap-4 animate-fade-in-up'>
           {loading ? (
             <>
               <CardSkeleton featured />
@@ -138,38 +143,45 @@ export default function PartiesScreen() {
             </>
           ) : currentList.length === 0 ? (
             tab === 'hosting' ? (
-              <div className='mt-6 flex flex-col items-center gap-8'>
-                <div className='relative h-36 w-64'>
-                  <div className='absolute left-0 top-0 h-28 w-28 rounded-2xl bg-tertiary' />
-                  <div className='absolute left-14 top-8 h-24 w-48 rounded-2xl bg-secondary' />
-                  <div className='absolute left-0 top-32 flex flex-col gap-1.5'>
-                    <div className='h-2 w-14 rounded-full bg-white/80' />
-                    <div className='h-2 w-10 rounded-full bg-white/30' />
+              <div className='flex flex-1 flex-col items-center justify-center gap-8'>
+                {/* The card mockup, scaled to 0.75 of its original size — every value
+                    below is the old one times 0.75, so the proportions are unchanged. */}
+                <div className='relative h-27 w-48'>
+                  <div className='absolute left-0 top-0 h-21 w-21 rounded-xl backdrop-blur-xl bg-tertiary' />
+                  <div className='absolute left-10.5 top-6 h-18 w-36 rounded-xl backdrop-blur-xl bg-secondary' />
+                  <div className='absolute left-0 top-24 flex flex-col gap-1'>
+                    <div className='h-1.5 w-10.5 rounded-full bg-white/80 backdrop-blur-xl' />
+                    <div className='h-1.5 w-7.5 rounded-full bg-white/30 backdrop-blur-xl' />
                   </div>
-                  <div className='absolute left-16 top-[8.5rem] flex flex-col gap-1.5'>
-                    <div className='h-2 w-24 rounded-full bg-white/80' />
-                    <div className='h-2 w-14 rounded-full bg-white/30' />
+                  <div className='absolute left-12 top-25.5 flex flex-col gap-1'>
+                    <div className='h-1.5 w-18 rounded-full bg-white/80 backdrop-blur-xl' />
+                    <div className='h-1.5 w-10.5 rounded-full bg-white/30 backdrop-blur-xl' />
                   </div>
                 </div>
 
-                <div className='flex w-full flex-col items-center gap-2 px-4 text-center'>
-                  <span className='font-bold text-heading-4 text-heading'>
-                    Starte jetzt mit &ldquo;{profile?.firstname || 'dir'}&rdquo;
+                <div className='flex w-80 flex-col items-center gap-2 px-4 text-center'>
+                  <span className='font-semibold text-heading-4 text-heading'>
+                    Du hast keine Parties?
                   </span>
-                  <span className='text-subheading-1 text-subheading'>
-                    Erstelle eine Party, lade Freunde ein und schaffe eine unvergessliche Zeit
+                  <span className='text-label-2 text-subheading'>
+                    Erstelle eine Party, lade Freunde ein und schaffe ein unvergessliche Zeit
                   </span>
                 </div>
 
-                {/* Hand-drawn illustration, deliberately not a lucide icon: it has to
-                    curve down onto the + in the bottom nav. */}
-                <svg width='130' height='130' viewBox='0 0 200 200' fill='none' stroke='currentColor' strokeWidth='4' strokeLinecap='round' strokeLinejoin='round' className='text-arrow'>
-                  <path d='M62,12 C32,28 30,62 52,82 C80,105 125,98 138,125 C148,145 100,155 100,165 L100,193' />
-                  <path d='M100,193 L89,180 M100,193 L111,180' />
-                </svg>
+                {/* bg-sheet/text-sheet-heading are the app's white-surface pair, so the
+                    button needs no new tokens. */}
+                <Link
+                  href='/create-event'
+                  className='flex h-12.5 items-center gap-2 rounded-full bg-sheet px-6 text-button font-semibold text-sheet-heading transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+                >
+                  <Plus size={20} strokeWidth={3} />
+                  Party erstellen
+                </Link>
               </div>
             ) : (
-              <span className='mt-8 block text-center text-body-1 text-body'>{emptyMessage}</span>
+              <div className='flex flex-1 items-center justify-center'>
+                <span className='text-center text-body-1 text-body'>{emptyMessage}</span>
+              </div>
             )
           ) : (
             <>

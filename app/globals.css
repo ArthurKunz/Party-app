@@ -75,6 +75,12 @@
     100% { transform: translateX(100%); }
 }
 
+/* Background emoji circles: start fully below the viewport, exit fully above it. */
+@keyframes float-up {
+    from { transform: translate3d(0, 115dvh, 0); }
+    to   { transform: translate3d(0, -25dvh, 0); }
+}
+
 @keyframes fade-in-up {
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: none; }
@@ -105,6 +111,22 @@
     }
     @media (prefers-reduced-motion: reduce) {
         .skeleton::after { animation: none; }
+    }
+
+    /* Duration and delay come from the element's inline style, so each circle can
+       drift at its own pace. Runs ONCE and holds its end position: the spawner
+       removes the element shortly after, and a loop would drop it back to the
+       bottom of the screen in the meantime. */
+    .animate-float-up {
+        animation-name: float-up;
+        animation-timing-function: linear;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+        will-change: transform;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        /* Nothing to show without the movement — they would pile up at the top edge. */
+        .animate-float-up { display: none; }
     }
 
     /* Enter animation for content that swaps in place (e.g. the parties tab list). */

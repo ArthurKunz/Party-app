@@ -120,4 +120,14 @@
     .pb-safe-nav {
         padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
     }
+
+    /* Invite page RSVP bar: sits above the iPhone home indicator */
+    .pb-safe-rsvp {
+        padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Content bottom padding: clears the RSVP bar (50px buttons + its own 2rem) */
+    .pb-safe-rsvp-content {
+        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    }
 }

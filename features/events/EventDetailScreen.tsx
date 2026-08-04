@@ -197,8 +197,8 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
         },
         ...(event.max_guests != null ? [{ label: 'Max. Gäste', value: String(event.max_guests) }] : []),
         { label: 'zugesagt', value: String(counts.going) },
-        { label: 'abgesagt', value: String(counts.not_going) },
         { label: 'vielleicht', value: String(counts.maybe) },
+        { label: 'abgesagt', value: String(counts.not_going) },
       ]
     : []
 

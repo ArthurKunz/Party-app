@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, ChevronLeft, Copy, MoreHorizontal, Trash2 } from 'lucide-react'
+import { Check, ChevronLeft, Copy, MoreHorizontal, Trash2, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { alertError, getInitials, getOrigin } from '@/lib/utils'
 import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
@@ -32,6 +32,8 @@ const MoreIcon = <MoreHorizontal size={20} strokeWidth={2.5} className='text-hea
 const TrashIcon = <Trash2 size={20} strokeWidth={2.5} className='text-warning' />
 
 const CheckIcon = <Check size={18} strokeWidth={3} className='text-heading' />
+
+const CrossIcon = <X size={22} strokeWidth={3.5} className='text-warning' />
 
 // lucide dropped brand marks, so the two provider logos are inline paths.
 const AppleIcon = (
@@ -90,6 +92,14 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
 
   // Signing up from an invite has to come back to that invite, not to /home.
   const loginHref = `/login?next=${encodeURIComponent(`/e/${inviteCode}`)}`
+
+  // A signed-in guest who has not answered yet must answer first: the header
+  // controls are hidden and the three RSVP buttons take over the bottom.
+  const showRsvpGate = !eventLoading && !!userId && !isHost && rsvpStatus === null
+
+  // While the event is loading we do not yet know whether this is the host, a
+  // guest or someone without an account, so the header stays completely empty.
+  const showHeaderControls = !eventLoading && !showAuthGate && !showRsvpGate
 
   // Clipping the page container is not enough: the document itself stays
   // scrollable, and mobile Safari scrolls it right through a fixed overlay.
@@ -251,8 +261,8 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
         },
         ...(event.max_guests != null ? [{ label: 'Max. Gäste', value: String(event.max_guests) }] : []),
         { label: 'zugesagt', value: String(counts.going) },
-        { label: 'abgesagt', value: String(counts.not_going) },
         { label: 'vielleicht', value: String(counts.maybe) },
+        { label: 'abgesagt', value: String(counts.not_going) },
       ]
     : []
 
@@ -285,19 +295,21 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
 
         <div className='relative z-10 px-4 py-7.5'>
           <div className='relative w-full h-10'>
-            <button
-              onClick={() => router.push('/parties')}
-              aria-label='Zurück'
-              className={`absolute left-0 top-0 ${iconButtonClass}`}
-            >
-              {BackIcon}
-            </button>
-
-            {/* Role is unknown until the event loads, so hold the spot with a skeleton circle. */}
-            {eventLoading && <div className='absolute right-0 top-0 h-11.25 w-11.25 rounded-full skeleton' />}
+            {/* Nothing at all until we know who is looking: no back button, no
+                skeleton placeholder. The controls only appear once the role is
+                known AND neither gate is up. */}
+            {showHeaderControls && (
+              <button
+                onClick={() => router.push('/parties')}
+                aria-label='Zurück'
+                className={`absolute left-0 top-0 ${iconButtonClass}`}
+              >
+                {BackIcon}
+              </button>
+            )}
 
             {/* The host owns this link, so they get the copy button — to the left of the ••• . */}
-            {!eventLoading && isHost && (
+            {showHeaderControls && isHost && (
               <button
                 onClick={handleCopy}
                 aria-label='Link kopieren'
@@ -307,7 +319,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
               </button>
             )}
 
-            {!eventLoading && (
+            {showHeaderControls && (
               <div className='absolute right-0 top-0'>
                 <button
                   onClick={() => setMenuOpen((v) => !v)}
@@ -366,7 +378,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
       </div>
 
       {/* ── CONTENT ── */}
-      <div className='relative px-4 pb-7.5 bg-main flex flex-col gap-12.5'>
+      <div className={`relative px-4 bg-main flex flex-col gap-12.5 ${showRsvpGate ? 'pb-safe-rsvp-content' : 'pb-7.5'}`}>
 
         <div className='w-full flex flex-col gap-5'>
           {eventLoading ? (
@@ -496,6 +508,40 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
         </div>
 
       </div>
+
+      {showRsvpGate && (
+        <div className='fixed inset-x-0 bottom-0 z-20 flex items-center justify-center gap-3 px-4 pb-safe-rsvp'>
+          <button
+            type='button'
+            onClick={() => handleRsvp('not_going')}
+            disabled={rsvpLoading}
+            aria-label='Absagen'
+            className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-warning/60 bg-warning/15 backdrop-blur-md disabled:opacity-50'
+          >
+            {CrossIcon}
+          </button>
+
+          <button
+            type='button'
+            onClick={() => handleRsvp('going')}
+            disabled={rsvpLoading}
+            className='h-12.5 flex items-center justify-center gap-2 rounded-full border border-success/60 bg-success/15 px-6 backdrop-blur-md text-subheading-1 font-semibold text-success disabled:opacity-50'
+          >
+            <span>✅</span>
+            zusagen
+          </button>
+
+          <button
+            type='button'
+            onClick={() => handleRsvp('maybe')}
+            disabled={rsvpLoading}
+            aria-label='Vielleicht'
+            className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-maybe/60 bg-maybe/15 backdrop-blur-md text-subheading-1 disabled:opacity-50'
+          >
+            🤔
+          </button>
+        </div>
+      )}
 
       {/* Anonymous visitors see the event through a blur, but cannot act on it without an account. */}
       {showAuthGate && (

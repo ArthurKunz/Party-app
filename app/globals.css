@@ -21,6 +21,7 @@
     --color-label-large: rgba(255, 255, 255, 0.9);
     --color-label-small: rgba(204, 204, 204, 0.5);
     --color-body: rgba(111, 111, 111, 0.9);
+    --color-link: #0A84FF;
 
     /* RSVP STATUS (Apple dark-mode system colors) */
     --color-success: #30D158;

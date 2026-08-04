@@ -18,6 +18,7 @@ import {
 } from './services/events.service'
 import { getEventPools } from './services/pools.service'
 import Section from './components/Section'
+import EventDescription from './components/EventDescription'
 import PoolsSection from './components/PoolsSection'
 import AttendeeList from './components/AttendeeList'
 import EventMap from './components/EventMap'
@@ -341,7 +342,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
                   </span>
                 </div>
               </div>
-              <span className='text-body text-body-1'>{event?.description}</span>
+              {event?.description && <EventDescription text={event.description} />}
             </div>
           )}
 

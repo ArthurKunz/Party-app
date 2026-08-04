@@ -75,6 +75,11 @@
     100% { transform: translateX(100%); }
 }
 
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+}
+
 @layer utilities {
     .border-border { border-width: 0.75px; }
     .border-border-input { border-width: 0.75px; }
@@ -100,6 +105,14 @@
     }
     @media (prefers-reduced-motion: reduce) {
         .skeleton::after { animation: none; }
+    }
+
+    /* Enter animation for content that swaps in place (e.g. the parties tab list). */
+    .animate-fade-in-up {
+        animation: fade-in-up 0.3s cubic-bezier(0.32, 0.72, 0, 1) both;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .animate-fade-in-up { animation: none; }
     }
 
     .scrollbar-none {

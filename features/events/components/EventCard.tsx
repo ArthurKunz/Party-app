@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import type { EventWithCount } from '../types/events.types'
 
 export default function EventCard({
@@ -12,21 +13,29 @@ export default function EventCard({
   featured?: boolean
 }) {
   const hostName = [event.host_firstname, event.host_lastname].filter(Boolean).join(' ')
+  // Same pattern as the detail page hero: shimmer until the image is decoded, then cross-fade.
+  const [imgLoaded, setImgLoaded] = useState(false)
 
   return (
-    <div className='flex flex-col gap-2 transition-transform active:scale-[0.98] pb-1.5 '>
+    <div className='flex flex-col gap-2 pb-1.5 transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.97]'>
       <div
         className={`relative overflow-hidden rounded-lg bg-secondary ${
           featured ? 'aspect-[2/1]' : 'aspect-square'
         }`}
       >
         {event.background_url && (
-          <img
-            src={event.background_url}
-            alt=''
-            aria-hidden='true'
-            className='absolute inset-0 h-full w-full object-cover'
-          />
+          <>
+            <img
+              src={event.background_url}
+              alt=''
+              aria-hidden='true'
+              onLoad={() => setImgLoaded(true)}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
+                imgLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+            {!imgLoaded && <div className='absolute inset-0 skeleton' />}
+          </>
         )}
       </div>
 

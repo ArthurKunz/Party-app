@@ -15,7 +15,8 @@ const ChevronIcon = <ChevronRight size={20} strokeWidth={2.5} className='text-su
 // Radius is half a row's 50px height, so a one-row card is a full pill and the
 // two-row card keeps the identical corners without becoming one.
 const cardClass = 'w-full rounded-[25px] bg-secondary backdrop-blur-xl overflow-hidden'
-const rowClass = 'flex h-12.5 w-full items-center gap-3 px-4'
+const rowClass =
+  'flex h-12.5 w-full items-center gap-3 px-4 transition-colors duration-150 active:bg-white/10'
 const rowLabelClass = 'text-button text-label-large'
 const rowValueClass = 'text-button text-subheading'
 
@@ -57,8 +58,10 @@ export default function ProfileScreen() {
           </>
         ) : (
           <>
+            {/* Only the header animates in: the cards below carry backdrop-blur, and an
+                ancestor animating opacity would kill their blur for its duration. */}
             <div
-              className='flex h-31.25 w-31.25 items-center justify-center overflow-hidden rounded-full text-heading-3 text-heading'
+              className='flex h-31.25 w-31.25 items-center justify-center overflow-hidden rounded-full text-heading-3 text-heading animate-fade-in-up'
               style={{ backgroundColor: profile?.avatar_url ? 'transparent' : (profile?.avatar_color ?? '#A336FF') }}
             >
               {profile?.avatar_url ? (
@@ -68,8 +71,8 @@ export default function ProfileScreen() {
               )}
             </div>
 
-            <span className='mt-4 text-heading-3 font-bold text-heading'>{name}</span>
-            <span className='text-subheading-1 text-subheading'>{email}</span>
+            <span className='mt-4 text-heading-3 font-bold text-heading animate-fade-in-up'>{name}</span>
+            <span className='text-subheading-1 text-subheading animate-fade-in-up'>{email}</span>
 
             <div className='mt-12.5 flex w-full flex-col gap-3'>
               {/* Name, Alter and Profilbild in one card. Name and Alter are edited in
@@ -133,7 +136,7 @@ export default function ProfileScreen() {
                 {/* Abmelden and Account löschen live together on their own page, the
                     same way Profilbild does. */}
                 <Link href='/profile/account' className={rowClass}>
-                  <span className='text-xl leading-none'>👋</span>
+                  <span className='text-xl leading-none'>⚙️</span>
                   <span className={rowLabelClass}>Account verwalten</span>
                   <span className='ml-auto flex items-center'>{ChevronIcon}</span>
                 </Link>

@@ -1,4 +1,4 @@
-import { TriangleAlert } from 'lucide-react'
+import WarningBanner from '@/components/shared/WarningBanner'
 
 // Fires for the last 10% of the places: 5 left of 50, 2 left of 20, and so on.
 const WARN_RATIO = 0.1
@@ -19,11 +19,5 @@ export default function CapacityWarning({ going, maxGuests }: { going: number; m
         ? 'Nur noch 1 Platz frei.'
         : `Nur noch ${remaining} Plätze frei.`
 
-  return (
-    // border-border is the app's 0.75px hairline width (globals.css).
-    <div className='flex w-full items-center justify-center gap-2 rounded-xl border-border border-warning/60 bg-warning/15 py-3'>
-      <TriangleAlert size={18} strokeWidth={2} className='text-warning' />
-      <span className='text-subheading-1 text-warning'>{message}</span>
-    </div>
-  )
+  return <WarningBanner message={message} />
 }

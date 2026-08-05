@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 // iOS-style wheel: three scroll-snapping columns under one selection band. Sizes are
 // fixed because the maths below (padding, scrollTop → index) depends on them.
@@ -115,6 +115,13 @@ export default function BirthdayPicker({
   const maxDay = daysInMonth(month, year)
   const days = Array.from({ length: maxDay }, (_, i) => i + 1)
 
+  // Flipped on the frame after mount, so the sheet has a state to animate FROM.
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
+
   // A month that just got shorter cannot keep the 31st.
   useEffect(() => {
     if (day > maxDay) onChange({ day: maxDay, month, year })
@@ -122,35 +129,51 @@ export default function BirthdayPicker({
 
   return (
     <>
-      <div className='fixed inset-0 z-40 bg-main/50 backdrop-blur-xs touch-none' onClick={onClose} />
+      <div
+        onClick={onClose}
+        className={`fixed inset-0 z-40 bg-main/50 backdrop-blur-xs touch-none transition-opacity duration-300 ${
+          shown ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
 
-      <div className='fixed inset-x-0 bottom-0 z-50 rounded-t-[2.5rem] bg-sheet px-4 pb-safe-rsvp pt-6 backdrop-blur-2xl'>
-        <div className='relative flex w-full'>
-          {/* Selection band sits behind the three columns, dead centre. */}
-          <div
-            aria-hidden='true'
-            className='pointer-events-none absolute inset-x-0 rounded-xl bg-button-secondary/80'
-            style={{ height: ITEM_HEIGHT, top: EDGE_PADDING }}
-          />
+      {/* Grown by height rather than slid in with a transform: a transform on this
+          element would put its backdrop-blur in its own compositing group, and the
+          sheet would sit there flat and grey until the animation finished. */}
+      <div
+        className={`fixed inset-x-0 bottom-0 z-50 grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+          shown ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+        }`}
+      >
+        <div className='overflow-hidden'>
+          <div className='rounded-t-[2.5rem] bg-sheet px-4 pb-safe-rsvp pt-6 backdrop-blur-2xl'>
+            <div className='relative flex w-full'>
+              {/* Selection band sits behind the three columns, dead centre. */}
+              <div
+                aria-hidden='true'
+                className='pointer-events-none absolute inset-x-0 rounded-xl bg-button-secondary/80'
+                style={{ height: ITEM_HEIGHT, top: EDGE_PADDING }}
+              />
 
-          <Column
-            values={days}
-            index={day - 1}
-            onChange={(i) => onChange({ day: i + 1, month, year })}
-            format={(value) => `${value}.`}
-          />
-          <Column
-            values={MONTHS.map((_, i) => i)}
-            index={month}
-            onChange={(i) => onChange({ day, month: i, year })}
-            format={(value) => MONTHS[value]}
-          />
-          <Column
-            values={YEARS}
-            index={YEARS.indexOf(year)}
-            onChange={(i) => onChange({ day, month, year: YEARS[i] })}
-            format={(value) => String(value)}
-          />
+              <Column
+                values={days}
+                index={day - 1}
+                onChange={(i) => onChange({ day: i + 1, month, year })}
+                format={(value) => `${value}.`}
+              />
+              <Column
+                values={MONTHS.map((_, i) => i)}
+                index={month}
+                onChange={(i) => onChange({ day, month: i, year })}
+                format={(value) => MONTHS[value]}
+              />
+              <Column
+                values={YEARS}
+                index={YEARS.indexOf(year)}
+                onChange={(i) => onChange({ day, month, year: YEARS[i] })}
+                format={(value) => String(value)}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </>

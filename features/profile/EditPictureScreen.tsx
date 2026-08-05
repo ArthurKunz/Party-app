@@ -134,20 +134,20 @@ export default function EditPictureScreen() {
       {/* Photo first: the circle is the file input, the pencil badge is decoration
             on top of it, and it previews whatever is currently chosen. */}
         <label className='flex cursor-pointer justify-center'>
-          <div className='relative'>
+          <div className='group relative'>
             <div
-              className='flex h-43.75 w-43.75 items-center justify-center overflow-hidden rounded-full bg-secondary backdrop-blur-xl text-heading-1 text-white/90'
+              className='flex h-43.75 w-43.75 items-center justify-center overflow-hidden rounded-full bg-secondary backdrop-blur-xl text-heading-1 text-white/90 transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
               style={color ? { backgroundColor: color } : undefined}
             >
               {shownPhoto ? (
-                <img src={shownPhoto} alt='' className='h-full w-full object-cover' />
+                <img src={shownPhoto} alt='' className='h-full w-full object-cover animate-fade-in-up' />
               ) : color ? (
                 initials
               ) : (
                 <User size={72} strokeWidth={1.5} className='text-subheading' />
               )}
             </div>
-            <span className='absolute bottom-1 right-1 flex h-11.25 w-11.25 items-center justify-center rounded-full bg-sheet'>
+            <span className='absolute bottom-1 right-1 flex h-11.25 w-11.25 items-center justify-center rounded-full bg-sheet transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] group-active:scale-95'>
               <Pencil size={18} strokeWidth={2.5} className='text-sheet-heading' />
             </span>
           </div>
@@ -174,7 +174,7 @@ export default function EditPictureScreen() {
                   color === value ? 'bg-link' : 'border border-white/30'
                 }`}
               >
-                {color === value && <Check size={14} strokeWidth={3} className='text-white' />}
+                {color === value && <Check size={14} strokeWidth={3} className='text-white animate-fade-in-up' />}
               </span>
             </button>
           ))}

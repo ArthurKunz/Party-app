@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import Spinner from '@/components/shared/Spinner'
+import WarningBanner from '@/components/shared/WarningBanner'
 import { alertError } from '@/lib/utils'
 import { usePasswordValidation } from '@/features/auth/hooks/usePasswordValidation'
 import SettingsPage, {
@@ -36,7 +37,15 @@ export default function EditPasswordScreen() {
     if (password.trim()) confirmRef.current?.focus()
   }
 
-  const canSave = password.length > 0 && confirm.length > 0
+  // Both warnings are live rather than waiting for the save: a mismatch beats a
+  // weak-password hint, since it is the one that blocks the button.
+  const mismatch = confirm.length > 0 && password !== confirm
+  const warning = mismatch
+    ? 'Passwörter stimmen nicht überein'
+    : password.length > 0 && passwordWarning
+      ? passwordWarning
+      : null
+  const canSave = password.length > 0 && confirm.length > 0 && !mismatch
 
   const handleSave = async () => {
     if (!isPasswordValid) {
@@ -94,10 +103,8 @@ export default function EditPasswordScreen() {
         </div>
       </div>
 
-      {/* Only once something has been typed, so the page is not born shouting. */}
-      {password.length > 0 && passwordWarning && (
-        <span className='px-4 text-label-2 text-warning' role='alert'>{passwordWarning}</span>
-      )}
+      {/* Same warning surface as the event pages' "nearly full" notice. */}
+      {warning && <WarningBanner message={warning} />}
 
       <button type='button' onClick={handleSave} disabled={!canSave || saving} className={saveButtonClass}>
         {saving ? <Spinner /> : 'speichern'}

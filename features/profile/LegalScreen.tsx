@@ -1,9 +1,13 @@
 'use client'
 
 import { useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
-import SettingsPage, { cardClass, rowClass, rowLabelClass, rowValueClass } from './components/SettingsPage'
+import SettingsPage, { cardClass, rowClass, rowLabelClass, RowDivider } from './components/SettingsPage'
+
+const ChevronIcon = <ChevronRight size={20} strokeWidth={2.5} className='text-subheading' />
 
 export default function LegalScreen() {
   const router = useRouter()
@@ -17,17 +21,17 @@ export default function LegalScreen() {
   return (
     <SettingsPage title='Rechtliches'>
       <div className={cardClass}>
-        <div className={rowClass}>
+        <Link href='/profile/legal/impressum' className={rowClass}>
           <span className={rowLabelClass}>Impressum</span>
-          <span className={`ml-auto ${rowValueClass}`}>folgt</span>
-        </div>
-      </div>
+          <span className='ml-auto flex items-center'>{ChevronIcon}</span>
+        </Link>
 
-      <div className={cardClass}>
-        <div className={rowClass}>
-          <span className={rowLabelClass}>Datenschutzerklärung</span>
-          <span className={`ml-auto ${rowValueClass}`}>folgt</span>
-        </div>
+        <RowDivider />
+
+        <Link href='/profile/legal/datenschutz' className={rowClass}>
+          <span className={rowLabelClass}>Datenschutz</span>
+          <span className='ml-auto flex items-center'>{ChevronIcon}</span>
+        </Link>
       </div>
     </SettingsPage>
   )

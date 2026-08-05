@@ -4,6 +4,9 @@ export type CreateEventPayload = {
   description: string | null
   invite_code: string
   event_date: string
+  // When the party ends. Null when the host leaves it open; the next day when the
+  // end time is earlier than the start, because the party runs past midnight.
+  ends_at: string | null
   location: string
   max_guests: number | null
 }
@@ -16,6 +19,8 @@ export type CreateEventFormValues = {
   year: string
   hour: string
   minute: string
+  end_hour: string
+  end_minute: string
   location: string
   city: string
   max_guests: string

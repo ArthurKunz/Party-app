@@ -1,13 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-
-// iOS-style wheel: three scroll-snapping columns under one selection band. Sizes are
-// fixed because the maths below (padding, scrollTop → index) depends on them.
-const ITEM_HEIGHT = 36
-const VISIBLE_ITEMS = 7
-const LIST_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS
-const EDGE_PADDING = (LIST_HEIGHT - ITEM_HEIGHT) / 2
+import { useEffect } from 'react'
+import WheelSheet from '@/components/shared/WheelSheet'
 
 const MONTHS = [
   'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
@@ -19,85 +13,6 @@ const CURRENT_YEAR = new Date().getFullYear()
 const YEARS = Array.from({ length: 31 }, (_, i) => CURRENT_YEAR - 40 + i)
 
 const daysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate()
-
-// Fades the rows out towards the top and bottom edges, like the native wheel.
-const EDGE_FADE = 'linear-gradient(to bottom, transparent 0%, #000 28%, #000 72%, transparent 100%)'
-
-function Column({
-  values,
-  index,
-  onChange,
-  format,
-}: {
-  values: number[]
-  index: number
-  onChange: (index: number) => void
-  format: (value: number) => string
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const frame = useRef(0)
-  // True from the first scroll event until 150ms after the last one. Without it the
-  // effect below would yank the list back mid-flick, because every index change it
-  // causes looks exactly like one coming from outside.
-  const userScrolling = useRef(false)
-  const settleTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-
-  // Jump to the selected row when it changes from the outside (opening the sheet, or
-  // a day being clamped because the month got shorter).
-  useEffect(() => {
-    const el = ref.current
-    if (!el || userScrolling.current) return
-    const target = index * ITEM_HEIGHT
-    if (Math.abs(el.scrollTop - target) > 1) el.scrollTop = target
-  }, [index])
-
-  useEffect(() => () => {
-    clearTimeout(settleTimer.current)
-    cancelAnimationFrame(frame.current)
-  }, [])
-
-  const handleScroll = () => {
-    userScrolling.current = true
-    clearTimeout(settleTimer.current)
-    settleTimer.current = setTimeout(() => { userScrolling.current = false }, 150)
-
-    // Reading scrollTop is the whole job, so it is throttled to one read per frame.
-    cancelAnimationFrame(frame.current)
-    frame.current = requestAnimationFrame(() => {
-      const el = ref.current
-      if (!el) return
-      const next = Math.round(el.scrollTop / ITEM_HEIGHT)
-      if (next !== index && next >= 0 && next < values.length) onChange(next)
-    })
-  }
-
-  return (
-    <div
-      ref={ref}
-      onScroll={handleScroll}
-      className='flex-1 snap-y snap-mandatory overflow-y-scroll scrollbar-none [-webkit-overflow-scrolling:touch]'
-      style={{
-        height: LIST_HEIGHT,
-        paddingTop: EDGE_PADDING,
-        paddingBottom: EDGE_PADDING,
-        maskImage: EDGE_FADE,
-        WebkitMaskImage: EDGE_FADE,
-      }}
-    >
-      {values.map((value, i) => (
-        <div
-          key={value}
-          style={{ height: ITEM_HEIGHT }}
-          className={`flex snap-center items-center justify-center text-heading-4 transition-colors duration-150 ${
-            i === index ? 'text-sheet-heading' : 'text-sheet-body'
-          }`}
-        >
-          {format(value)}
-        </div>
-      ))}
-    </div>
-  )
-}
 
 export default function BirthdayPicker({
   day,
@@ -113,14 +28,6 @@ export default function BirthdayPicker({
   onClose: () => void
 }) {
   const maxDay = daysInMonth(month, year)
-  const days = Array.from({ length: maxDay }, (_, i) => i + 1)
-
-  // Flipped on the frame after mount, so the sheet has a state to animate FROM.
-  const [shown, setShown] = useState(false)
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setShown(true))
-    return () => cancelAnimationFrame(id)
-  }, [])
 
   // A month that just got shorter cannot keep the 31st.
   useEffect(() => {
@@ -128,54 +35,25 @@ export default function BirthdayPicker({
   }, [day, maxDay, month, year, onChange])
 
   return (
-    <>
-      <div
-        onClick={onClose}
-        className={`fixed inset-0 z-40 bg-main/50 backdrop-blur-xs touch-none transition-opacity duration-300 ${
-          shown ? 'opacity-100' : 'opacity-0'
-        }`}
-      />
-
-      {/* Grown by height rather than slid in with a transform: a transform on this
-          element would put its backdrop-blur in its own compositing group, and the
-          sheet would sit there flat and grey until the animation finished. */}
-      <div
-        className={`fixed inset-x-0 bottom-0 z-50 grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-          shown ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-        }`}
-      >
-        <div className='overflow-hidden'>
-          <div className='rounded-t-[2.5rem] bg-sheet px-4 pb-safe-rsvp pt-6 backdrop-blur-2xl'>
-            <div className='relative flex w-full'>
-              {/* Selection band sits behind the three columns, dead centre. */}
-              <div
-                aria-hidden='true'
-                className='pointer-events-none absolute inset-x-0 rounded-xl bg-button-secondary/80'
-                style={{ height: ITEM_HEIGHT, top: EDGE_PADDING }}
-              />
-
-              <Column
-                values={days}
-                index={day - 1}
-                onChange={(i) => onChange({ day: i + 1, month, year })}
-                format={(value) => `${value}.`}
-              />
-              <Column
-                values={MONTHS.map((_, i) => i)}
-                index={month}
-                onChange={(i) => onChange({ day, month: i, year })}
-                format={(value) => MONTHS[value]}
-              />
-              <Column
-                values={YEARS}
-                index={YEARS.indexOf(year)}
-                onChange={(i) => onChange({ day, month, year: YEARS[i] })}
-                format={(value) => String(value)}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+    <WheelSheet
+      onClose={onClose}
+      columns={[
+        {
+          labels: Array.from({ length: maxDay }, (_, i) => `${i + 1}.`),
+          index: day - 1,
+          onChange: (i) => onChange({ day: i + 1, month, year }),
+        },
+        {
+          labels: MONTHS,
+          index: month,
+          onChange: (i) => onChange({ day, month: i, year }),
+        },
+        {
+          labels: YEARS.map(String),
+          index: YEARS.indexOf(year),
+          onChange: (i) => onChange({ day, month, year: YEARS[i] }),
+        },
+      ]}
+    />
   )
 }

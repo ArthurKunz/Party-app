@@ -6,23 +6,17 @@ import FloatingEmojis from '@/features/events/components/FloatingEmojis'
 
 // Shared by every profile sub-page: emoji background, back button, centred title,
 // and content pinned to the bottom of the screen with the save button under it.
-export const cardClass = 'w-full rounded-[25px] bg-secondary backdrop-blur-xl overflow-hidden'
-// Rows highlight on press rather than scaling: a row scaling inside a card would
-// tear away from the divider above it.
-export const rowClass =
-  'flex h-12.5 w-full items-center gap-3 px-4 transition-colors duration-150 active:bg-white/10'
-export const rowLabelClass = 'text-button text-label-large shrink-0'
-export const rowValueClass = 'text-button text-subheading'
-export const rowInputClass = `ml-auto min-w-0 flex-1 bg-transparent text-right outline-none ${rowValueClass}`
-export const saveButtonClass =
-  'flex h-12.5 w-full items-center justify-center rounded-[25px] bg-sheet backdrop-blur-xl text-button font-semibold text-sheet-heading transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95 disabled:bg-sheet/40 disabled:text-sheet-heading/60'
-
-// Hairline between two rows, inset to start under the label rather than the edge.
-export const RowDivider = () => (
-  <div className='flex px-4'>
-    <div className='h-[0.75px] w-full bg-white/10 backdrop-blur-xl' />
-  </div>
-)
+// The card and row styles live in components/shared/Card so the create-event flow
+// uses the very same ones; they are re-exported here for the existing importers.
+export {
+  cardClass,
+  rowClass,
+  rowLabelClass,
+  rowValueClass,
+  rowInputClass,
+  RowDivider,
+} from '@/components/shared/Card'
+export { primaryButtonClass as saveButtonClass } from '@/components/shared/Card'
 
 export default function SettingsPage({
   title,

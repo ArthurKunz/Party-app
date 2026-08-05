@@ -1,6 +1,7 @@
 'use client'
 
-import { calculateAge, getInitials } from '@/lib/utils'
+import { calculateAge } from '@/lib/utils'
+import Avatar from '@/components/shared/Avatar'
 import type { Attendee } from '../types/events.types'
 
 const STATUS_CONFIG = {
@@ -21,16 +22,7 @@ export default function AttendeeList({ attendees }: { attendees: Attendee[] }) {
         return (
           <div key={a.user_id}>
             <div className='flex items-center gap-3 py-3'>
-              <div
-                className='flex h-12.5 w-12.5 shrink-0 items-center justify-center overflow-hidden rounded-full text-subheading-1 font-semibold text-heading'
-                style={{ backgroundColor: a.avatar_url ? 'transparent' : (a.avatar_color ?? '#2A2A2A') }}
-              >
-                {a.avatar_url ? (
-                  <img src={a.avatar_url} alt='' className='h-full w-full object-cover' />
-                ) : (
-                  getInitials(a.firstname, a.lastname)
-                )}
-              </div>
+              <Avatar size={50} url={a.avatar_url} color={a.avatar_color} firstname={a.firstname} lastname={a.lastname} />
               <div className='min-w-0 flex-1'>
                 <span className='block truncate text-label-1 font-md text-heading'>
                   {[a.firstname, a.lastname].filter(Boolean).join(' ') || 'Unbekannt'}

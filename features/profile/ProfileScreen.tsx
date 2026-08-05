@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
-import { calculateAge, getInitials } from '@/lib/utils'
+import { calculateAge } from '@/lib/utils'
+import Avatar from '@/components/shared/Avatar'
 import FloatingEmojis from '@/features/events/components/FloatingEmojis'
 import { getMyProfile, type Profile } from './services/profile.service'
 
@@ -60,16 +61,14 @@ export default function ProfileScreen() {
           <>
             {/* Only the header animates in: the cards below carry backdrop-blur, and an
                 ancestor animating opacity would kill their blur for its duration. */}
-            <div
-              className='flex h-31.25 w-31.25 items-center justify-center overflow-hidden rounded-full text-heading-3 text-heading animate-fade-in-up'
-              style={{ backgroundColor: profile?.avatar_url ? 'transparent' : (profile?.avatar_color ?? '#A336FF') }}
-            >
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt='Profilbild' className='h-full w-full object-cover' />
-              ) : (
-                getInitials(profile?.firstname ?? null, profile?.lastname ?? null)
-              )}
-            </div>
+            <Avatar
+              size={125}
+              url={profile?.avatar_url ?? null}
+              color={profile?.avatar_color ?? null}
+              firstname={profile?.firstname ?? null}
+              lastname={profile?.lastname ?? null}
+              className='animate-fade-in-up'
+            />
 
             <span className='mt-4 text-heading-3 font-bold text-heading animate-fade-in-up'>{name}</span>
             <span className='text-subheading-1 text-subheading animate-fade-in-up'>{email}</span>
@@ -109,14 +108,14 @@ export default function ProfileScreen() {
                 <Link href='/profile/picture' className={rowClass}>
                   <span className='text-xl leading-none'>📸</span>
                   <span className={rowLabelClass}>Profilbild</span>
-                  <div
-                    className='ml-auto h-7.5 w-7.5 shrink-0 overflow-hidden rounded-full'
-                    style={{ backgroundColor: profile?.avatar_url ? 'transparent' : (profile?.avatar_color ?? '#A336FF') }}
-                  >
-                    {profile?.avatar_url && (
-                      <img src={profile.avatar_url} alt='' className='h-full w-full object-cover' />
-                    )}
-                  </div>
+                  <Avatar
+                    size={30}
+                    url={profile?.avatar_url ?? null}
+                    color={profile?.avatar_color ?? null}
+                    firstname={profile?.firstname ?? null}
+                    lastname={profile?.lastname ?? null}
+                    className='ml-auto'
+                  />
                   {ChevronIcon}
                 </Link>
               </div>

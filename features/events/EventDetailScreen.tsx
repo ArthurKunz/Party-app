@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, ChevronLeft, Copy, MoreHorizontal, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
-import { alertError, getInitials, getOrigin } from '@/lib/utils'
+import { alertError, getOrigin } from '@/lib/utils'
 import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
 import {
   getEventById,
@@ -17,6 +17,7 @@ import {
   getRsvpCountsByStatus,
 } from './services/events.service'
 import { getEventPools } from './services/pools.service'
+import Avatar from '@/components/shared/Avatar'
 import Section from './components/Section'
 import CapacityWarning, { isNearlyFull } from './components/CapacityWarning'
 import EventDescription from './components/EventDescription'
@@ -372,13 +373,13 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
               <div className='w-full flex flex-col'>
                 <span className='text-heading-1 font-semibold text-heading'>{event?.title}</span>
                 <div className='flex items-center gap-2'>
-                  <div className='w-6.25 h-6.25 rounded-full overflow-hidden flex items-center justify-center bg-secondary backdrop-blur-xl text-white/90 font-bold text-5'>
-                    {host?.avatar_url ? (
-                      <img src={host.avatar_url} alt='' className='h-full w-full object-cover' />
-                    ) : (
-                      getInitials(host?.firstname ?? null, host?.lastname ?? null)
-                    )}
-                  </div>
+                  <Avatar
+                    size={25}
+                    url={host?.avatar_url ?? null}
+                    color={host?.avatar_color ?? null}
+                    firstname={host?.firstname ?? null}
+                    lastname={host?.lastname ?? null}
+                  />
                   <span className='text-[14px] text-label-large'>
                     {[host?.firstname, host?.lastname].filter(Boolean).join(' ') || 'Unbekannt'}
                   </span>

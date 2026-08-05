@@ -9,7 +9,7 @@ import { getHostedEvents, getAttendedEvents } from './services/events.service'
 import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
 import EventCard from './components/EventCard'
 import FloatingEmojis from './components/FloatingEmojis'
-import { getInitials } from '@/lib/utils'
+import Avatar from '@/components/shared/Avatar'
 import type { EventWithCount } from './types/events.types'
 
 type Tab = 'hosting' | 'attending'
@@ -137,13 +137,15 @@ export default function PartiesScreen() {
               <Link
                 href='/profile'
                 aria-label='Profil'
-                className={`${iconButtonClass} overflow-hidden text-white/90 font-bold text-5`}
+                className='transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
               >
-                {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt='' className='h-full w-full object-cover' />
-                ) : (
-                  getInitials(profile?.firstname ?? null, profile?.lastname ?? null)
-                )}
+                <Avatar
+                  size={45}
+                  url={profile?.avatar_url ?? null}
+                  color={profile?.avatar_color ?? null}
+                  firstname={profile?.firstname ?? null}
+                  lastname={profile?.lastname ?? null}
+                />
               </Link>
             )}
           </div>

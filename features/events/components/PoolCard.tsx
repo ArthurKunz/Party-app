@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { alertError, getInitials } from '@/lib/utils'
+import { alertError } from '@/lib/utils'
 import type { Profile } from '@/features/profile/services/profile.service'
 import { upsertPoolResponse } from '../services/pools.service'
+import Avatar from '@/components/shared/Avatar'
 import type { Pool, PoolResponse } from '../types/events.types'
 
 type Props = {
@@ -99,17 +100,14 @@ export default function PoolCard({ pool, userId, myProfile, onRefresh }: Props) 
               {voters.length > 0 && (
                 <div className='flex items-center -space-x-2 shrink-0'>
                   {voters.slice(0, 3).map((v) => (
-                    <div
+                    <Avatar
                       key={v.id}
-                      className='h-6 w-6 rounded-full overflow-hidden flex items-center justify-center text-[9px] font-semibold text-heading'
-                      style={{ backgroundColor: v.avatar_url ? 'transparent' : (v.avatar_color ?? '#2A2A2A') }}
-                    >
-                      {v.avatar_url ? (
-                        <img src={v.avatar_url} alt='' className='h-full w-full object-cover' />
-                      ) : (
-                        getInitials(v.firstname, v.lastname)
-                      )}
-                    </div>
+                      size={24}
+                      url={v.avatar_url}
+                      color={v.avatar_color}
+                      firstname={v.firstname}
+                      lastname={v.lastname}
+                    />
                   ))}
                   {voters.length > 3 && (
                     <div className='h-6 w-6 rounded-full bg-quaternary backdrop-blur-xl ring-2 ring-main flex items-center justify-center text-[9px] font-semibold text-heading'>

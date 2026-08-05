@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Pencil, User } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
+import Avatar from '@/components/shared/Avatar'
 import Spinner from '@/components/shared/Spinner'
-import { alertError, getInitials } from '@/lib/utils'
+import { alertError } from '@/lib/utils'
 import { AVATAR_COLORS, BUCKET, MAX_BYTES } from '@/features/onboarding/constants/onboarding.constants'
 import {
   getMyProfile,
@@ -39,8 +40,6 @@ export default function EditPictureScreen() {
       setLoading(false)
     })
   }, [router])
-
-  const initials = getInitials(profile?.firstname ?? null, profile?.lastname ?? null)
 
   const onPickFile = (picked: File | null) => {
     if (!picked) return
@@ -135,18 +134,20 @@ export default function EditPictureScreen() {
             on top of it, and it previews whatever is currently chosen. */}
         <label className='flex cursor-pointer justify-center'>
           <div className='group relative'>
-            <div
-              className='flex h-43.75 w-43.75 items-center justify-center overflow-hidden rounded-full bg-secondary backdrop-blur-xl text-heading-1 text-white/90 transition-[transform,background-color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
-              style={color ? { backgroundColor: color } : undefined}
-            >
-              {shownPhoto ? (
-                <img src={shownPhoto} alt='' className='h-full w-full object-cover animate-fade-in-up' />
-              ) : color ? (
-                initials
-              ) : (
+            {shownPhoto || color ? (
+              <Avatar
+                size={175}
+                url={shownPhoto}
+                color={color}
+                firstname={profile?.firstname ?? null}
+                lastname={profile?.lastname ?? null}
+                className='backdrop-blur-xl transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+              />
+            ) : (
+              <div className='flex h-43.75 w-43.75 items-center justify-center rounded-full bg-secondary backdrop-blur-xl transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'>
                 <User size={72} strokeWidth={1.5} className='text-subheading' />
-              )}
-            </div>
+              </div>
+            )}
             <span className='absolute bottom-1 right-1 flex h-11.25 w-11.25 items-center justify-center rounded-full bg-sheet transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] group-active:scale-95'>
               <Pencil size={18} strokeWidth={2.5} className='text-sheet-heading' />
             </span>
@@ -163,12 +164,14 @@ export default function EditPictureScreen() {
         <div className='mt-6 grid grid-cols-3 gap-3'>
           {AVATAR_COLORS.map((value) => (
             <button key={value} type='button' onClick={() => selectColor(value)} className='flex flex-col items-center gap-2'>
-              <span
-                className='flex h-22.5 w-22.5 items-center justify-center rounded-full text-heading-4 text-white/90 transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
-                style={{ backgroundColor: value }}
-              >
-                {initials}
-              </span>
+              <Avatar
+                size={90}
+                url={null}
+                color={value}
+                firstname={profile?.firstname ?? null}
+                lastname={profile?.lastname ?? null}
+                className='transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+              />
               <span
                 className={`flex h-6 w-6 items-center justify-center rounded-full backdrop-blur-xl transition-colors duration-200 ${
                   color === value ? 'bg-link' : 'border border-white/30'

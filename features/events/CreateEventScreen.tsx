@@ -3,6 +3,7 @@
 import { useState, useEffect, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
+import Spinner from '@/components/shared/Spinner'
 import { generateInviteCode, getOrigin } from '@/lib/utils'
 import DateTimePicker from './components/DateTimePicker'
 import StepProgress from './components/StepProgress'
@@ -273,9 +274,9 @@ export default function CreateEventScreen() {
                     type='button'
                     onClick={handleNext}
                     disabled={creating}
-                    className='h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading px-7.5 disabled:opacity-40'
+                    className='flex h-12 items-center justify-center rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading px-7.5 disabled:opacity-40'
                   >
-                    {creating ? 'Wird erstellt…' : 'weiter'}
+                    {creating ? <Spinner /> : 'weiter'}
                   </button>
                 </div>
               )}

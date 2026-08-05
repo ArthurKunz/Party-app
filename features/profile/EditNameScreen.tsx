@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
+import Spinner from '@/components/shared/Spinner'
 import { alertError } from '@/lib/utils'
 import { getMyProfile, updateProfileName } from './services/profile.service'
 import SettingsPage, {
@@ -19,6 +20,7 @@ export default function EditNameScreen() {
   const [userId, setUserId] = useState('')
   const [firstname, setFirstname] = useState('')
   const [lastname, setLastname] = useState('')
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   // What is stored, kept so the fields can be cleared on focus and still restored,
   // and so an unchanged name cannot be saved.
@@ -36,6 +38,7 @@ export default function EditNameScreen() {
       setFirstname(profile?.firstname ?? '')
       setLastname(profile?.lastname ?? '')
       setStored({ firstname: profile?.firstname ?? '', lastname: profile?.lastname ?? '' })
+      setLoading(false)
     })
   }, [router])
 
@@ -62,6 +65,9 @@ export default function EditNameScreen() {
 
   return (
     <SettingsPage title='Name'>
+      {loading ? (
+        <div className='h-25 w-full rounded-[25px] skeleton' />
+      ) : (
       <div className={cardClass}>
         <div className={rowClass}>
           <label htmlFor='firstname' className={rowLabelClass}>Vorname</label>
@@ -102,9 +108,10 @@ export default function EditNameScreen() {
           />
         </div>
       </div>
+      )}
 
-      <button type='button' onClick={handleSave} disabled={!canSave || saving} className={saveButtonClass}>
-        {saving ? 'speichert …' : 'speichern'}
+      <button type='button' onClick={handleSave} disabled={loading || !canSave || saving} className={saveButtonClass}>
+        {saving ? <Spinner /> : 'speichern'}
       </button>
     </SettingsPage>
   )

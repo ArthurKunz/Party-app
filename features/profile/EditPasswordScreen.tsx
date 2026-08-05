@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
+import Spinner from '@/components/shared/Spinner'
 import { alertError } from '@/lib/utils'
 import { usePasswordValidation } from '@/features/auth/hooks/usePasswordValidation'
 import SettingsPage, {
@@ -99,7 +100,7 @@ export default function EditPasswordScreen() {
       )}
 
       <button type='button' onClick={handleSave} disabled={!canSave || saving} className={saveButtonClass}>
-        {saving ? 'speichert …' : 'speichern'}
+        {saving ? <Spinner /> : 'speichern'}
       </button>
     </SettingsPage>
   )

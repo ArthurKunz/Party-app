@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
+import Spinner from '@/components/shared/Spinner'
 import { alertError } from '@/lib/utils'
 import { getMyProfile, updateProfileBirthday } from './services/profile.service'
 import BirthdayPicker from './components/BirthdayPicker'
@@ -26,6 +27,7 @@ export default function EditAgeScreen() {
   const [year, setYear] = useState(DEFAULT_BIRTH_YEAR)
   const [storedBirthday, setStoredBirthday] = useState('')
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -43,6 +45,7 @@ export default function EditAgeScreen() {
         setMonth(m - 1)
         setDay(d)
       }
+      setLoading(false)
     })
   }, [router])
 
@@ -76,15 +79,19 @@ export default function EditAgeScreen() {
   return (
     <>
       <SettingsPage title='Alter'>
-        <div className={cardClass}>
-          <button type='button' onClick={() => setPickerOpen(true)} className={rowClass}>
-            <span className={rowLabelClass}>Geburtstag</span>
-            <span className={`ml-auto ${rowValueClass}`}>{formatted}</span>
-          </button>
-        </div>
+        {loading ? (
+          <div className='h-12.5 w-full rounded-[25px] skeleton' />
+        ) : (
+          <div className={cardClass}>
+            <button type='button' onClick={() => setPickerOpen(true)} className={rowClass}>
+              <span className={rowLabelClass}>Geburtstag</span>
+              <span className={`ml-auto ${rowValueClass}`}>{formatted}</span>
+            </button>
+          </div>
+        )}
 
-        <button type='button' onClick={handleSave} disabled={!changed || saving} className={saveButtonClass}>
-          {saving ? 'speichert …' : 'speichern'}
+        <button type='button' onClick={handleSave} disabled={loading || !changed || saving} className={saveButtonClass}>
+          {saving ? <Spinner /> : 'speichern'}
         </button>
       </SettingsPage>
 

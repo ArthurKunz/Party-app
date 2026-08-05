@@ -102,7 +102,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   // flash over the skeletons on every load.
   const showAuthGate = !eventLoading && !userId
 
-  // Signing up from an invite has to come back to that invite, not to /home.
+  // Signing up from an invite has to come back to that invite, not to the parties list.
   const loginHref = `/login?next=${encodeURIComponent(`/e/${inviteCode}`)}`
 
   // A signed-in guest who has not answered yet must answer first: the header

@@ -43,8 +43,8 @@ export async function GET(request: Request) {
         if (error) alert(error.message)
     }
 
-    // Set when the flow started from an invite link; falls back to /home.
+    // Set when the flow started from an invite link; falls back to the parties list.
     const next = sanitizeNextPath(requestUrl.searchParams.get('next'))
 
-    return NextResponse.redirect(`${requestUrl.origin}${next ?? '/home'}`)
+    return NextResponse.redirect(`${requestUrl.origin}${next ?? '/parties'}`)
 }

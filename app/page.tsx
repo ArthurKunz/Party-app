@@ -25,7 +25,7 @@ export default function Rootpage() {
 
       if (profile) {
         // Profile exists → go to home
-        router.push('/home')
+        router.push('/parties')
       } else {
         // No profile yet → go to onboarding
         router.push('/onboarding')

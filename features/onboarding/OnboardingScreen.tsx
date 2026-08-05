@@ -48,7 +48,7 @@ export default function OnboardingScreen() {
     })
 
     if (error) alert(error.message)
-    else router.push(next ?? '/home')
+    else router.push(next ?? '/parties')
   }
 
   const stepIndex = STEPS.indexOf(step)

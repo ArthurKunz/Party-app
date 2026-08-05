@@ -50,16 +50,15 @@ export default function ProfileScreen() {
             <div className='mt-4 h-7 w-48 rounded-full skeleton' />
             <div className='mt-2 h-4 w-56 rounded-full skeleton' />
             <div className='mt-12.5 flex w-full flex-col gap-3'>
-              <div className='h-25 w-full rounded-[25px] skeleton' />
-              {[0, 1, 2].map((i) => (
-                <div key={i} className='h-12.5 w-full rounded-[25px] skeleton' />
+              {[0, 1].map((i) => (
+                <div key={i} className='h-37.5 w-full rounded-[25px] skeleton' />
               ))}
             </div>
           </>
         ) : (
           <>
             <div
-              className='flex h-31.25 w-31.25 items-center justify-center overflow-hidden rounded-full text-heading-3 font-semibold text-heading'
+              className='flex h-31.25 w-31.25 items-center justify-center overflow-hidden rounded-full text-heading-3 text-heading'
               style={{ backgroundColor: profile?.avatar_url ? 'transparent' : (profile?.avatar_color ?? '#A336FF') }}
             >
               {profile?.avatar_url ? (
@@ -73,13 +72,14 @@ export default function ProfileScreen() {
             <span className='text-subheading-1 text-subheading'>{email}</span>
 
             <div className='mt-12.5 flex w-full flex-col gap-3'>
-              {/* Name and Alter share one card: they show their current value instead
-                  of a chevron, so the divider is inset to line up with the labels. */}
+              {/* Name, Alter and Profilbild in one card. Name and Alter are edited in
+                  place: the value on the right is the input itself. */}
               <div className={cardClass}>
                 <Link href='/profile/name' className={rowClass}>
                   <span className='text-xl leading-none'>👤</span>
-                  <span className={rowLabelClass}>Name</span>
+                  <span className={`${rowLabelClass} shrink-0`}>Name</span>
                   <span className={`ml-auto truncate ${rowValueClass}`}>{name}</span>
+                  {ChevronIcon}
                 </Link>
 
                 <div className='flex px-4'>
@@ -91,14 +91,18 @@ export default function ProfileScreen() {
 
                 <Link href='/profile/age' className={rowClass}>
                   <span className='text-xl leading-none'>🎂</span>
-                  <span className={rowLabelClass}>Alter</span>
+                  <span className={`${rowLabelClass} shrink-0`}>Alter</span>
                   <span className={`ml-auto ${rowValueClass}`}>
                     {profile?.birthday ? calculateAge(profile.birthday) : '—'}
                   </span>
+                  {ChevronIcon}
                 </Link>
-              </div>
 
-              <div className={cardClass}>
+                <div className='flex px-4'>
+                  <div className='w-6 shrink-0' />
+                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10' />
+                </div>
+
                 <Link href='/profile/picture' className={rowClass}>
                   <span className='text-xl leading-none'>📸</span>
                   <span className={rowLabelClass}>Profilbild</span>
@@ -120,9 +124,25 @@ export default function ProfileScreen() {
                   <span className={rowLabelClass}>Passwort</span>
                   <span className='ml-auto flex items-center'>{ChevronIcon}</span>
                 </Link>
-              </div>
 
-              <div className={cardClass}>
+                <div className='flex px-4'>
+                  <div className='w-6 shrink-0' />
+                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10' />
+                </div>
+
+                {/* Abmelden and Account löschen live together on their own page, the
+                    same way Profilbild does. */}
+                <Link href='/profile/account' className={rowClass}>
+                  <span className='text-xl leading-none'>👋</span>
+                  <span className={rowLabelClass}>Account verwalten</span>
+                  <span className='ml-auto flex items-center'>{ChevronIcon}</span>
+                </Link>
+
+                <div className='flex px-4'>
+                  <div className='w-6 shrink-0' />
+                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10' />
+                </div>
+
                 <Link href='/profile/legal' className={rowClass}>
                   <span className='text-xl leading-none'>👨🏻‍⚖️</span>
                   <span className={rowLabelClass}>Rechtliches</span>

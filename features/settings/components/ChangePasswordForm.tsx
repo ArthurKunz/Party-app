@@ -43,7 +43,7 @@ export default function ChangePasswordForm({ onSuccess }: ChangePasswordFormProp
     if (onSuccess) {
       onSuccess()
     } else {
-      router.push('/home')
+      router.push('/parties')
     }
   }
 

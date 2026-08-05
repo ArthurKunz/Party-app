@@ -13,7 +13,7 @@ export default function AuthPage() {
   const searchParams = useSearchParams()
   const stepParam = searchParams.get('step')
   // Set when the flow was entered from somewhere specific (an invite link), so
-  // every exit below returns there instead of dumping the user on /home.
+  // every exit below returns there instead of dumping the user on the parties list.
   const next = sanitizeNextPath(searchParams.get('next'))
   const onboardingHref = next ? `/onboarding?next=${encodeURIComponent(next)}` : '/onboarding'
 
@@ -50,13 +50,13 @@ export default function AuthPage() {
 
           {effectiveStep === 'signin' && (
             <SignInForm
-              onSuccess={() => router.push(next ?? '/home')}
+              onSuccess={() => router.push(next ?? '/parties')}
               onGoToSignUp={() => setStep('signup')}
             />
           )}
 
           {effectiveStep === 'reset-password' && (
-            <ChangePasswordForm onSuccess={() => router.push('/home')} />
+            <ChangePasswordForm onSuccess={() => router.push('/parties')} />
           )}
         </div>
 

@@ -1,48 +1,106 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import ChangePasswordForm from '@/features/settings/components/ChangePasswordForm'
-
-const BackIcon = (
-  <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
-    <line x1='19' y1='12' x2='5' y2='12' />
-    <polyline points='12 19 5 12 12 5' />
-  </svg>
-)
+import { alertError } from '@/lib/utils'
+import { usePasswordValidation } from '@/features/auth/hooks/usePasswordValidation'
+import SettingsPage, {
+  cardClass,
+  rowClass,
+  rowInputClass,
+  rowLabelClass,
+  RowDivider,
+  saveButtonClass,
+} from './components/SettingsPage'
 
 export default function EditPasswordScreen() {
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [saving, setSaving] = useState(false)
+  const confirmRef = useRef<HTMLInputElement>(null)
+  // Same strength check the signup flow uses.
+  const { passwordWarning, isPasswordValid } = usePasswordValidation(password)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.push('/login')
-        return
-      }
-      setLoading(false)
+      if (!session) router.push('/login')
     })
   }, [router])
 
-  if (loading) return null
+  const handlePasswordKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+    if (password.trim()) confirmRef.current?.focus()
+  }
+
+  const canSave = password.length > 0 && confirm.length > 0
+
+  const handleSave = async () => {
+    if (!isPasswordValid) {
+      alertError(passwordWarning || 'Dieses Passwort ist zu schwach.')
+      return
+    }
+    if (password !== confirm) {
+      alertError('Die beiden Passwörter stimmen nicht überein.')
+      return
+    }
+    setSaving(true)
+    const { error } = await supabase.auth.updateUser({ password })
+    setSaving(false)
+    if (error) {
+      alertError('Dein Passwort konnte nicht geändert werden.', error.message)
+      return
+    }
+    router.push('/profile')
+  }
 
   return (
-    <div className='relative w-full min-h-dvh overflow-hidden bg-background-main'>
-      <div className='relative z-10 flex flex-col px-6 pt-7.5 pb-12'>
-        <div className='relative flex items-center justify-center mb-10'>
-          <button
-            onClick={() => router.push('/profile')}
-            aria-label='Zurück'
-            className='absolute left-0 flex h-11 w-11 items-center justify-center rounded-full text-headline'
-          >
-            {BackIcon}
-          </button>
+    <SettingsPage title='Passwort'>
+      <div className={cardClass}>
+        <div className={rowClass}>
+          <label htmlFor='new-password' className={rowLabelClass}>neues Passwort</label>
+          <input
+            id='new-password'
+            type='password'
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handlePasswordKeyDown}
+            autoComplete='new-password'
+            enterKeyHint='next'
+            placeholder='••••••••'
+            className={rowInputClass}
+          />
         </div>
 
-        <ChangePasswordForm onSuccess={() => router.push('/profile')} />
+        <RowDivider />
+
+        <div className={rowClass}>
+          <label htmlFor='confirm-password' className={rowLabelClass}>Passwort wiederholen</label>
+          <input
+            ref={confirmRef}
+            id='confirm-password'
+            type='password'
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+            autoComplete='new-password'
+            enterKeyHint='done'
+            placeholder='••••••••'
+            className={rowInputClass}
+          />
+        </div>
       </div>
-    </div>
+
+      {/* Only once something has been typed, so the page is not born shouting. */}
+      {password.length > 0 && passwordWarning && (
+        <span className='px-4 text-label-2 text-warning' role='alert'>{passwordWarning}</span>
+      )}
+
+      <button type='button' onClick={handleSave} disabled={!canSave || saving} className={saveButtonClass}>
+        {saving ? 'speichert …' : 'speichern'}
+      </button>
+    </SettingsPage>
   )
 }

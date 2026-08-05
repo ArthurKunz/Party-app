@@ -5,13 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { getInitials } from '@/lib/utils'
 import { getMyProfile, updateProfileAvatar, type Profile } from './services/profile.service'
-
-const BackIcon = (
-  <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
-    <line x1='19' y1='12' x2='5' y2='12' />
-    <polyline points='12 19 5 12 12 5' />
-  </svg>
-)
+import SettingsPage, { cardClass, rowClass, rowLabelClass, rowValueClass, saveButtonClass } from './components/SettingsPage'
 
 const MAX_BYTES = 5 * 1024 * 1024
 const BUCKET = 'avatars'
@@ -86,35 +80,37 @@ export default function EditPictureScreen() {
     router.push('/profile')
   }
 
-  if (loading) return null
-
   return (
-    <div className='relative w-full min-h-dvh overflow-hidden bg-background-main'>
-      <div className='relative z-10 flex flex-col items-center px-6 pt-7.5 pb-12'>
-        <div className='relative w-full flex items-center justify-center'>
-          <button
-            onClick={() => router.push('/profile')}
-            aria-label='Zurück'
-            className='absolute left-0 flex h-11 w-11 items-center justify-center rounded-full text-headline'
-          >
-            {BackIcon}
-          </button>
-          <span className='text-2xl font-bold text-headline'>Profilbild</span>
+    <SettingsPage title='Profilbild'>
+      {/* The picked (or current) picture sits above the row, centred like the mockups
+          keep their subject above the controls. */}
+      <label className='mb-2 flex cursor-pointer justify-center'>
+        <div
+          className='flex h-40 w-40 items-center justify-center overflow-hidden rounded-full text-heading-1 text-heading'
+          style={{ backgroundColor: previewUrl || profile?.avatar_url ? 'transparent' : (profile?.avatar_color ?? '#A336FF') }}
+        >
+          {previewUrl ? (
+            <img src={previewUrl} alt='' className='h-full w-full object-cover' />
+          ) : profile?.avatar_url ? (
+            <img src={profile.avatar_url} alt='' className='h-full w-full object-cover' />
+          ) : (
+            getInitials(profile?.firstname ?? null, profile?.lastname ?? null)
+          )}
         </div>
+        <input
+          type='file'
+          accept='image/*'
+          className='hidden'
+          onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
+        />
+      </label>
 
-        <label className='mt-10 cursor-pointer'>
-          <div
-            className='w-40 h-40 rounded-full overflow-hidden flex items-center justify-center text-3xl font-semibold text-headline'
-            style={{ backgroundColor: previewUrl ? 'transparent' : (profile?.avatar_url ? 'transparent' : (profile?.avatar_color ?? '#A336FF')) }}
-          >
-            {previewUrl ? (
-              <img src={previewUrl} alt='Profilbild' className='w-full h-full object-cover' />
-            ) : profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt='Profilbild' className='w-full h-full object-cover' />
-            ) : (
-              getInitials(profile?.firstname ?? null, profile?.lastname ?? null)
-            )}
-          </div>
+      <div className={cardClass}>
+        <label className={`${rowClass} cursor-pointer`}>
+          <span className={rowLabelClass}>Bild</span>
+          <span className={`ml-auto truncate ${rowValueClass}`}>
+            {file ? file.name : 'auswählen'}
+          </span>
           <input
             type='file'
             accept='image/*'
@@ -122,17 +118,13 @@ export default function EditPictureScreen() {
             onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
           />
         </label>
-
-        {error && <span className='mt-4 text-sm text-warning' role='alert'>{error}</span>}
-
-        <button
-          onClick={() => void handleSave()}
-          disabled={!file || uploading}
-          className='mt-10 w-full h-12 rounded-full bg-background-button text-button text-sm font-semibold disabled:opacity-40'
-        >
-          {uploading ? 'Wird hochgeladen…' : 'Speichern'}
-        </button>
       </div>
-    </div>
+
+      {error && <span className='px-4 text-label-2 text-warning' role='alert'>{error}</span>}
+
+      <button type='button' onClick={handleSave} disabled={!file || uploading} className={saveButtonClass}>
+        {uploading ? 'speichert …' : 'speichern'}
+      </button>
+    </SettingsPage>
   )
 }

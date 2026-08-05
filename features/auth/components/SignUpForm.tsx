@@ -49,7 +49,7 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
           <input
             type='email'
             placeholder='max.mustermann@example.com'
-            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={handleEmailKeyDown}
@@ -63,7 +63,7 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
             placeholder='Erstelle ein Passwort'
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
           />
           {showPasswordWarning && (
             <span className='text-xs text-red-400' role='alert'>
@@ -75,19 +75,19 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
         <div className='flex flex-col gap-4 mt-4'>
           <button
             type='submit'
-            className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading'
+            className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
           >
             Sign up
           </button>
           <div className='flex items-center gap-3'>
-            <div className='flex-1 h-px bg-tertiary' />
+            <div className='flex-1 h-px bg-tertiary backdrop-blur-xl' />
             <span className='text-xs text-subheading'>or</span>
-            <div className='flex-1 h-px bg-tertiary' />
+            <div className='flex-1 h-px bg-tertiary backdrop-blur-xl' />
           </div>
           <button
             type='button'
             onClick={handleGoogleSignUp}
-            className='flex w-full items-center justify-center gap-2 w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading'
+            className='flex w-full items-center justify-center gap-2 w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
           >
             <Image src='/icons/Google.png' alt='' width={18} height={18} className='shrink-0' />
             Google

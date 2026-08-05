@@ -33,7 +33,7 @@ export default function PersonalDataForm({ onSuccess }: NameFormProps) {
             value={firstname}
             onChange={(e) => setFirstname(e.target.value)}
             onKeyDown={handleFirstnameKeyDown}
-            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
           />
         </div>
         <div className='flex flex-col gap-2'>
@@ -45,7 +45,7 @@ export default function PersonalDataForm({ onSuccess }: NameFormProps) {
             value={lastname}
             onChange={(e) => setLastname(e.target.value)}
             onKeyDown={handleLastnameKeyDown}
-            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
           />
         </div>
       </div>
@@ -53,7 +53,7 @@ export default function PersonalDataForm({ onSuccess }: NameFormProps) {
       <button
         onClick={() => onSuccess(firstname, lastname)}
         disabled={!firstname.trim() || !lastname.trim()}
-        className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading disabled:opacity-40'
+        className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading disabled:opacity-40'
       >
         Weiter
       </button>

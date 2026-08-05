@@ -61,7 +61,7 @@ export default function ChangePasswordForm({ onSuccess }: ChangePasswordFormProp
             onChange={(e) => setNewPassword(e.target.value)}
             onKeyDown={handleNewPasswordKeyDown}
             required
-            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
           />
           {showPasswordWarning && (
             <span className='text-xs text-red-400' role='alert'>
@@ -78,14 +78,14 @@ export default function ChangePasswordForm({ onSuccess }: ChangePasswordFormProp
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
           />
         </div>
       </div>
 
       <button
         type='submit'
-        className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading'
+        className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
       >
         Speichern
       </button>

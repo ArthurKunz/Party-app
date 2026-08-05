@@ -68,14 +68,14 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
             value={resetEmail}
             onChange={(e) => setResetEmail(e.target.value)}
             onKeyDown={handleResetEmailKeyDown}
-            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
           />
         </div>
 
         <button
           type='button'
           onClick={handleForgotPassword}
-          className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading'
+          className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
         >
           Weiter
         </button>
@@ -107,7 +107,7 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
           <input
             type='email'
             placeholder='max.mustermann@example.com'
-            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={handleEmailKeyDown}
@@ -121,7 +121,7 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
             placeholder='Gib dein Passwort ein'
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className='w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
           />
           <span
             className='text-xs text-label-small cursor-pointer'
@@ -134,19 +134,19 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
         <div className='flex flex-col gap-4 mt-4'>
           <button
             type='submit'
-            className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading'
+            className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
           >
             Login
           </button>
           <div className='flex items-center gap-3'>
-            <div className='flex-1 h-px bg-tertiary' />
+            <div className='flex-1 h-px bg-tertiary backdrop-blur-xl' />
             <span className='text-xs text-subheading'>or</span>
-            <div className='flex-1 h-px bg-tertiary' />
+            <div className='flex-1 h-px bg-tertiary backdrop-blur-xl' />
           </div>
           <button
             type='button'
             onClick={handleGoogleSignIn}
-            className='flex w-full items-center justify-center gap-2 w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading'
+            className='flex w-full items-center justify-center gap-2 w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
           >
             <Image src='/icons/Google.png' alt='' width={18} height={18} className='shrink-0' />
             Google

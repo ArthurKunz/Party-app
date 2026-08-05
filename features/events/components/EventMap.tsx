@@ -24,7 +24,7 @@ export default function EventMap({ location }: { location: string }) {
       {failed ? (
         // Keeps the block tappable if the Static Maps API is off or the key is missing,
         // rather than leaving a skeleton shimmering forever.
-        <div className='absolute inset-0 bg-secondary flex items-center justify-center'>
+        <div className='absolute inset-0 bg-secondary backdrop-blur-xl flex items-center justify-center'>
           <span className='text-label-2 text-label-small'>In Google Maps öffnen</span>
         </div>
       ) : (

@@ -67,7 +67,7 @@ export default function OnboardingScreen() {
             <div
               key={i}
               className={`h-2 rounded-full transition-all duration-300 ${
-                i === stepIndex ? 'w-6 bg-white' : 'w-2 bg-white/30'
+                i === stepIndex ? 'w-6 bg-white' : 'w-2 bg-white/30 backdrop-blur-xl'
               }`}
             />
           ))}

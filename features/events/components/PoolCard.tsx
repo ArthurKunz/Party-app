@@ -82,7 +82,7 @@ export default function PoolCard({ pool, userId, myProfile, onRefresh }: Props) 
               onClick={() => void handleVote(opt.id)}
               disabled={submitting}
               className={`h-12.5 rounded-full pl-3 pr-3 flex items-center justify-between gap-3 ${
-                isSelected ? 'bg-tertiary' : 'bg-secondary'
+                isSelected ? 'bg-tertiary backdrop-blur-xl' : 'bg-secondary'
               }`}
             >
               <div className='flex items-center gap-3 min-w-0'>
@@ -112,7 +112,7 @@ export default function PoolCard({ pool, userId, myProfile, onRefresh }: Props) 
                     </div>
                   ))}
                   {voters.length > 3 && (
-                    <div className='h-6 w-6 rounded-full bg-quaternary ring-2 ring-main flex items-center justify-center text-[9px] font-semibold text-heading'>
+                    <div className='h-6 w-6 rounded-full bg-quaternary backdrop-blur-xl ring-2 ring-main flex items-center justify-center text-[9px] font-semibold text-heading'>
                       +{voters.length - 3}
                     </div>
                   )}

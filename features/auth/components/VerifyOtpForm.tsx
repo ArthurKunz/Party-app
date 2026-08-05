@@ -43,14 +43,14 @@ export default function VerifyOtpForm({ email, onSuccess }: VerifyProps) {
                 else if (code.length === digits.length) handleVerify(e)
               }}
               onPaste={handlePaste}
-              className='w-full text-center h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+              className='w-full text-center h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
             />
           ))}
         </div>
       </div>
 
       <button
-        className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading'
+        className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
         onClick={handleVerify}
       >
         Verify

@@ -29,3 +29,9 @@ export async function updateProfileBirthday(userId: string, birthday: string) {
 export async function updateProfileAvatar(userId: string, avatarUrl: string) {
   return supabase.from('profiles').update({ avatar_url: avatarUrl }).eq('id', userId)
 }
+
+// Choosing initials means dropping the photo: the two are alternatives, and the
+// avatar components fall back to initials exactly when avatar_url is null.
+export async function updateProfileAvatarColor(userId: string, avatarColor: string) {
+  return supabase.from('profiles').update({ avatar_url: null, avatar_color: avatarColor }).eq('id', userId)
+}

@@ -75,7 +75,7 @@ export default function BirthdateForm({ onSuccess }: BirthdateFormProps) {
       <button
         onClick={handleSubmit}
         disabled={!day || !month || !year}
-        className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading disabled:opacity-40'
+        className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading disabled:opacity-40'
       >
         Fertig
       </button>

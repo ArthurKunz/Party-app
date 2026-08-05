@@ -84,14 +84,14 @@ export default function DateTimePicker({ day, month, year, hour, minute, onChang
 
   return (
     <div className='flex flex-col gap-3'>
-      <div className='flex rounded-2xl overflow-hidden border border-border-input bg-secondary'>
+      <div className='flex rounded-2xl overflow-hidden border border-border-input bg-secondary backdrop-blur-xl'>
         {/* Calendar */}
         <div className='flex-1 min-w-0 p-3 flex flex-col gap-2'>
           <div className='flex items-center justify-between'>
             <button
               type='button'
               onClick={prevMonth}
-              className='h-7 w-7 flex items-center justify-center rounded-lg text-subheading hover:text-body hover:bg-tertiary transition-colors text-lg leading-none'
+              className='h-7 w-7 flex items-center justify-center rounded-lg text-subheading hover:text-body hover:bg-tertiary backdrop-blur-xl transition-colors text-lg leading-none'
             >
               ‹
             </button>
@@ -101,7 +101,7 @@ export default function DateTimePicker({ day, month, year, hour, minute, onChang
             <button
               type='button'
               onClick={nextMonth}
-              className='h-7 w-7 flex items-center justify-center rounded-lg text-subheading hover:text-body hover:bg-tertiary transition-colors text-lg leading-none'
+              className='h-7 w-7 flex items-center justify-center rounded-lg text-subheading hover:text-body hover:bg-tertiary backdrop-blur-xl transition-colors text-lg leading-none'
             >
               ›
             </button>
@@ -126,10 +126,10 @@ export default function DateTimePicker({ day, month, year, hour, minute, onChang
                 className={[
                   'relative h-8 rounded-lg text-sm flex items-center justify-center transition-colors',
                   isSelected(d)
-                    ? 'bg-tertiary text-button font-semibold text-heading'
+                    ? 'bg-tertiary backdrop-blur-xl text-button font-semibold text-heading'
                     : isPast(d)
                     ? 'text-subheading line-through opacity-40 cursor-not-allowed'
-                    : 'text-body hover:bg-tertiary cursor-pointer',
+                    : 'text-body hover:bg-tertiary backdrop-blur-xl cursor-pointer',
                 ].join(' ')}
               >
                 {d}
@@ -141,7 +141,7 @@ export default function DateTimePicker({ day, month, year, hour, minute, onChang
           </div>
         </div>
 
-        <div className='w-px bg-tertiary shrink-0' />
+        <div className='w-px bg-tertiary backdrop-blur-xl shrink-0' />
 
         {/* Time picker */}
         <div
@@ -156,8 +156,8 @@ export default function DateTimePicker({ day, month, year, hour, minute, onChang
               className={[
                 'shrink-0 h-10 w-full rounded-xl text-sm font-medium transition-colors',
                 h === hour && m === minute
-                  ? 'bg-tertiary text-button text-heading'
-                  : 'bg-tertiary/50 text-body hover:bg-tertiary',
+                  ? 'bg-tertiary backdrop-blur-xl text-button text-heading'
+                  : 'bg-tertiary backdrop-blur-xl/50 text-body hover:bg-tertiary',
               ].join(' ')}
             >
               {h}:{m}

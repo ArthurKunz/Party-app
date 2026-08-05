@@ -177,7 +177,7 @@ export default function Selectbox<Value extends string = string>({
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
         className={cn(
-          'flex h-14 w-full items-center rounded-xl border border-border-input bg-secondary px-4 text-sm text-heading outline-none disabled:cursor-not-allowed disabled:opacity-50',
+          'flex h-14 w-full items-center rounded-xl border border-border-input bg-secondary backdrop-blur-xl px-4 text-sm text-heading outline-none disabled:cursor-not-allowed disabled:opacity-50',
           center ? 'justify-center' : 'justify-between',
           triggerClassName,
         )}

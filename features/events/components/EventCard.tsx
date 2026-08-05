@@ -19,7 +19,7 @@ export default function EventCard({
   return (
     <div className='flex flex-col gap-2 pb-1.5 transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.97]'>
       <div
-        className={`relative overflow-hidden rounded-lg bg-secondary ${
+        className={`relative overflow-hidden rounded-lg bg-secondary backdrop-blur-xl ${
           featured ? 'aspect-[2/1]' : 'aspect-square'
         }`}
       >

@@ -252,7 +252,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
         ) : eventLoading ? (
           <div className='absolute inset-0 skeleton' />
         ) : (
-          <div className='absolute inset-0 bg-secondary' />
+          <div className='absolute inset-0 bg-secondary backdrop-blur-xl' />
         )}
         <div className='absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-main to-transparent pointer-events-none' />
 
@@ -322,7 +322,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
                             onClick={() => handleRsvp(status)}
                             disabled={rsvpLoading}
                             className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left ${
-                              rsvpStatus === status ? 'bg-tertiary' : ''
+                              rsvpStatus === status ? 'bg-tertiary backdrop-blur-xl' : ''
                             }`}
                           >
                             <span className='w-5 h-5 flex items-center justify-center text-md'>{icon}</span>
@@ -372,7 +372,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
               <div className='w-full flex flex-col'>
                 <span className='text-heading-1 font-semibold text-heading'>{event?.title}</span>
                 <div className='flex items-center gap-2'>
-                  <div className='w-6.25 h-6.25 rounded-full overflow-hidden flex items-center justify-center bg-secondary text-white/90 font-bold text-5'>
+                  <div className='w-6.25 h-6.25 rounded-full overflow-hidden flex items-center justify-center bg-secondary backdrop-blur-xl text-white/90 font-bold text-5'>
                     {host?.avatar_url ? (
                       <img src={host.avatar_url} alt='' className='h-full w-full object-cover' />
                     ) : (

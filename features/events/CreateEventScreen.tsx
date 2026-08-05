@@ -12,7 +12,7 @@ import { createPool, addPoolOption } from './services/pools.service'
 import type { CreateEventFormValues, PoolDraft } from './types/events.types'
 
 const inputClass =
-  'w-full px-4 h-14 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+  'w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
 
 const BG_MAX_BYTES = 10 * 1024 * 1024
 
@@ -224,7 +224,7 @@ export default function CreateEventScreen() {
         type='button'
         onClick={() => router.push('/parties')}
         aria-label='Abbrechen'
-        className='absolute top-6 right-6 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-heading transition-transform hover:scale-105'
+        className='absolute top-6 right-6 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-secondary backdrop-blur-xl text-heading transition-transform hover:scale-105'
       >
         <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
           <line x1='18' y1='6' x2='6' y2='18' />
@@ -241,11 +241,11 @@ export default function CreateEventScreen() {
               </span>
               <div className='flex flex-col gap-3'>
                 {localPools.map((pool) => (
-                  <div key={pool.id} className='rounded-xl bg-secondary border border-border-input px-4 py-3 flex flex-col gap-2'>
+                  <div key={pool.id} className='rounded-xl bg-secondary backdrop-blur-xl border border-border-input px-4 py-3 flex flex-col gap-2'>
                     <span className='text-sm font-semibold text-heading'>{pool.question}</span>
                     <div className='flex flex-wrap gap-1.5'>
                       {pool.options.map((opt, i) => (
-                        <span key={i} className='text-xs text-subheading bg-tertiary px-2.5 py-1 rounded-full'>
+                        <span key={i} className='text-xs text-subheading bg-tertiary backdrop-blur-xl px-2.5 py-1 rounded-full'>
                           {opt}
                         </span>
                       ))}
@@ -273,7 +273,7 @@ export default function CreateEventScreen() {
                     type='button'
                     onClick={handleNext}
                     disabled={creating}
-                    className='h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading px-7.5 disabled:opacity-40'
+                    className='h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading px-7.5 disabled:opacity-40'
                   >
                     {creating ? 'Wird erstellt…' : 'weiter'}
                   </button>
@@ -315,7 +315,7 @@ export default function CreateEventScreen() {
                   onChange={(e) => setField('description', e.target.value)}
                   onKeyDown={handleTextareaEnterAdvance}
                   rows={3}
-                  className='w-full px-4 py-3 bg-secondary border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small resize-none'
+                  className='w-full px-4 py-3 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small resize-none'
                 />
               </div>
             )}
@@ -376,12 +376,12 @@ export default function CreateEventScreen() {
               <div className='flex flex-col gap-3'>
                 <label className='cursor-pointer block w-full'>
                   {bgPreviewUrl ? (
-                    <div className='w-full aspect-video rounded-xl overflow-hidden bg-secondary'>
+                    <div className='w-full aspect-video rounded-xl overflow-hidden bg-secondary backdrop-blur-xl'>
                       <img src={bgPreviewUrl} alt='Hintergrundbild' className='w-full h-full object-cover' />
                     </div>
                   ) : (
                     <div className='w-full rounded-xl border border-dashed border-border-input flex flex-col items-center gap-4 px-6 py-10'>
-                      <div className='flex h-14 w-14 items-center justify-center rounded-full bg-tertiary'>
+                      <div className='flex h-14 w-14 items-center justify-center rounded-full bg-tertiary backdrop-blur-xl'>
                         <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' className='text-subheading'>
                           <path d='M7 18a4.5 4.5 0 0 1-.6-8.96A5.5 5.5 0 0 1 17.4 8.02 4 4 0 0 1 17 16H16' />
                           <path d='M12 12v9' />
@@ -414,7 +414,7 @@ export default function CreateEventScreen() {
                 <button
                   type='button'
                   onClick={handleCopy}
-                  className='w-full px-4 h-14 flex items-center justify-between gap-3 bg-secondary border border-border-input rounded-xl text-heading text-sm'
+                  className='w-full px-4 h-14 flex items-center justify-between gap-3 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm'
                 >
                   <span className='truncate'>{shareLink}</span>
                   <span className='shrink-0 text-subheading'>{copied ? 'Kopiert ✓' : 'Kopieren'}</span>
@@ -427,7 +427,7 @@ export default function CreateEventScreen() {
                 <button
                   type='button'
                   onClick={() => router.push('/parties')}
-                  className='h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading px-7.5'
+                  className='h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading px-7.5'
                 >
                   Fertig
                 </button>
@@ -436,7 +436,7 @@ export default function CreateEventScreen() {
                   type='button'
                   onClick={handleNext}
                   disabled={!canContinue}
-                  className='h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading px-7.5 disabled:opacity-40'
+                  className='h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading px-7.5 disabled:opacity-40'
                 >
                   weiter
                 </button>

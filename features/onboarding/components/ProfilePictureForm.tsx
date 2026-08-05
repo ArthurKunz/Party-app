@@ -67,7 +67,7 @@ export default function ProfilePictureForm({ onSuccess }: ProfilePictureFormProp
       <span className='text-3xl font-bold text-heading'>Wie siehst du aus?</span>
 
       <label className='cursor-pointer'>
-        <div className='w-40 h-40 rounded-full overflow-hidden bg-tertiary'>
+        <div className='w-40 h-40 rounded-full overflow-hidden bg-tertiary backdrop-blur-xl'>
           <img
             src={previewUrl ?? '/images/noProfilPicture.jpg'}
             alt='Profilbild'
@@ -87,7 +87,7 @@ export default function ProfilePictureForm({ onSuccess }: ProfilePictureFormProp
       <div className='flex flex-col items-center gap-4 w-full'>
         <button
           type='button'
-          className='w-full h-12 rounded-full bg-tertiary text-button text-sm font-semibold text-heading disabled:opacity-40'
+          className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading disabled:opacity-40'
           disabled={!file || uploading}
           onClick={() => void handleUpload()}
         >

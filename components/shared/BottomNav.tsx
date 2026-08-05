@@ -50,7 +50,7 @@ export default function BottomNav() {
           href='/parties'
           aria-label='Meine Events'
           className={`flex h-11 w-15 items-center justify-center rounded-full transition-colors ${
-            pathname === '/parties' ? 'bg-black/15 text-white' : 'text-hint hover:text-body'
+            pathname === '/parties' ? 'bg-black/15 backdrop-blur-xl text-white' : 'text-hint hover:text-body'
           }`}
         >
           {links[0].icon}
@@ -59,7 +59,7 @@ export default function BottomNav() {
         <Link
           href='/create-event'
           aria-label='Event erstellen'
-          className='flex h-11 w-11 items-center justify-center rounded-full bg-black/15 text-white transition-transform hover:scale-105'
+          className='flex h-11 w-11 items-center justify-center rounded-full bg-black/15 backdrop-blur-xl text-white transition-transform hover:scale-105'
         >
           <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
             <line x1='12' y1='5' x2='12' y2='19' />
@@ -71,7 +71,7 @@ export default function BottomNav() {
           href='/profile'
           aria-label='Mein Profil'
           className={`flex h-11 w-15 items-center justify-center rounded-full transition-colors ${
-            pathname === '/profile' ? 'bg-black/15 text-white' : 'text-hint hover:text-body'
+            pathname === '/profile' ? 'bg-black/15 backdrop-blur-xl text-white' : 'text-hint hover:text-body'
           }`}
         >
           {links[1].icon}

@@ -86,7 +86,7 @@ export default function ProfileScreen() {
                   {/* Invisible spacer matching the emoji column, so the hairline always
                       starts under the label however the emoji is sized. */}
                   <div className='w-6 shrink-0' />
-                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10' />
+                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10 backdrop-blur-xl' />
                 </div>
 
                 <Link href='/profile/age' className={rowClass}>
@@ -100,7 +100,7 @@ export default function ProfileScreen() {
 
                 <div className='flex px-4'>
                   <div className='w-6 shrink-0' />
-                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10' />
+                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10 backdrop-blur-xl' />
                 </div>
 
                 <Link href='/profile/picture' className={rowClass}>
@@ -127,7 +127,7 @@ export default function ProfileScreen() {
 
                 <div className='flex px-4'>
                   <div className='w-6 shrink-0' />
-                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10' />
+                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10 backdrop-blur-xl' />
                 </div>
 
                 {/* Abmelden and Account löschen live together on their own page, the
@@ -140,7 +140,7 @@ export default function ProfileScreen() {
 
                 <div className='flex px-4'>
                   <div className='w-6 shrink-0' />
-                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10' />
+                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10 backdrop-blur-xl' />
                 </div>
 
                 <Link href='/profile/legal' className={rowClass}>

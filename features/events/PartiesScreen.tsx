@@ -153,7 +153,7 @@ export default function PartiesScreen() {
           <div role='tablist' className='relative flex w-full h-12.5 rounded-full bg-secondary p-1 backdrop-blur-xl'>
             <div
               aria-hidden='true'
-              className={`absolute top-1 bottom-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-white/25 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+              className={`absolute top-1 bottom-1 left-1 w-[calc(50%-0.25rem)] rounded-full bg-white/25 backdrop-blur-xl transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
                 tab === 'hosting' ? 'translate-x-full' : 'translate-x-0'
               }`}
             />

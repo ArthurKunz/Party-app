@@ -21,7 +21,7 @@ export default function StepProgress({ count, current, onSelect }: StepProgressP
             aria-label={`Frage ${i + 1}`}
             className={`h-2 rounded-full transition-all duration-300 ${
               i === current ? 'w-6' : 'w-2'
-            } ${reached ? 'bg-white' : 'bg-white/30'} ${
+            } ${reached ? 'bg-white' : 'bg-white/30 backdrop-blur-xl'} ${
               clickable ? 'cursor-pointer' : 'cursor-default'
             }`}
           />

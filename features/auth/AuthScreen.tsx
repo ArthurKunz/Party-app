@@ -66,7 +66,7 @@ export default function AuthPage() {
             <div
               key={i}
               className={`h-2 rounded-full transition-all duration-300 ${
-                activeDot === i ? 'w-6 bg-white' : 'w-2 bg-white/30'
+                activeDot === i ? 'w-6 bg-white' : 'w-2 bg-white/30 backdrop-blur-xl'
               }`}
             />
           ))}

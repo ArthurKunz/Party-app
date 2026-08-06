@@ -103,6 +103,7 @@ export type Pool = {
   description: string | null
   type: PoolType
   allow_text_response: boolean
+  allow_multiple: boolean
   created_at: string
   options: PoolOption[]
   responses: PoolResponse[]
@@ -113,4 +114,5 @@ export type PoolDraft = {
   question: string
   description: string | null
   options: string[]
+  allow_multiple: boolean
 }

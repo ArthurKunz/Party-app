@@ -2,15 +2,18 @@
 
 import { useState, useEffect, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import { Check, ImagePlus, Plus, Search } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Spinner from '@/components/shared/Spinner'
 import { generateInviteCode, getOrigin } from '@/lib/utils'
+import AddressSearchSheet from './components/AddressSearchSheet'
 import EventDateSheet from './components/EventDateSheet'
 import EventTimeSheet from './components/EventTimeSheet'
 import StepProgress from './components/StepProgress'
 import CreateStepLayout from './components/CreateStepLayout'
-import { cardClass, RowDivider, rowClass, rowInputClass, rowLabelClass, rowValueClass } from '@/components/shared/Card'
-import CreatePoolForm from './components/CreatePoolForm'
+import FloatingEmojis from './components/FloatingEmojis'
+import { cardClass, primaryButtonClass, RowDivider, rowClass, rowInputClass, rowLabelClass, rowValueClass } from '@/components/shared/Card'
+import PoolDraftForm from './components/PoolDraftForm'
 import { createEvent } from './services/events.service'
 import { createPool, addPoolOption } from './services/pools.service'
 import type { CreateEventFormValues, PoolDraft } from './types/events.types'
@@ -19,6 +22,10 @@ const inputClass =
   'w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
 
 const BG_MAX_BYTES = 10 * 1024 * 1024
+
+// Ready-made party backgrounds from /public: picking one writes its path straight
+// into events.background_url, so nothing is uploaded.
+const BG_PRESETS = Array.from({ length: 8 }, (_, i) => `/backgrounds/bg-${i + 1}.jpg`)
 
 type StepId = 'name' | 'description' | 'date' | 'time' | 'location' | 'guests' | 'background' | 'pools' | 'done'
 
@@ -47,6 +54,8 @@ export default function CreateEventScreen() {
   const [copied, setCopied] = useState(false)
   const [showPoolForm, setShowPoolForm] = useState(false)
   const [localPools, setLocalPools] = useState<PoolDraft[]>([])
+  const [bgPreset, setBgPreset] = useState<string | null>(null)
+  const [addressSheetOpen, setAddressSheetOpen] = useState(false)
   const [dateSheetOpen, setDateSheetOpen] = useState(false)
   const [timeSheet, setTimeSheet] = useState<'start' | 'end' | null>(null)
   const [bgFile, setBgFile] = useState<File | null>(null)
@@ -118,6 +127,7 @@ export default function CreateEventScreen() {
       setBgError('Die Datei darf höchstens 10 MB groß sein.')
       return
     }
+    setBgPreset(null)
     setBgFile(picked)
     setBgPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev)
@@ -158,7 +168,9 @@ export default function CreateEventScreen() {
 
     const newEventId = data.id
 
-    if (bgFile) {
+    if (bgPreset) {
+      await supabase.from('events').update({ background_url: bgPreset }).eq('id', newEventId)
+    } else if (bgFile) {
       const ext = bgFile.name.split('.').pop()?.toLowerCase() || 'jpg'
       const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'jpg'
       const path = `${userId}/${newEventId}/background.${safeExt}`
@@ -178,6 +190,7 @@ export default function CreateEventScreen() {
         description: pool.description,
         type: 'options',
         allow_text_response: false,
+        allow_multiple: pool.allow_multiple,
       })
       if (poolData) {
         await Promise.all(pool.options.map((label, i) => addPoolOption(poolData.id, label, i)))
@@ -254,6 +267,191 @@ export default function CreateEventScreen() {
         ? { ...v, hour: pad(next.hour), minute: pad(next.minute) }
         : { ...v, end_hour: pad(next.hour), end_minute: pad(next.minute) },
     )
+
+  if (step === 'pools') {
+    if (showPoolForm) {
+      return (
+        <PoolDraftForm
+          onCancel={() => setShowPoolForm(false)}
+          onAdd={(draft) => {
+            setLocalPools((prev) => [...prev, draft])
+            setShowPoolForm(false)
+          }}
+        />
+      )
+    }
+
+    return (
+      <CreateStepLayout
+        headline={HEADLINES.pools}
+        onCancel={() => router.push('/parties')}
+        onSkip={() => void handleFinish()}
+        onPrimary={handleNext}
+        busy={creating}
+        stepCount={QUESTION_COUNT}
+        currentStep={stepIndex}
+        onSelectStep={handleSelectStep}
+      >
+        {/* Everything added so far, as an overview. */}
+        {localPools.map((pool) => (
+          <div key={pool.id} className={cardClass}>
+            <div className={rowClass}>
+              <span className={rowLabelClass}>Frage</span>
+              <span className='ml-auto truncate text-button text-label-large'>{pool.question}</span>
+            </div>
+            {pool.options.map((option, i) => (
+              <div key={i}>
+                <RowDivider />
+                <div className={rowClass}>
+                  <span className={rowLabelClass}>Option {i + 1}</span>
+                  <span className={`ml-auto truncate ${rowValueClass}`}>{option}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+
+        <div className={cardClass}>
+          <button type='button' onClick={() => setShowPoolForm(true)} className={rowClass}>
+            <span className='flex h-6 w-6 items-center justify-center rounded-full bg-success'>
+              <Plus size={16} strokeWidth={3} className='text-white' />
+            </span>
+            <span className='text-button text-label-large'>Umfrage hinzufügen</span>
+          </button>
+        </div>
+      </CreateStepLayout>
+    )
+  }
+
+  if (step === 'background') {
+    return (
+      <CreateStepLayout
+        headline={HEADLINES.background}
+        onCancel={() => router.push('/parties')}
+        onPrimary={handleNext}
+        primaryDisabled={!bgFile && !bgPreset}
+        stepCount={QUESTION_COUNT}
+        currentStep={stepIndex}
+        onSelectStep={handleSelectStep}
+      >
+        <label className='block w-full cursor-pointer'>
+          <div className='flex aspect-[2/1] w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-[25px] bg-secondary backdrop-blur-xl'>
+            {bgPreviewUrl ? (
+              <img src={bgPreviewUrl} alt='' className='h-full w-full object-cover' />
+            ) : (
+              <>
+                <div className='flex h-12.5 w-12.5 items-center justify-center rounded-full bg-tertiary backdrop-blur-xl'>
+                  <ImagePlus size={22} strokeWidth={2} className='text-heading' />
+                </div>
+                <div className='flex flex-col items-center gap-0.5 px-6 text-center'>
+                  <span className='text-button text-label-large'>Eigenes Bild hochladen</span>
+                  <span className='text-label-2 text-subheading'>JPG oder PNG, bis 10 MB</span>
+                </div>
+              </>
+            )}
+          </div>
+          <input type='file' accept='image/*' className='hidden' onChange={(e) => handlePickBg(e.target.files?.[0] ?? null)} />
+        </label>
+
+        {bgError && <span className='px-4 text-label-2 text-warning'>{bgError}</span>}
+
+        <div className='grid grid-cols-2 gap-3'>
+          {BG_PRESETS.map((url, i) => (
+            <button
+              key={url}
+              type='button'
+              onClick={() => {
+                setBgPreset(url)
+                setBgFile(null)
+                setBgPreviewUrl((prev) => {
+                  if (prev) URL.revokeObjectURL(prev)
+                  return null
+                })
+              }}
+              className='flex flex-col items-center gap-2'
+            >
+              <img
+                src={url}
+                alt={`Hintergrund ${i + 1}`}
+                className='aspect-[3/2] w-full rounded-[18px] object-cover transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+              />
+              <span
+                className={`flex h-6 w-6 items-center justify-center rounded-full backdrop-blur-xl transition-colors duration-200 ${
+                  bgPreset === url ? 'bg-link' : 'border border-white/30'
+                }`}
+              >
+                {bgPreset === url && <Check size={14} strokeWidth={3} className='text-white' />}
+              </span>
+            </button>
+          ))}
+        </div>
+      </CreateStepLayout>
+    )
+  }
+
+  if (step === 'location') {
+    return (
+      <>
+        <CreateStepLayout
+          headline={HEADLINES.location}
+          onCancel={() => router.push('/parties')}
+          onPrimary={handleNext}
+          primaryDisabled={!canContinue}
+          stepCount={QUESTION_COUNT}
+          currentStep={stepIndex}
+          onSelectStep={handleSelectStep}
+        >
+          <div className={cardClass}>
+            {/* The row is typable, and the circle opens the search with whatever is
+                already in it. */}
+            <div className={rowClass}>
+              <span className={rowLabelClass}>Adresse</span>
+              <input
+                type='text'
+                value={values.location}
+                onChange={(e) => setField('location', e.target.value)}
+                placeholder='Hauptstraße 13'
+                className={rowInputClass}
+              />
+              <button
+                type='button'
+                onClick={() => setAddressSheetOpen(true)}
+                aria-label='Adresse suchen'
+                className='flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-full bg-sheet transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+              >
+                <Search size={16} strokeWidth={2.5} className='text-sheet-heading' />
+              </button>
+            </div>
+
+            <RowDivider />
+
+            <div className={rowClass}>
+              <span className={rowLabelClass}>Stadt</span>
+              <input
+                type='text'
+                value={values.city}
+                onChange={(e) => setField('city', e.target.value)}
+                onKeyDown={handleEnterAdvance}
+                placeholder='Leipzig'
+                className={rowInputClass}
+              />
+            </div>
+          </div>
+        </CreateStepLayout>
+
+        {addressSheetOpen && (
+          <AddressSearchSheet
+            initialQuery={values.location}
+            onClose={() => setAddressSheetOpen(false)}
+            onSelect={(result) => {
+              setValues((v) => ({ ...v, location: result.street, city: result.city || v.city }))
+              setAddressSheetOpen(false)
+            }}
+          />
+        )}
+      </>
+    )
+  }
 
   if (step === 'date' || step === 'time') {
     return (
@@ -371,184 +569,35 @@ export default function CreateEventScreen() {
     )
   }
 
+  // Every question has its own branch above, so what is left is the finish screen.
   return (
     <div className='relative w-full h-dvh overflow-hidden bg-main'>
+      <FloatingEmojis active />
 
-      <button
-        type='button'
-        onClick={() => router.push('/parties')}
-        aria-label='Abbrechen'
-        className='absolute top-6 right-6 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-secondary backdrop-blur-xl text-heading transition-transform hover:scale-105'
-      >
-        <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
-          <line x1='18' y1='6' x2='6' y2='18' />
-          <line x1='6' y1='6' x2='18' y2='18' />
-        </svg>
-      </button>
+      <div className='relative z-10 flex h-dvh flex-col items-center justify-center px-4 pb-safe-rsvp'>
+        <span className='text-center text-heading-2 font-bold text-heading'>{HEADLINES.done}</span>
 
-      {step === 'pools' ? (
-        <div className='relative z-10 h-full overflow-y-auto scrollbar-none px-6'>
-          <div className='min-h-full flex flex-col items-center justify-center py-24'>
-            <div className='w-full max-w-sm flex flex-col gap-8'>
-              <span className='block text-center text-4xl font-bold text-heading'>
-                {HEADLINES.pools}
-              </span>
-              <div className='flex flex-col gap-3'>
-                {localPools.map((pool) => (
-                  <div key={pool.id} className='rounded-xl bg-secondary backdrop-blur-xl border border-border-input px-4 py-3 flex flex-col gap-2'>
-                    <span className='text-sm font-semibold text-heading'>{pool.question}</span>
-                    <div className='flex flex-wrap gap-1.5'>
-                      {pool.options.map((opt, i) => (
-                        <span key={i} className='text-xs text-subheading bg-tertiary backdrop-blur-xl px-2.5 py-1 rounded-full'>
-                          {opt}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                {showPoolForm ? (
-                  <CreatePoolForm
-                    onCreated={(pool) => { setLocalPools((prev) => [...prev, pool]); setShowPoolForm(false) }}
-                    onCancel={() => setShowPoolForm(false)}
-                  />
-                ) : (
-                  <button
-                    type='button'
-                    onClick={() => setShowPoolForm(true)}
-                    className='text-sm text-label-small'
-                  >
-                    + Hinzufügen
-                  </button>
-                )}
-              </div>
-              {!showPoolForm && (
-                <div className='flex justify-center'>
-                  <button
-                    type='button'
-                    onClick={handleNext}
-                    disabled={creating}
-                    className='flex h-12 items-center justify-center rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading px-7.5 disabled:opacity-40'
-                  >
-                    {creating ? <Spinner /> : 'weiter'}
-                  </button>
-                </div>
-              )}
-              <div className='flex justify-center'>
-                <StepProgress count={QUESTION_COUNT} current={stepIndex} onSelect={handleSelectStep} />
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className='relative z-10 flex h-full flex-col items-center justify-center px-6'>
-          <div className='w-full max-w-sm flex flex-col gap-10'>
-            <span className='block text-center text-4xl font-bold text-heading'>
-              {HEADLINES[step]}
-            </span>
-
-            {step === 'location' && (
-              <div className='flex flex-col gap-3'>
-                <div className='flex flex-col gap-2'>
-                  <label className='text-sm text-label-small'>Straße & Hausnummer</label>
-                  <input
-                    type='text'
-                    placeholder='z.B. Musterstraße 14'
-                    value={values.location}
-                    onChange={(e) => setField('location', e.target.value)}
-                    className={inputClass}
-                  />
-                </div>
-                <div className='flex flex-col gap-2'>
-                  <label className='text-sm text-label-small'>Stadt</label>
-                  <input
-                    type='text'
-                    placeholder='z.B. Berlin'
-                    value={values.city}
-                    onChange={(e) => setField('city', e.target.value)}
-                    onKeyDown={handleEnterAdvance}
-                    className={inputClass}
-                  />
-                </div>
-              </div>
-            )}
-
-            {step === 'background' && (
-              <div className='flex flex-col gap-3'>
-                <label className='cursor-pointer block w-full'>
-                  {bgPreviewUrl ? (
-                    <div className='w-full aspect-video rounded-xl overflow-hidden bg-secondary backdrop-blur-xl'>
-                      <img src={bgPreviewUrl} alt='Hintergrundbild' className='w-full h-full object-cover' />
-                    </div>
-                  ) : (
-                    <div className='w-full rounded-xl border border-dashed border-border-input flex flex-col items-center gap-4 px-6 py-10'>
-                      <div className='flex h-14 w-14 items-center justify-center rounded-full bg-tertiary backdrop-blur-xl'>
-                        <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.5' strokeLinecap='round' strokeLinejoin='round' className='text-subheading'>
-                          <path d='M7 18a4.5 4.5 0 0 1-.6-8.96A5.5 5.5 0 0 1 17.4 8.02 4 4 0 0 1 17 16H16' />
-                          <path d='M12 12v9' />
-                          <path d='M9 15l3-3 3 3' />
-                        </svg>
-                      </div>
-                      <div className='flex flex-col items-center gap-1 text-center'>
-                        <span className='text-sm font-semibold text-label-small'>Datei auswählen oder hierher ziehen</span>
-                        <span className='text-xs text-subheading'>JPG, PNG bis 10 MB</span>
-                      </div>
-                      <span className='h-10 flex items-center justify-center rounded-full border border-border-input px-5 text-sm font-semibold text-label-small'>
-                        Datei durchsuchen
-                      </span>
-                    </div>
-                  )}
-                  <input
-                    type='file'
-                    accept='image/*'
-                    className='hidden'
-                    onChange={(e) => handlePickBg(e.target.files?.[0] ?? null)}
-                  />
-                </label>
-                {bgError && <span className='text-sm text-warning text-center' role='alert'>{bgError}</span>}
-              </div>
-            )}
-
-            {step === 'done' && (
-              <div className='flex flex-col gap-3'>
-                <label className='text-sm text-label-small'>Einladungs-Link</label>
-                <button
-                  type='button'
-                  onClick={handleCopy}
-                  className='w-full px-4 h-14 flex items-center justify-between gap-3 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm'
-                >
-                  <span className='truncate'>{shareLink}</span>
-                  <span className='shrink-0 text-subheading'>{copied ? 'Kopiert ✓' : 'Kopieren'}</span>
-                </button>
-              </div>
-            )}
-
-            <div className='flex justify-center'>
-              {step === 'done' ? (
-                <button
-                  type='button'
-                  onClick={() => router.push('/parties')}
-                  className='h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading px-7.5'
-                >
-                  Fertig
-                </button>
-              ) : (
-                <button
-                  type='button'
-                  onClick={handleNext}
-                  disabled={!canContinue}
-                  className='h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading px-7.5 disabled:opacity-40'
-                >
-                  weiter
-                </button>
-              )}
+        <div className='mt-7.5 w-full'>
+          <div className={cardClass}>
+            <div className={rowClass}>
+              <span className={rowLabelClass}>Einladungslink</span>
+              <span className={`ml-auto truncate ${rowValueClass}`}>{shareLink}</span>
             </div>
           </div>
 
-          <div className='absolute bottom-8'>
-            <StepProgress count={QUESTION_COUNT} current={stepIndex} onSelect={handleSelectStep} />
-          </div>
+          <button type='button' onClick={handleCopy} className={`${primaryButtonClass} mt-3`}>
+            {copied ? 'kopiert' : 'Link kopieren'}
+          </button>
+
+          <button
+            type='button'
+            onClick={() => router.push('/parties')}
+            className='mt-3 flex h-12.5 w-full items-center justify-center rounded-[25px] bg-secondary backdrop-blur-xl text-button font-semibold text-label-large transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+          >
+            Fertig
+          </button>
         </div>
-      )}
+      </div>
     </div>
   )
 }

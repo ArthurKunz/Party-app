@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { MapPin, Search, X } from 'lucide-react'
-import Spinner from '@/components/shared/Spinner'
 import { cardClass, RowDivider } from '@/components/shared/Card'
 
 // Photon, komoot's search over the same OpenStreetMap data: free, no key, and — the
@@ -136,9 +135,24 @@ export default function AddressSearchField({
     <>
       {/* The list sits above the field, so it is read from the bottom up: the best
           match is the row closest to what was typed. */}
+      {/* Skeleton rather than a spinner: a suggestion has a known shape (pin, street,
+          address line), so the list can be drawn before its content arrives. Three
+          rows, not the full six — an empty block taller than most answers would
+          collapse noisily every time a shorter result set lands. */}
       {open && loading && (
-        <div className='flex justify-center py-6 text-label-large'>
-          <Spinner />
+        <div className={cardClass}>
+          {[0, 1, 2].map((i) => (
+            <div key={i}>
+              {i > 0 && <RowDivider />}
+              <div className='flex w-full items-center gap-3 px-4 py-3'>
+                <span className='skeleton h-10 w-10 shrink-0 rounded-full' />
+                <span className='flex min-w-0 flex-1 flex-col gap-1.5'>
+                  <span className='skeleton h-3.5 w-2/5 rounded-full' />
+                  <span className='skeleton h-3 w-4/5 rounded-full' />
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

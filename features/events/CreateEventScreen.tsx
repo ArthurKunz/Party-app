@@ -56,6 +56,51 @@ const HEADLINES: Record<StepId, string> = {
   done: 'Deine Party ist bereit! 🎉',
 }
 
+// The eight wallpapers are ~1.1MB together and arrive one at a time, so each tile
+// shimmers until ITS OWN image has decoded and then cross-fades it in — the same
+// treatment the event hero and EventCard give their images. It has to be a component
+// rather than inline markup: the loaded flag is per-tile, and state cannot live
+// inside the parent's map.
+function PresetTile({
+  url,
+  index,
+  selected,
+  onSelect,
+}: {
+  url: string
+  index: number
+  selected: boolean
+  onSelect: () => void
+}) {
+  const [loaded, setLoaded] = useState(false)
+
+  return (
+    <button type='button' onClick={onSelect} className='flex flex-col items-center gap-2'>
+      <div
+        className={`relative aspect-[3/2] w-full overflow-hidden rounded-[18px] transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95 ${
+          loaded ? '' : 'skeleton'
+        }`}
+      >
+        <img
+          src={url}
+          alt={`Hintergrund ${index + 1}`}
+          onLoad={() => setLoaded(true)}
+          className={`h-full w-full object-cover transition-opacity duration-500 ${
+            loaded ? 'opacity-100' : 'opacity-0'
+          }`}
+        />
+      </div>
+      <span
+        className={`flex h-6 w-6 items-center justify-center rounded-full backdrop-blur-xl transition-colors duration-200 ${
+          selected ? 'bg-link' : 'border border-white/30'
+        }`}
+      >
+        {selected && <Check size={14} strokeWidth={3} className='text-white' />}
+      </span>
+    </button>
+  )
+}
+
 export default function CreateEventScreen() {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
@@ -74,6 +119,7 @@ export default function CreateEventScreen() {
   const [timeSheet, setTimeSheet] = useState<'start' | 'end' | null>(null)
   const [bgFile, setBgFile] = useState<File | null>(null)
   const [bgPreviewUrl, setBgPreviewUrl] = useState<string | null>(null)
+  const [bgPreviewLoaded, setBgPreviewLoaded] = useState(false)
   const [bgError, setBgError] = useState<string | null>(null)
   const [values, setValues] = useState<CreateEventFormValues>({
     title: '',
@@ -147,6 +193,9 @@ export default function CreateEventScreen() {
     }
     setBgPreset(null)
     setBgFile(picked)
+    // A phone photo is big enough to take a moment to decode, so the box shimmers
+    // until this new one is actually on screen.
+    setBgPreviewLoaded(false)
     setBgPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev)
       return URL.createObjectURL(picked)
@@ -405,9 +454,20 @@ export default function CreateEventScreen() {
         onSelectStep={handleSelectStep}
       >
         <label className='block w-full cursor-pointer'>
-          <div className='flex aspect-[2/1] w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-[25px] bg-secondary backdrop-blur-xl'>
+          <div
+            className={`flex aspect-[2/1] w-full flex-col items-center justify-center gap-3 overflow-hidden rounded-[25px] bg-secondary backdrop-blur-xl ${
+              bgPreviewUrl && !bgPreviewLoaded ? 'skeleton' : ''
+            }`}
+          >
             {bgPreviewUrl ? (
-              <img src={bgPreviewUrl} alt='' className='h-full w-full object-cover' />
+              <img
+                src={bgPreviewUrl}
+                alt=''
+                onLoad={() => setBgPreviewLoaded(true)}
+                className={`h-full w-full object-cover transition-opacity duration-500 ${
+                  bgPreviewLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
             ) : (
               <>
                 <div className='flex h-12.5 w-12.5 items-center justify-center rounded-full bg-tertiary backdrop-blur-xl'>
@@ -427,10 +487,12 @@ export default function CreateEventScreen() {
 
         <div className='grid grid-cols-2 gap-3'>
           {BG_PRESETS.map((url, i) => (
-            <button
+            <PresetTile
               key={url}
-              type='button'
-              onClick={() => {
+              url={url}
+              index={i}
+              selected={bgPreset === url}
+              onSelect={() => {
                 setBgPreset(url)
                 setBgFile(null)
                 setBgPreviewUrl((prev) => {
@@ -438,21 +500,7 @@ export default function CreateEventScreen() {
                   return null
                 })
               }}
-              className='flex flex-col items-center gap-2'
-            >
-              <img
-                src={url}
-                alt={`Hintergrund ${i + 1}`}
-                className='aspect-[3/2] w-full rounded-[18px] object-cover transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
-              />
-              <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full backdrop-blur-xl transition-colors duration-200 ${
-                  bgPreset === url ? 'bg-link' : 'border border-white/30'
-                }`}
-              >
-                {bgPreset === url && <Check size={14} strokeWidth={3} className='text-white' />}
-              </span>
-            </button>
+            />
           ))}
         </div>
       </CreateStepLayout>

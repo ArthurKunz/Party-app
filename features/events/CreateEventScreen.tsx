@@ -15,6 +15,7 @@ import FloatingEmojis from './components/FloatingEmojis'
 import { cardClass, primaryButtonClass, RowDivider, rowClass, rowInputClass, rowLabelClass, rowValueClass } from '@/components/shared/Card'
 import PoolDraftForm from './components/PoolDraftForm'
 import PoolDraftCard from './components/PoolDraftCard'
+import Switch from '@/components/shared/Switch'
 import { createEvent } from './services/events.service'
 import { createPool, addPoolOption } from './services/pools.service'
 import type { CreateEventFormValues, PoolDraft } from './types/events.types'
@@ -60,6 +61,7 @@ export default function CreateEventScreen() {
   const [localPools, setLocalPools] = useState<PoolDraft[]>([])
   const [bgPreset, setBgPreset] = useState<string | null>(null)
   const [locationPicked, setLocationPicked] = useState(false)
+  const [hasEndTime, setHasEndTime] = useState(false)
   const [dateSheetOpen, setDateSheetOpen] = useState(false)
   const [timeSheet, setTimeSheet] = useState<'start' | 'end' | null>(null)
   const [bgFile, setBgFile] = useState<File | null>(null)
@@ -112,7 +114,9 @@ export default function CreateEventScreen() {
       case 'date':
         return Boolean(values.day && values.month && values.year)
       case 'time':
-        return Boolean(values.hour && values.minute && values.end_hour && values.end_minute)
+        return Boolean(
+          values.hour && values.minute && (!hasEndTime || (values.end_hour && values.end_minute)),
+        )
       case 'location':
         // Typed text is never enough: the answer has to be a picked suggestion, so
         // every event ends up on an address a guest can actually be sent to.
@@ -147,12 +151,16 @@ export default function CreateEventScreen() {
 
     const code = generateInviteCode()
     const event_date = `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:00`
-    // An end earlier than the start means the party runs past midnight.
-    const start = new Date(event_date)
-    const end = new Date(event_date)
-    end.setHours(Number(values.end_hour), Number(values.end_minute), 0, 0)
-    if (end <= start) end.setDate(end.getDate() + 1)
-    const ends_at = end.toISOString()
+    // The end time is optional, so the column simply stays null without one.
+    let ends_at: string | null = null
+    if (values.end_hour) {
+      // An end earlier than the start means the party runs past midnight.
+      const start = new Date(event_date)
+      const end = new Date(event_date)
+      end.setHours(Number(values.end_hour), Number(values.end_minute), 0, 0)
+      if (end <= start) end.setDate(end.getDate() + 1)
+      ends_at = end.toISOString()
+    }
     const max_guests = values.max_guests ? parseInt(values.max_guests, 10) : null
 
     const { data, error } = await createEvent({
@@ -293,6 +301,12 @@ export default function CreateEventScreen() {
   const openTimeSheet = (which: 'start' | 'end') => {
     setTime(which, timeValue(which))
     setTimeSheet(which)
+  }
+
+  const toggleEndTime = (next: boolean) => {
+    setHasEndTime(next)
+    // Switching it back off must not leave a stale end time behind for handleFinish.
+    if (!next) setValues((v) => ({ ...v, end_hour: '', end_minute: '' }))
   }
 
   // Only the step's own content is swapped — the background below it is rendered
@@ -488,33 +502,41 @@ export default function CreateEventScreen() {
               </button>
             </div>
           ) : (
-            <div className={cardClass}>
-              {/* Same shape as the Datum row: the row is the tap target, the input
-                  only carries the Name step's value and placeholder colours. */}
-              <button type='button' onClick={() => openTimeSheet('start')} className={rowClass}>
-                <span className={rowLabelClass}>beginnt um…</span>
-                <input
-                  type='text'
-                  readOnly
-                  tabIndex={-1}
-                  value={values.hour ? `${values.hour}:${values.minute}` : ''}
-                  placeholder='auswählen'
-                  className={`${rowInputClass} pointer-events-none`}
-                />
-              </button>
-              <RowDivider />
-              <button type='button' onClick={() => openTimeSheet('end')} className={rowClass}>
-                <span className={rowLabelClass}>endet um…</span>
-                <input
-                  type='text'
-                  readOnly
-                  tabIndex={-1}
-                  value={values.end_hour ? `${values.end_hour}:${values.end_minute}` : ''}
-                  placeholder='auswählen'
-                  className={`${rowInputClass} pointer-events-none`}
-                />
-              </button>
-            </div>
+            <>
+              <div className={cardClass}>
+                {/* Same shape as the Datum row: the row is the tap target, the input
+                    only carries the Name step's value and placeholder colours. */}
+                <button type='button' onClick={() => openTimeSheet('start')} className={rowClass}>
+                  <span className={rowLabelClass}>beginnt um…</span>
+                  <input
+                    type='text'
+                    readOnly
+                    tabIndex={-1}
+                    value={values.hour ? `${values.hour}:${values.minute}` : ''}
+                    placeholder='auswählen'
+                    className={`${rowInputClass} pointer-events-none`}
+                  />
+                </button>
+                {hasEndTime && (
+                  <>
+                    <RowDivider />
+                    <button type='button' onClick={() => openTimeSheet('end')} className={rowClass}>
+                      <span className={rowLabelClass}>endet um…</span>
+                      <input
+                        type='text'
+                        readOnly
+                        tabIndex={-1}
+                        value={values.end_hour ? `${values.end_hour}:${values.end_minute}` : ''}
+                        placeholder='auswählen'
+                        className={`${rowInputClass} pointer-events-none`}
+                      />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <Switch label='Endzeitpunkt hinzufügen' checked={hasEndTime} onChange={toggleEndTime} />
+            </>
           )}
         </CreateStepLayout>
 

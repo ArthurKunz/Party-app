@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ChevronLeft, Minus, Plus } from 'lucide-react'
 import { cardClass, primaryButtonClass, RowDivider, rowClass, rowInputClass, rowLabelClass } from '@/components/shared/Card'
+import Switch from '@/components/shared/Switch'
 import type { PoolDraft } from '../types/events.types'
 
 const MIN_OPTIONS = 2
@@ -98,28 +99,11 @@ export default function PoolDraftForm({
             </button>
           </div>
 
-          <div className={cardClass}>
-            <button
-              type='button'
-              onClick={() => setAllowMultiple((v) => !v)}
-              role='switch'
-              aria-checked={allowMultiple}
-              className={rowClass}
-            >
-              <span className='text-button text-label-large'>mehrere Antworten erlauben</span>
-              <span
-                className={`ml-auto flex h-7 w-12 shrink-0 items-center rounded-full p-1 transition-colors duration-200 ${
-                  allowMultiple ? 'bg-success' : 'bg-tertiary'
-                }`}
-              >
-                <span
-                  className={`h-5 w-5 rounded-full bg-sheet transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-                    allowMultiple ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
-              </span>
-            </button>
-          </div>
+          <Switch
+            label='mehrere Antworten erlauben'
+            checked={allowMultiple}
+            onChange={setAllowMultiple}
+          />
 
           <div className={`${cardClass} p-4`}>
             <textarea

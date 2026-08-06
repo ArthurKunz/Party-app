@@ -179,4 +179,10 @@
     .pb-safe-rsvp-content {
         padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
     }
+
+    /* Create-flow content: clears the fixed weiter button (50px), its 1.5rem gap,
+       the step dots (8px) and the 2rem those sit on. */
+    .pb-safe-step {
+        padding-bottom: calc(8.5rem + env(safe-area-inset-bottom, 0px));
+    }
 }

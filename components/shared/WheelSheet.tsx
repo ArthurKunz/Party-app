@@ -55,6 +55,19 @@ function Column({ labels, index, onChange }: WheelColumn) {
     })
   }
 
+  // Tapping a row is the second way to pick one: it scrolls that row under the
+  // band, and `userScrolling` is raised first so the effect above cannot snap the
+  // list there instantly and kill the animation.
+  const handleTap = (i: number) => {
+    const el = ref.current
+    if (!el) return
+    userScrolling.current = true
+    clearTimeout(settleTimer.current)
+    settleTimer.current = setTimeout(() => { userScrolling.current = false }, 150)
+    el.scrollTo({ top: i * ITEM_HEIGHT, behavior: 'smooth' })
+    onChange(i)
+  }
+
   return (
     <div
       ref={ref}
@@ -69,15 +82,17 @@ function Column({ labels, index, onChange }: WheelColumn) {
       }}
     >
       {labels.map((label, i) => (
-        <div
+        <button
           key={label}
+          type='button'
+          onClick={() => handleTap(i)}
           style={{ height: ITEM_HEIGHT }}
-          className={`flex snap-center items-center justify-center text-heading-4 transition-colors duration-150 ${
+          className={`flex w-full snap-center items-center justify-center text-heading-4 transition-colors duration-150 ${
             i === index ? 'text-sheet-heading' : 'text-sheet-body'
           }`}
         >
           {label}
-        </div>
+        </button>
       ))}
     </div>
   )

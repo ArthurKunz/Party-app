@@ -2,11 +2,11 @@
 
 import { useState, useEffect, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, ImagePlus, Plus, Search } from 'lucide-react'
+import { Check, ImagePlus, Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Spinner from '@/components/shared/Spinner'
 import { generateInviteCode, getOrigin } from '@/lib/utils'
-import AddressSearchSheet from './components/AddressSearchSheet'
+import AddressSearchField from './components/AddressSearchField'
 import EventDateSheet from './components/EventDateSheet'
 import EventTimeSheet from './components/EventTimeSheet'
 import StepProgress from './components/StepProgress'
@@ -14,6 +14,7 @@ import CreateStepLayout from './components/CreateStepLayout'
 import FloatingEmojis from './components/FloatingEmojis'
 import { cardClass, primaryButtonClass, RowDivider, rowClass, rowInputClass, rowLabelClass, rowValueClass } from '@/components/shared/Card'
 import PoolDraftForm from './components/PoolDraftForm'
+import PoolDraftCard from './components/PoolDraftCard'
 import { createEvent } from './services/events.service'
 import { createPool, addPoolOption } from './services/pools.service'
 import type { CreateEventFormValues, PoolDraft } from './types/events.types'
@@ -29,7 +30,9 @@ const BG_PRESETS = Array.from({ length: 8 }, (_, i) => `/backgrounds/bg-${i + 1}
 
 type StepId = 'name' | 'description' | 'date' | 'time' | 'location' | 'guests' | 'background' | 'pools' | 'done'
 
-const STEPS: StepId[] = ['name', 'date', 'time', 'location', 'description', 'guests', 'background', 'pools', 'done']
+// Background sits with the other required answers (name, date, time, location) and
+// ahead of the optional ones, since it is the only later step that cannot be skipped.
+const STEPS: StepId[] = ['name', 'date', 'time', 'location', 'background', 'description', 'guests', 'pools', 'done']
 const QUESTION_COUNT = STEPS.length - 1
 
 const HEADLINES: Record<StepId, string> = {
@@ -53,9 +56,10 @@ export default function CreateEventScreen() {
   const [inviteCode, setInviteCode] = useState('')
   const [copied, setCopied] = useState(false)
   const [showPoolForm, setShowPoolForm] = useState(false)
+  const [editingPool, setEditingPool] = useState<PoolDraft | null>(null)
   const [localPools, setLocalPools] = useState<PoolDraft[]>([])
   const [bgPreset, setBgPreset] = useState<string | null>(null)
-  const [addressSheetOpen, setAddressSheetOpen] = useState(false)
+  const [locationPicked, setLocationPicked] = useState(false)
   const [dateSheetOpen, setDateSheetOpen] = useState(false)
   const [timeSheet, setTimeSheet] = useState<'start' | 'end' | null>(null)
   const [bgFile, setBgFile] = useState<File | null>(null)
@@ -110,7 +114,9 @@ export default function CreateEventScreen() {
       case 'time':
         return Boolean(values.hour && values.minute && values.end_hour && values.end_minute)
       case 'location':
-        return values.location.trim().length > 0 && values.city.trim().length > 0
+        // Typed text is never enough: the answer has to be a picked suggestion, so
+        // every event ends up on an address a guest can actually be sent to.
+        return locationPicked && values.location.trim().length > 0
       default:
         return true
     }
@@ -156,7 +162,9 @@ export default function CreateEventScreen() {
       invite_code: code,
       event_date,
       ends_at,
-      location: `${values.location.trim()}, ${values.city.trim()}`,
+      // The city only exists when a suggestion was picked; a hand-typed address
+      // must not end up stored with a dangling comma.
+      location: [values.location.trim(), values.city.trim()].filter(Boolean).join(', '),
       max_guests,
     })
 
@@ -256,6 +264,13 @@ export default function CreateEventScreen() {
   }
   const setDate = (next: { day: number; month: number; year: number }) =>
     setValues((v) => ({ ...v, day: pad(next.day), month: pad(next.month + 1), year: String(next.year) }))
+  const formattedDate = values.day
+    ? new Date(Number(values.year), Number(values.month) - 1, Number(values.day)).toLocaleDateString('de-DE', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : ''
 
   const timeValue = (which: 'start' | 'end') => ({
     hour: Number(which === 'start' ? values.hour : values.end_hour) || (which === 'start' ? 20 : 2),
@@ -268,14 +283,37 @@ export default function CreateEventScreen() {
         : { ...v, end_hour: pad(next.hour), end_minute: pad(next.minute) },
     )
 
+  // The wheel opens on a default, and that default is what the user sees — so it
+  // counts as the answer straight away. Closing without scrolling keeps it instead
+  // of falling back to the placeholder.
+  const openDateSheet = () => {
+    setDate(dateValue)
+    setDateSheetOpen(true)
+  }
+  const openTimeSheet = (which: 'start' | 'end') => {
+    setTime(which, timeValue(which))
+    setTimeSheet(which)
+  }
+
   if (step === 'pools') {
     if (showPoolForm) {
       return (
         <PoolDraftForm
-          onCancel={() => setShowPoolForm(false)}
-          onAdd={(draft) => {
-            setLocalPools((prev) => [...prev, draft])
+          draft={editingPool ?? undefined}
+          onCancel={() => {
             setShowPoolForm(false)
+            setEditingPool(null)
+          }}
+          onAdd={(draft) => {
+            // The form hands back the id it was opened on, so an edit replaces its
+            // poll in place and a new one lands at the end.
+            setLocalPools((prev) =>
+              prev.some((p) => p.id === draft.id)
+                ? prev.map((p) => (p.id === draft.id ? draft : p))
+                : [...prev, draft],
+            )
+            setShowPoolForm(false)
+            setEditingPool(null)
           }}
         />
       )
@@ -288,27 +326,24 @@ export default function CreateEventScreen() {
         onSkip={() => void handleFinish()}
         onPrimary={handleNext}
         busy={creating}
+        // Grows with every poll added, so a pinned bar would end up sitting on the
+        // list it belongs to.
+        pinnedControls={false}
         stepCount={QUESTION_COUNT}
         currentStep={stepIndex}
         onSelectStep={handleSelectStep}
       >
-        {/* Everything added so far, as an overview. */}
+        {/* Everything added so far, as an overview: tap to edit, swipe to delete. */}
         {localPools.map((pool) => (
-          <div key={pool.id} className={cardClass}>
-            <div className={rowClass}>
-              <span className={rowLabelClass}>Frage</span>
-              <span className='ml-auto truncate text-button text-label-large'>{pool.question}</span>
-            </div>
-            {pool.options.map((option, i) => (
-              <div key={i}>
-                <RowDivider />
-                <div className={rowClass}>
-                  <span className={rowLabelClass}>Option {i + 1}</span>
-                  <span className={`ml-auto truncate ${rowValueClass}`}>{option}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <PoolDraftCard
+            key={pool.id}
+            pool={pool}
+            onEdit={() => {
+              setEditingPool(pool)
+              setShowPoolForm(true)
+            }}
+            onDelete={() => setLocalPools((prev) => prev.filter((p) => p.id !== pool.id))}
+          />
         ))}
 
         <div className={cardClass}>
@@ -330,6 +365,9 @@ export default function CreateEventScreen() {
         onCancel={() => router.push('/parties')}
         onPrimary={handleNext}
         primaryDisabled={!bgFile && !bgPreset}
+        // Long enough that a pinned bar would cover the wallpapers it is asking
+        // about: here the button waits at the end of the page instead.
+        pinnedControls={false}
         stepCount={QUESTION_COUNT}
         currentStep={stepIndex}
         onSelectStep={handleSelectStep}
@@ -391,65 +429,29 @@ export default function CreateEventScreen() {
 
   if (step === 'location') {
     return (
-      <>
-        <CreateStepLayout
-          headline={HEADLINES.location}
-          onCancel={() => router.push('/parties')}
-          onPrimary={handleNext}
-          primaryDisabled={!canContinue}
-          stepCount={QUESTION_COUNT}
-          currentStep={stepIndex}
-          onSelectStep={handleSelectStep}
-        >
-          <div className={cardClass}>
-            {/* The row is typable, and the circle opens the search with whatever is
-                already in it. */}
-            <div className={rowClass}>
-              <span className={rowLabelClass}>Adresse</span>
-              <input
-                type='text'
-                value={values.location}
-                onChange={(e) => setField('location', e.target.value)}
-                placeholder='Hauptstraße 13'
-                className={rowInputClass}
-              />
-              <button
-                type='button'
-                onClick={() => setAddressSheetOpen(true)}
-                aria-label='Adresse suchen'
-                className='flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-full bg-sheet transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
-              >
-                <Search size={16} strokeWidth={2.5} className='text-sheet-heading' />
-              </button>
-            </div>
-
-            <RowDivider />
-
-            <div className={rowClass}>
-              <span className={rowLabelClass}>Stadt</span>
-              <input
-                type='text'
-                value={values.city}
-                onChange={(e) => setField('city', e.target.value)}
-                onKeyDown={handleEnterAdvance}
-                placeholder='Leipzig'
-                className={rowInputClass}
-              />
-            </div>
-          </div>
-        </CreateStepLayout>
-
-        {addressSheetOpen && (
-          <AddressSearchSheet
-            initialQuery={values.location}
-            onClose={() => setAddressSheetOpen(false)}
-            onSelect={(result) => {
-              setValues((v) => ({ ...v, location: result.street, city: result.city || v.city }))
-              setAddressSheetOpen(false)
-            }}
-          />
-        )}
-      </>
+      <CreateStepLayout
+        headline={HEADLINES.location}
+        onCancel={() => router.push('/parties')}
+        onPrimary={handleNext}
+        primaryDisabled={!canContinue}
+        stepCount={QUESTION_COUNT}
+        currentStep={stepIndex}
+        onSelectStep={handleSelectStep}
+      >
+        <AddressSearchField
+          value={values.location}
+          // Typing by hand invalidates the city — and the pick — that the last
+          // suggestion brought with it.
+          onChange={(address) => {
+            setLocationPicked(false)
+            setValues((v) => ({ ...v, location: address, city: '' }))
+          }}
+          onSelect={(result) => {
+            setLocationPicked(true)
+            setValues((v) => ({ ...v, location: result.street, city: result.city }))
+          }}
+        />
+      </CreateStepLayout>
     )
   }
 
@@ -467,27 +469,46 @@ export default function CreateEventScreen() {
         >
           {step === 'date' ? (
             <div className={cardClass}>
-              <button type='button' onClick={() => setDateSheetOpen(true)} className={rowClass}>
+              {/* The whole row is the tap target; the input is only here so the
+                  value and placeholder read exactly like the Name step's. */}
+              <button type='button' onClick={openDateSheet} className={rowClass}>
                 <span className={rowLabelClass}>Datum</span>
-                <span className={`ml-auto ${values.day ? 'text-button text-label-large' : rowValueClass}`}>
-                  {values.day ? `${values.day}.${values.month}.${values.year}` : 'auswählen'}
-                </span>
+                <input
+                  type='text'
+                  readOnly
+                  tabIndex={-1}
+                  value={formattedDate}
+                  placeholder='auswählen'
+                  className={`${rowInputClass} pointer-events-none`}
+                />
               </button>
             </div>
           ) : (
             <div className={cardClass}>
-              <button type='button' onClick={() => setTimeSheet('start')} className={rowClass}>
+              {/* Same shape as the Datum row: the row is the tap target, the input
+                  only carries the Name step's value and placeholder colours. */}
+              <button type='button' onClick={() => openTimeSheet('start')} className={rowClass}>
                 <span className={rowLabelClass}>beginnt um…</span>
-                <span className={`ml-auto ${values.hour ? 'text-button text-label-large' : rowValueClass}`}>
-                  {values.hour ? `${values.hour}:${values.minute}` : 'auswählen'}
-                </span>
+                <input
+                  type='text'
+                  readOnly
+                  tabIndex={-1}
+                  value={values.hour ? `${values.hour}:${values.minute}` : ''}
+                  placeholder='auswählen'
+                  className={`${rowInputClass} pointer-events-none`}
+                />
               </button>
               <RowDivider />
-              <button type='button' onClick={() => setTimeSheet('end')} className={rowClass}>
+              <button type='button' onClick={() => openTimeSheet('end')} className={rowClass}>
                 <span className={rowLabelClass}>endet um…</span>
-                <span className={`ml-auto ${values.end_hour ? 'text-button text-label-large' : rowValueClass}`}>
-                  {values.end_hour ? `${values.end_hour}:${values.end_minute}` : 'auswählen'}
-                </span>
+                <input
+                  type='text'
+                  readOnly
+                  tabIndex={-1}
+                  value={values.end_hour ? `${values.end_hour}:${values.end_minute}` : ''}
+                  placeholder='auswählen'
+                  className={`${rowInputClass} pointer-events-none`}
+                />
               </button>
             </div>
           )}
@@ -543,7 +564,7 @@ export default function CreateEventScreen() {
               onChange={(e) => setField('description', e.target.value)}
               placeholder='Details'
               rows={4}
-              className='w-full resize-none bg-transparent text-button text-label-large outline-none placeholder:text-subheading'
+              className='w-full resize-none bg-transparent text-button text-subheading outline-none'
             />
           </div>
         )}

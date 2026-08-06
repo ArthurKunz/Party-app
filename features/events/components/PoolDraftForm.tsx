@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronLeft, Plus, X } from 'lucide-react'
+import { ChevronLeft, Minus, Plus } from 'lucide-react'
 import { cardClass, primaryButtonClass, RowDivider, rowClass, rowInputClass, rowLabelClass } from '@/components/shared/Card'
 import type { PoolDraft } from '../types/events.types'
 
@@ -9,17 +9,21 @@ const MIN_OPTIONS = 2
 
 // One poll being written, inside the create flow. Nothing here touches Supabase —
 // the finished draft is handed back and only written when the event is created.
+// Passing `draft` opens it on an existing poll; handing back the same id is what
+// makes the caller replace it instead of adding a second one.
 export default function PoolDraftForm({
+  draft,
   onAdd,
   onCancel,
 }: {
+  draft?: PoolDraft
   onAdd: (draft: PoolDraft) => void
   onCancel: () => void
 }) {
-  const [question, setQuestion] = useState('')
-  const [options, setOptions] = useState(['', ''])
-  const [description, setDescription] = useState('')
-  const [allowMultiple, setAllowMultiple] = useState(false)
+  const [question, setQuestion] = useState(draft?.question ?? '')
+  const [options, setOptions] = useState(draft ? draft.options : ['', ''])
+  const [description, setDescription] = useState(draft?.description ?? '')
+  const [allowMultiple, setAllowMultiple] = useState(draft?.allow_multiple ?? false)
 
   const filled = options.map((o) => o.trim()).filter(Boolean)
   const canAdd = question.trim().length > 0 && filled.length >= MIN_OPTIONS
@@ -27,9 +31,11 @@ export default function PoolDraftForm({
   const setOption = (index: number, value: string) =>
     setOptions((prev) => prev.map((o, i) => (i === index ? value : o)))
 
+  // The page itself scrolls — a poll with ten options is taller than the screen —
+  // so only the back button is pinned, exactly like the steps of the flow.
   return (
-    <div className='relative w-full h-dvh overflow-hidden bg-main'>
-      <div className='relative z-10 flex h-dvh flex-col px-4 pt-7.5 pb-safe-rsvp'>
+    <div className='relative w-full min-h-dvh bg-main'>
+      <div className='fixed inset-x-0 top-0 z-20 px-4 pt-7.5'>
         <button
           type='button'
           onClick={onCancel}
@@ -38,7 +44,9 @@ export default function PoolDraftForm({
         >
           <ChevronLeft size={24} strokeWidth={3} className='text-white' />
         </button>
+      </div>
 
+      <div className='relative z-10 flex min-h-dvh flex-col px-4 pt-26.25 pb-safe-rsvp'>
         <div className='mt-auto flex w-full flex-col gap-3'>
           <div className={cardClass}>
             <div className={rowClass}>
@@ -47,7 +55,7 @@ export default function PoolDraftForm({
                 type='text'
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder='Was sollen wir bestellen?'
+                placeholder='Bringst du was mit?'
                 className={rowInputClass}
               />
             </div>
@@ -56,6 +64,18 @@ export default function PoolDraftForm({
               <div key={i}>
                 <RowDivider />
                 <div className={rowClass}>
+                  {/* Only beyond the two required options can one be removed — the
+                      red circle mirrors the green one on 'Option hinzufügen'. */}
+                  {options.length > MIN_OPTIONS && (
+                    <button
+                      type='button'
+                      onClick={() => setOptions((prev) => prev.filter((_, index) => index !== i))}
+                      aria-label={`Option ${i + 1} entfernen`}
+                      className='flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-warning'
+                    >
+                      <Minus size={16} strokeWidth={3} className='text-white' />
+                    </button>
+                  )}
                   <span className={rowLabelClass}>Option {i + 1}</span>
                   <input
                     type='text'
@@ -64,17 +84,6 @@ export default function PoolDraftForm({
                     placeholder={i === 0 ? 'Ja' : 'Nein'}
                     className={rowInputClass}
                   />
-                  {/* Only beyond the two required options can one be removed. */}
-                  {options.length > MIN_OPTIONS && (
-                    <button
-                      type='button'
-                      onClick={() => setOptions((prev) => prev.filter((_, index) => index !== i))}
-                      aria-label={`Option ${i + 1} entfernen`}
-                      className='shrink-0'
-                    >
-                      <X size={18} strokeWidth={2.5} className='text-subheading' />
-                    </button>
-                  )}
                 </div>
               </div>
             ))}
@@ -118,7 +127,7 @@ export default function PoolDraftForm({
               onChange={(e) => setDescription(e.target.value)}
               placeholder='Details'
               rows={3}
-              className='w-full resize-none bg-transparent text-button text-label-large outline-none placeholder:text-subheading'
+              className='w-full resize-none bg-transparent text-button text-subheading outline-none'
             />
           </div>
 
@@ -127,7 +136,7 @@ export default function PoolDraftForm({
             disabled={!canAdd}
             onClick={() =>
               onAdd({
-                id: crypto.randomUUID(),
+                id: draft?.id ?? crypto.randomUUID(),
                 question: question.trim(),
                 description: description.trim() || null,
                 options: filled,
@@ -136,7 +145,7 @@ export default function PoolDraftForm({
             }
             className={primaryButtonClass}
           >
-            Hinzufügen
+            {draft ? 'Speichern' : 'Hinzufügen'}
           </button>
         </div>
       </div>

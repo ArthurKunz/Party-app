@@ -3,7 +3,6 @@
 import { ChevronRight, X } from 'lucide-react'
 import Spinner from '@/components/shared/Spinner'
 import { primaryButtonClass } from '@/components/shared/Card'
-import FloatingEmojis from './FloatingEmojis'
 import StepProgress from './StepProgress'
 
 // Every question in the create flow is this: cancel top-left, an optional skip
@@ -58,10 +57,10 @@ export default function CreateStepLayout({
     </>
   )
 
+  // No background of its own: CreateEventScreen paints it once, below every step, so
+  // the floating emojis survive the switch from one question to the next.
   return (
-    <div className='relative w-full min-h-dvh bg-main'>
-      <FloatingEmojis active />
-
+    <div className='relative w-full min-h-dvh'>
       {/* The page itself scrolls; only the controls are pinned, and their strips are
           transparent so the answer passes behind them rather than under a black bar.
           The skip rides along with ✕ so the two cannot drift apart mid-scroll. */}

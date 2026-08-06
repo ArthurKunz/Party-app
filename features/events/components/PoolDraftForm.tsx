@@ -34,7 +34,7 @@ export default function PoolDraftForm({
   // The page itself scrolls — a poll with ten options is taller than the screen —
   // so only the back button is pinned, exactly like the steps of the flow.
   return (
-    <div className='relative w-full min-h-dvh bg-main'>
+    <div className='relative w-full min-h-dvh'>
       <div className='fixed inset-x-0 top-0 z-20 px-4 pt-7.5'>
         <button
           type='button'

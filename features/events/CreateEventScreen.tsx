@@ -16,6 +16,7 @@ import { cardClass, primaryButtonClass, RowDivider, rowClass, rowInputClass, row
 import PoolDraftForm from './components/PoolDraftForm'
 import PoolDraftCard from './components/PoolDraftCard'
 import Switch from '@/components/shared/Switch'
+import WarningBanner from '@/components/shared/WarningBanner'
 import { createEvent } from './services/events.service'
 import { createPool, addPoolOption } from './services/pools.service'
 import type { CreateEventFormValues, PoolDraft } from './types/events.types'
@@ -24,6 +25,13 @@ const inputClass =
   'w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
 
 const BG_MAX_BYTES = 10 * 1024 * 1024
+
+// The title is `text-heading-1` (35px semibold) on the event page and must not wrap:
+// roughly 18px per character across 343px of content leaves about 19, so 20.
+const TITLE_MAX = 20
+const DESCRIPTION_MAX = 500
+const GUESTS_MAX = 500
+const POOLS_MAX = 5
 
 // Ready-made party backgrounds from /public: picking one writes its path straight
 // into events.background_url, so nothing is uploaded.
@@ -364,14 +372,20 @@ export default function CreateEventScreen() {
           />
         ))}
 
-        <div className={cardClass}>
-          <button type='button' onClick={() => setShowPoolForm(true)} className={rowClass}>
-            <span className='flex h-6 w-6 items-center justify-center rounded-full bg-success'>
-              <Plus size={16} strokeWidth={3} className='text-white' />
-            </span>
-            <span className='text-button text-label-large'>Umfrage hinzufügen</span>
-          </button>
-        </div>
+        {/* At the cap the row is replaced by the reason, rather than left there
+            looking tappable. */}
+        {localPools.length >= POOLS_MAX ? (
+          <WarningBanner message={`Maximal ${POOLS_MAX} Umfragen`} />
+        ) : (
+          <div className={cardClass}>
+            <button type='button' onClick={() => setShowPoolForm(true)} className={rowClass}>
+              <span className='flex h-6 w-6 items-center justify-center rounded-full bg-success'>
+                <Plus size={16} strokeWidth={3} className='text-white' />
+              </span>
+              <span className='text-button text-label-large'>Umfrage hinzufügen</span>
+            </button>
+          </div>
+        )}
       </CreateStepLayout>
     )
   }
@@ -567,50 +581,72 @@ export default function CreateEventScreen() {
         onSelectStep={handleSelectStep}
       >
         {step === 'name' && (
-          <div className={cardClass}>
-            <div className={rowClass}>
-              <span className={rowLabelClass}>Name</span>
-              <input
-                type='text'
-                value={values.title}
-                onChange={(e) => setField('title', e.target.value)}
-                onKeyDown={handleEnterAdvance}
-                placeholder='Sommerparty'
-                enterKeyHint='next'
-                className={rowInputClass}
-              />
+          <>
+            <div className={cardClass}>
+              <div className={rowClass}>
+                <span className={rowLabelClass}>Name</span>
+                <input
+                  type='text'
+                  value={values.title}
+                  onChange={(e) => setField('title', e.target.value)}
+                  onKeyDown={handleEnterAdvance}
+                  placeholder='Sommerparty'
+                  enterKeyHint='next'
+                  maxLength={TITLE_MAX}
+                  className={rowInputClass}
+                />
+              </div>
             </div>
-          </div>
+            {values.title.length >= TITLE_MAX && (
+              <WarningBanner message={`Maximal ${TITLE_MAX} Zeichen`} />
+            )}
+          </>
         )}
 
         {step === 'description' && (
-          <div className={`${cardClass} p-4`}>
-            <textarea
-              value={values.description}
-              onChange={(e) => setField('description', e.target.value)}
-              placeholder='Details'
-              rows={4}
-              className='w-full resize-none bg-transparent text-button text-subheading outline-none'
-            />
-          </div>
+          <>
+            <div className={`${cardClass} p-4`}>
+              <textarea
+                value={values.description}
+                onChange={(e) => setField('description', e.target.value)}
+                placeholder='Details'
+                rows={4}
+                maxLength={DESCRIPTION_MAX}
+                className='w-full resize-none bg-transparent text-button text-subheading outline-none'
+              />
+            </div>
+            {values.description.length >= DESCRIPTION_MAX && (
+              <WarningBanner message={`Maximal ${DESCRIPTION_MAX} Zeichen`} />
+            )}
+          </>
         )}
 
         {step === 'guests' && (
-          <div className={cardClass}>
-            <div className={rowClass}>
-              <span className={rowLabelClass}>Max. Gäste</span>
-              <input
-                type='text'
-                inputMode='numeric'
-                value={values.max_guests}
-                onChange={(e) => setField('max_guests', e.target.value.replace(/\D/g, '').slice(0, 4))}
-                onKeyDown={handleEnterAdvance}
-                placeholder='50'
-                enterKeyHint='next'
-                className={rowInputClass}
-              />
+          <>
+            <div className={cardClass}>
+              <div className={rowClass}>
+                <span className={rowLabelClass}>Max. Gäste</span>
+                <input
+                  type='text'
+                  inputMode='numeric'
+                  value={values.max_guests}
+                  // Typing past the cap clamps to it rather than being swallowed, so
+                  // the number on screen is always the one that will be saved.
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 4)
+                    setField('max_guests', Number(digits) > GUESTS_MAX ? String(GUESTS_MAX) : digits)
+                  }}
+                  onKeyDown={handleEnterAdvance}
+                  placeholder='50'
+                  enterKeyHint='next'
+                  className={rowInputClass}
+                />
+              </div>
             </div>
-          </div>
+            {Number(values.max_guests) >= GUESTS_MAX && (
+              <WarningBanner message={`Maximal ${GUESTS_MAX} Gäste`} />
+            )}
+          </>
         )}
       </CreateStepLayout>
     )

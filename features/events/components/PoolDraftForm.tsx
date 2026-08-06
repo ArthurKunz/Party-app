@@ -4,9 +4,17 @@ import { useState } from 'react'
 import { ChevronLeft, Minus, Plus } from 'lucide-react'
 import { cardClass, primaryButtonClass, RowDivider, rowClass, rowInputClass, rowLabelClass } from '@/components/shared/Card'
 import Switch from '@/components/shared/Switch'
+import WarningBanner from '@/components/shared/WarningBanner'
 import type { PoolDraft } from '../types/events.types'
 
 const MIN_OPTIONS = 2
+const MAX_OPTIONS = 10
+const DESCRIPTION_MAX = 300
+const QUESTION_MAX = 60
+// An option is one `truncate`d row on the event page: `text-label-1` (13px) across
+// roughly 215px once the radio and a full voter stack have taken their share, which
+// is about 33 characters.
+const OPTION_MAX = 30
 
 // One poll being written, inside the create flow. Nothing here touches Supabase —
 // the finished draft is handed back and only written when the event is created.
@@ -57,6 +65,7 @@ export default function PoolDraftForm({
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 placeholder='Bringst du was mit?'
+                maxLength={QUESTION_MAX}
                 className={rowInputClass}
               />
             </div>
@@ -83,21 +92,42 @@ export default function PoolDraftForm({
                     value={option}
                     onChange={(e) => setOption(i, e.target.value)}
                     placeholder={i === 0 ? 'Ja' : 'Nein'}
+                    maxLength={OPTION_MAX}
                     className={rowInputClass}
                   />
                 </div>
               </div>
             ))}
 
-            <RowDivider />
-
-            <button type='button' onClick={() => setOptions((prev) => [...prev, ''])} className={rowClass}>
-              <span className='flex h-6 w-6 items-center justify-center rounded-full bg-success'>
-                <Plus size={16} strokeWidth={3} className='text-white' />
-              </span>
-              <span className='text-button text-label-large'>Option hinzufügen</span>
-            </button>
+            {/* At the cap the row goes and the reason takes its place below the card. */}
+            {options.length < MAX_OPTIONS && (
+              <>
+                <RowDivider />
+                <button
+                  type='button'
+                  onClick={() => setOptions((prev) => [...prev, ''])}
+                  className={rowClass}
+                >
+                  <span className='flex h-6 w-6 items-center justify-center rounded-full bg-success'>
+                    <Plus size={16} strokeWidth={3} className='text-white' />
+                  </span>
+                  <span className='text-button text-label-large'>Option hinzufügen</span>
+                </button>
+              </>
+            )}
           </div>
+
+          {question.length >= QUESTION_MAX && (
+            <WarningBanner message={`Maximal ${QUESTION_MAX} Zeichen pro Frage`} />
+          )}
+
+          {options.some((o) => o.length >= OPTION_MAX) && (
+            <WarningBanner message={`Maximal ${OPTION_MAX} Zeichen pro Option`} />
+          )}
+
+          {options.length >= MAX_OPTIONS && (
+            <WarningBanner message={`Maximal ${MAX_OPTIONS} Optionen`} />
+          )}
 
           <Switch
             label='mehrere Antworten erlauben'
@@ -111,9 +141,14 @@ export default function PoolDraftForm({
               onChange={(e) => setDescription(e.target.value)}
               placeholder='Details'
               rows={3}
+              maxLength={DESCRIPTION_MAX}
               className='w-full resize-none bg-transparent text-button text-subheading outline-none'
             />
           </div>
+
+          {description.length >= DESCRIPTION_MAX && (
+            <WarningBanner message={`Maximal ${DESCRIPTION_MAX} Zeichen`} />
+          )}
 
           <button
             type='button'

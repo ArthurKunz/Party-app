@@ -2,7 +2,7 @@
 
 import { useState, useEffect, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, ImagePlus, Plus } from 'lucide-react'
+import { Check, Copy, ImagePlus, Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Spinner from '@/components/shared/Spinner'
 import { generateInviteCode, getOrigin } from '@/lib/utils'
@@ -653,26 +653,42 @@ export default function CreateEventScreen() {
   }
 
   // Every question has its own branch above, so what is left is the finish screen.
+  // It carries no ✕, no skip and no dots, but keeps the questions' frame: headline at
+  // the top, answer and button at the bottom.
   return (
-    <div className='relative z-10 flex min-h-dvh flex-col items-center justify-center px-4 pb-safe-rsvp'>
-      <span className='text-center text-heading-2 font-bold text-heading'>{HEADLINES.done}</span>
+    <div className='relative z-10 flex min-h-dvh flex-col px-4 pt-26.25 pb-safe-rsvp'>
+      <span className='mb-7.5 text-center text-heading-2 font-bold text-heading'>
+        {HEADLINES.done}
+      </span>
 
-      <div className='mt-7.5 w-full'>
+      <div className='mt-auto w-full'>
         <div className={cardClass}>
           <div className={rowClass}>
             <span className={rowLabelClass}>Einladungslink</span>
-            <span className={`ml-auto truncate ${rowValueClass}`}>{shareLink}</span>
+
+            {/* The link is longer than the row, so it FADES OUT under the copy button
+                instead of being cut off. A gradient overlay would not do it here — the
+                card is translucent, so painting `bg-secondary` over the text only dims
+                it; masking makes the text itself transparent, on any background. */}
+            <div className='ml-auto min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(to_right,#000_65%,transparent)] [-webkit-mask-image:linear-gradient(to_right,#000_65%,transparent)]'>
+              <span className={`block whitespace-nowrap ${rowValueClass}`}>{shareLink}</span>
+            </div>
+
+            <button
+              type='button'
+              onClick={handleCopy}
+              aria-label='Einladungslink kopieren'
+              className='flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-full bg-sheet text-sheet-heading transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-90'
+            >
+              {copied ? <Check size={16} strokeWidth={3} /> : <Copy size={15} strokeWidth={2.5} />}
+            </button>
           </div>
         </div>
-
-        <button type='button' onClick={handleCopy} className={`${primaryButtonClass} mt-3`}>
-          {copied ? 'kopiert' : 'Link kopieren'}
-        </button>
 
         <button
           type='button'
           onClick={() => router.push('/parties')}
-          className='mt-3 flex h-12.5 w-full items-center justify-center rounded-[25px] bg-secondary backdrop-blur-xl text-button font-semibold text-label-large transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+          className={`${primaryButtonClass} mt-3`}
         >
           Fertig
         </button>

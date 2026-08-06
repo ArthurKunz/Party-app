@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, type KeyboardEvent } from 'react'
+import { useState, useEffect, useRef, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Copy, ImagePlus, Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
@@ -16,6 +16,7 @@ import { cardClass, primaryButtonClass, RowDivider, rowClass, rowInputClass, row
 import PoolDraftForm from './components/PoolDraftForm'
 import PoolDraftCard from './components/PoolDraftCard'
 import Switch from '@/components/shared/Switch'
+import Collapse from '@/components/shared/Collapse'
 import WarningBanner from '@/components/shared/WarningBanner'
 import { createEvent } from './services/events.service'
 import { createPool, addPoolOption } from './services/pools.service'
@@ -32,6 +33,8 @@ const TITLE_MAX = 20
 const DESCRIPTION_MAX = 500
 const GUESTS_MAX = 500
 const POOLS_MAX = 5
+// Matches Collapse's duration: a deleted poll folds away before it is dropped.
+const COLLAPSE_MS = 300
 
 // Ready-made party backgrounds from /public: picking one writes its path straight
 // into events.background_url, so nothing is uploaded.
@@ -112,6 +115,8 @@ export default function CreateEventScreen() {
   const [showPoolForm, setShowPoolForm] = useState(false)
   const [editingPool, setEditingPool] = useState<PoolDraft | null>(null)
   const [localPools, setLocalPools] = useState<PoolDraft[]>([])
+  const [removingPoolId, setRemovingPoolId] = useState<string | null>(null)
+  const removePoolTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const [bgPreset, setBgPreset] = useState<string | null>(null)
   const [locationPicked, setLocationPicked] = useState(false)
   const [hasEndTime, setHasEndTime] = useState(false)
@@ -135,6 +140,8 @@ export default function CreateEventScreen() {
     city: '',
     max_guests: '',
   })
+
+  useEffect(() => () => clearTimeout(removePoolTimer.current), [])
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -273,7 +280,41 @@ export default function CreateEventScreen() {
     setInviteCode(code)
     setCreated(true)
     setCreating(false)
-    setStep('done')
+    goToStep('done')
+  }
+
+  // The page scrolls, and the tall steps (background, pools) are usually left
+  // scrolled down — without this the next question opens halfway down itself.
+  // Jumped rather than smooth-scrolled: the content swaps in the same frame, so an
+  // animated scroll would be gliding over a page that is already the new one.
+  const goToStep = (next: StepId) => {
+    setStep(next)
+    window.scrollTo({ top: 0 })
+  }
+
+  // Folded away first and dropped afterwards, so the list closes the gap instead of
+  // snapping shut. The card slides itself out to the left over the same 300ms.
+  const removePool = (id: string) => {
+    if (removingPoolId) return
+    setRemovingPoolId(id)
+    removePoolTimer.current = setTimeout(() => {
+      setLocalPools((prev) => prev.filter((p) => p.id !== id))
+      setRemovingPoolId(null)
+    }, COLLAPSE_MS)
+  }
+
+  // The poll form is a page of its own, so it opens and closes at the top for the
+  // same reason a step does — the list it is reached from is usually scrolled.
+  const openPoolForm = (draft: PoolDraft | null) => {
+    setEditingPool(draft)
+    setShowPoolForm(true)
+    window.scrollTo({ top: 0 })
+  }
+
+  const closePoolForm = () => {
+    setShowPoolForm(false)
+    setEditingPool(null)
+    window.scrollTo({ top: 0 })
   }
 
   const handleNext = () => {
@@ -281,13 +322,13 @@ export default function CreateEventScreen() {
       void handleFinish()
       return
     }
-    setStep(STEPS[stepIndex + 1])
+    goToStep(STEPS[stepIndex + 1])
   }
 
   const handleSelectStep = (index: number) => {
     // Locked once the event exists; before that any question can be revisited.
     if (created) return
-    setStep(STEPS[index])
+    goToStep(STEPS[index])
   }
 
   const handleEnterAdvance = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -375,10 +416,7 @@ export default function CreateEventScreen() {
       return (
         <PoolDraftForm
           draft={editingPool ?? undefined}
-          onCancel={() => {
-            setShowPoolForm(false)
-            setEditingPool(null)
-          }}
+          onCancel={closePoolForm}
           onAdd={(draft) => {
             // The form hands back the id it was opened on, so an edit replaces its
             // poll in place and a new one lands at the end.
@@ -387,8 +425,7 @@ export default function CreateEventScreen() {
                 ? prev.map((p) => (p.id === draft.id ? draft : p))
                 : [...prev, draft],
             )
-            setShowPoolForm(false)
-            setEditingPool(null)
+            closePoolForm()
           }}
         />
       )
@@ -408,18 +445,24 @@ export default function CreateEventScreen() {
         currentStep={stepIndex}
         onSelectStep={handleSelectStep}
       >
-        {/* Everything added so far, as an overview: tap to edit, swipe to delete. */}
-        {localPools.map((pool) => (
-          <PoolDraftCard
-            key={pool.id}
-            pool={pool}
-            onEdit={() => {
-              setEditingPool(pool)
-              setShowPoolForm(true)
-            }}
-            onDelete={() => setLocalPools((prev) => prev.filter((p) => p.id !== pool.id))}
-          />
-        ))}
+        {/* Everything added so far, as an overview: tap to edit, swipe to delete.
+            Its own column with no gap — a collapsed card is still a flex item, so a
+            gap here would leave a hole where a deleted poll used to be. The spacing
+            rides inside each box instead and folds away with it. */}
+        <div className='flex flex-col'>
+          {localPools.map((pool) => (
+            <Collapse key={pool.id} open={pool.id !== removingPoolId}>
+              <div className='pb-3'>
+                <PoolDraftCard
+                  pool={pool}
+                  deleting={pool.id === removingPoolId}
+                  onEdit={() => openPoolForm(pool)}
+                  onDelete={() => removePool(pool.id)}
+                />
+              </div>
+            </Collapse>
+          ))}
+        </div>
 
         {/* At the cap the row is replaced by the reason, rather than left there
             looking tappable. */}
@@ -427,7 +470,7 @@ export default function CreateEventScreen() {
           <WarningBanner message={`Maximal ${POOLS_MAX} Umfragen`} />
         ) : (
           <div className={cardClass}>
-            <button type='button' onClick={() => setShowPoolForm(true)} className={rowClass}>
+            <button type='button' onClick={() => openPoolForm(null)} className={rowClass}>
               <span className='flex h-6 w-6 items-center justify-center rounded-full bg-success'>
                 <Plus size={16} strokeWidth={3} className='text-white' />
               </span>
@@ -579,22 +622,22 @@ export default function CreateEventScreen() {
                     className={`${rowInputClass} pointer-events-none`}
                   />
                 </button>
-                {hasEndTime && (
-                  <>
-                    <RowDivider />
-                    <button type='button' onClick={() => openTimeSheet('end')} className={rowClass}>
-                      <span className={rowLabelClass}>endet um…</span>
-                      <input
-                        type='text'
-                        readOnly
-                        tabIndex={-1}
-                        value={values.end_hour ? `${values.end_hour}:${values.end_minute}` : ''}
-                        placeholder='auswählen'
-                        className={`${rowInputClass} pointer-events-none`}
-                      />
-                    </button>
-                  </>
-                )}
+                {/* Unfolds out of the card rather than appearing in it, so the
+                    switch below visibly makes room for it. */}
+                <Collapse open={hasEndTime}>
+                  <RowDivider />
+                  <button type='button' onClick={() => openTimeSheet('end')} className={rowClass}>
+                    <span className={rowLabelClass}>endet um…</span>
+                    <input
+                      type='text'
+                      readOnly
+                      tabIndex={-1}
+                      value={values.end_hour ? `${values.end_hour}:${values.end_minute}` : ''}
+                      placeholder='auswählen'
+                      className={`${rowInputClass} pointer-events-none`}
+                    />
+                  </button>
+                </Collapse>
               </div>
 
               <Switch label='Endzeitpunkt hinzufügen' checked={hasEndTime} onChange={toggleEndTime} />
@@ -705,7 +748,7 @@ export default function CreateEventScreen() {
   // the top, answer and button at the bottom.
   return (
     <div className='relative z-10 flex min-h-dvh flex-col px-4 pt-26.25 pb-safe-rsvp'>
-      <span className='mb-7.5 text-center text-heading-2 font-bold text-heading'>
+      <span className='mb-7.5 animate-fade-in-up text-center text-heading-2 font-bold text-heading'>
         {HEADLINES.done}
       </span>
 

@@ -18,10 +18,14 @@ const SLOP = 8
 // swiping it left uncovers a delete button, the way an iOS list row does.
 export default function PoolDraftCard({
   pool,
+  deleting = false,
   onEdit,
   onDelete,
 }: {
   pool: PoolDraft
+  /** Owned by the caller, which is the one that knows the delete was accepted: the
+   *  card finishes the swipe and leaves to the left while the space it held folds. */
+  deleting?: boolean
   onEdit: () => void
   onDelete: () => void
 }) {
@@ -72,9 +76,11 @@ export default function PoolDraftCard({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        style={{ transform: `translateX(${offset}px)` }}
+        // -100% is the row's own width, which is wider than the container by the
+        // gap and the delete button, so the card clears the screen entirely.
+        style={{ transform: deleting ? 'translateX(-100%)' : `translateX(${offset}px)` }}
         className={`flex items-stretch gap-3 ${
-          dragging ? '' : 'transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]'
+          dragging && !deleting ? '' : 'transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]'
         }`}
       >
         <button type='button' onClick={handleClick} className={`${cardClass} shrink-0 text-left`}>

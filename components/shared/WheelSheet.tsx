@@ -98,6 +98,10 @@ function Column({ labels, index, onChange }: WheelColumn) {
   )
 }
 
+// Matches the duration on both transitions below: the sheet has to finish playing
+// its entry backwards before the parent is told to unmount it.
+const CLOSE_MS = 300
+
 export default function WheelSheet({ columns, onClose }: { columns: WheelColumn[]; onClose: () => void }) {
   // Flipped on the frame after mount, so the sheet has a state to animate FROM.
   const [shown, setShown] = useState(false)
@@ -105,6 +109,19 @@ export default function WheelSheet({ columns, onClose }: { columns: WheelColumn[
     const id = requestAnimationFrame(() => setShown(true))
     return () => cancelAnimationFrame(id)
   }, [])
+
+  // Opening was animated and closing was not — the parent renders this sheet
+  // conditionally, so its own `onClose` unmounts it on the spot. It is intercepted
+  // here instead: play the exit, then hand the close on.
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  useEffect(() => () => clearTimeout(closeTimer.current), [])
+
+  const handleClose = () => {
+    // A second tap while it is already leaving must not queue another close.
+    if (closeTimer.current) return
+    setShown(false)
+    closeTimer.current = setTimeout(onClose, CLOSE_MS)
+  }
 
   // The document must not scroll behind the sheet.
   useEffect(() => {
@@ -116,7 +133,7 @@ export default function WheelSheet({ columns, onClose }: { columns: WheelColumn[
   return (
     <>
       <div
-        onClick={onClose}
+        onClick={handleClose}
         className={`fixed inset-0 z-40 bg-main/50 backdrop-blur-xs touch-none transition-opacity duration-300 ${
           shown ? 'opacity-100' : 'opacity-0'
         }`}

@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { MapPin, Search, X } from 'lucide-react'
 import { cardClass, RowDivider } from '@/components/shared/Card'
+import Collapse from '@/components/shared/Collapse'
+
+// Matches Collapse's own duration: the list has to finish folding away before its
+// contents are cleared, or the box would empty in one frame instead of animating.
+const COLLAPSE_MS = 300
 
 // Photon, komoot's search over the same OpenStreetMap data: free, no key, and — the
 // reason it is here rather than Nominatim — built for type-ahead. Nominatim matches
@@ -60,6 +65,10 @@ export default function AddressSearchField({
 }) {
   const [results, setResults] = useState<AddressResult[]>([])
   const [loading, setLoading] = useState(false)
+  // True once a search has come back for what is currently typed. It is what tells
+  // an empty list ('Keine Adresse gefunden') apart from never having searched, so
+  // the box does not unfold onto that line when a picked address is refocused.
+  const [searched, setSearched] = useState(false)
   // The list belongs to the act of typing: it is only up while the field has focus.
   const [open, setOpen] = useState(false)
   // Picking a suggestion writes it into `value`, which would immediately look like
@@ -68,9 +77,13 @@ export default function AddressSearchField({
   // Leaving the field closes the list, but a tap on a suggestion blurs the input
   // before it fires its click — so the close waits a moment for that click.
   const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const clearTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const listRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => () => clearTimeout(closeTimer.current), [])
+  useEffect(() => () => {
+    clearTimeout(closeTimer.current)
+    clearTimeout(clearTimer.current)
+  }, [])
 
   // The list reads bottom-up, so it opens at its BOTTOM: the best match sits whole
   // and tappable right above the field, and it is the worst one that gets cut off
@@ -95,6 +108,7 @@ export default function AddressSearchField({
     const timer = setTimeout(async () => {
       if (!term) {
         setResults([])
+        setSearched(false)
         setLoading(false)
         return
       }
@@ -110,6 +124,7 @@ export default function AddressSearchField({
             .map(toResult)
             .slice(0, MAX_RESULTS),
         )
+        setSearched(true)
       } catch {
         // An aborted request is the normal case here, not a failure worth reporting.
       } finally {
@@ -126,64 +141,74 @@ export default function AddressSearchField({
   const handlePick = (result: AddressResult) => {
     clearTimeout(closeTimer.current)
     skipNextSearch.current = true
-    setResults([])
     setOpen(false)
+    setSearched(false)
+    // The rows are emptied only once the box has folded away — clearing them now
+    // would drop its height in a single frame instead of animating it.
+    clearTimeout(clearTimer.current)
+    clearTimer.current = setTimeout(() => setResults([]), COLLAPSE_MS)
     onSelect(result)
   }
 
   return (
-    <>
+    // One column with no gap of its own: the space above the field belongs to the
+    // suggestions and has to fold away with them, and a gap on this parent would go
+    // on rendering around the collapsed box.
+    <div className='flex w-full flex-col'>
       {/* The list sits above the field, so it is read from the bottom up: the best
-          match is the row closest to what was typed. */}
-      {/* Skeleton rather than a spinner: a suggestion has a known shape (pin, street,
-          address line), so the list can be drawn before its content arrives. Three
-          rows, not the full six — an empty block taller than most answers would
-          collapse noisily every time a shorter result set lands. */}
-      {open && loading && (
-        <div className={cardClass}>
-          {[0, 1, 2].map((i) => (
-            <div key={i}>
-              {i > 0 && <RowDivider />}
-              <div className='flex w-full items-center gap-3 px-4 py-3'>
-                <span className='skeleton h-10 w-10 shrink-0 rounded-full' />
-                <span className='flex min-w-0 flex-1 flex-col gap-1.5'>
-                  <span className='skeleton h-3.5 w-2/5 rounded-full' />
-                  <span className='skeleton h-3 w-4/5 rounded-full' />
-                </span>
-              </div>
+          match is the row closest to what was typed. It unfolds while typing and
+          folds away again on blur rather than appearing and vanishing — by HEIGHT,
+          since it is a `backdrop-blur-xl` card and opacity would flatten it. */}
+      <Collapse open={open && (loading || results.length > 0 || searched)}>
+        {/* The gap to the field lives in here, so it folds away too. */}
+        <div className='pb-3'>
+          {/* Skeleton rather than a spinner: a suggestion has a known shape (pin,
+              street, address line), so the list can be drawn before its content
+              arrives. Three rows, not the full six — an empty block taller than most
+              answers would collapse noisily every time a shorter set lands. */}
+          {loading ? (
+            <div className={cardClass}>
+              {[0, 1, 2].map((i) => (
+                <div key={i}>
+                  {i > 0 && <RowDivider />}
+                  <div className='flex w-full items-center gap-3 px-4 py-3'>
+                    <span className='skeleton h-10 w-10 shrink-0 rounded-full' />
+                    <span className='flex min-w-0 flex-1 flex-col gap-1.5'>
+                      <span className='skeleton h-3.5 w-2/5 rounded-full' />
+                      <span className='skeleton h-3 w-4/5 rounded-full' />
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
-
-      {open && !loading && results.length > 0 && (
-        <div ref={listRef} className={`${cardClass} max-h-[45dvh] overflow-y-auto scrollbar-none`}>
-          {[...results].reverse().map((result, i) => (
-            <div key={result.id}>
-              {i > 0 && <RowDivider />}
-              <button
-                type='button'
-                onClick={() => handlePick(result)}
-                className='flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-150 active:bg-white/10'
-              >
-                <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tertiary backdrop-blur-xl'>
-                  <MapPin size={18} strokeWidth={2.5} className='text-label-large' />
-                </span>
-                <span className='flex min-w-0 flex-col gap-0.5'>
-                  <span className='truncate text-button text-label-large'>{result.street}</span>
-                  <span className='line-clamp-1 text-label-2 text-subheading'>{result.label}</span>
-                </span>
-              </button>
+          ) : results.length > 0 ? (
+            <div ref={listRef} className={`${cardClass} max-h-[45dvh] overflow-y-auto scrollbar-none`}>
+              {[...results].reverse().map((result, i) => (
+                <div key={result.id}>
+                  {i > 0 && <RowDivider />}
+                  <button
+                    type='button'
+                    onClick={() => handlePick(result)}
+                    className='flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-150 active:bg-white/10'
+                  >
+                    <span className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tertiary backdrop-blur-xl'>
+                      <MapPin size={18} strokeWidth={2.5} className='text-label-large' />
+                    </span>
+                    <span className='flex min-w-0 flex-col gap-0.5'>
+                      <span className='truncate text-button text-label-large'>{result.street}</span>
+                      <span className='line-clamp-1 text-label-2 text-subheading'>{result.label}</span>
+                    </span>
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            <span className='block px-4 text-center text-label-1 text-subheading'>
+              Keine Adresse gefunden
+            </span>
+          )}
         </div>
-      )}
-
-      {open && !loading && value.trim().length > 0 && results.length === 0 && (
-        <span className='block px-4 text-center text-label-1 text-subheading'>
-          Keine Adresse gefunden
-        </span>
-      )}
+      </Collapse>
 
       {/* No label on this row: the magnifier and the placeholder say what it is. */}
       <label className={`${cardClass} flex h-12.5 items-center gap-3 px-4`}>
@@ -217,6 +242,6 @@ export default function AddressSearchField({
           </button>
         )}
       </label>
-    </>
+    </div>
   )
 }

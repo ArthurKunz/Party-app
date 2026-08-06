@@ -95,8 +95,19 @@ export default function CreateStepLayout({
         }`}
       >
         {/* The bottom margin keeps the headline clear of the answer on a step tall
-            enough to have swallowed all the free space above it. */}
-        <span className='mb-7.5 text-center text-heading-2 font-bold text-heading'>{headline}</span>
+            enough to have swallowed all the free space above it.
+            The key re-mounts it on every step so the entry animation replays —
+            this layout itself stays mounted across the whole flow, so without one
+            React would only swap the text. The ANSWER below deliberately does not
+            animate: its cards are `backdrop-blur-xl`, and an ancestor animating
+            opacity or transform becomes their backdrop root, which would leave them
+            flat and unblurred over the emojis for the animation's full duration. */}
+        <span
+          key={headline}
+          className='mb-7.5 animate-fade-in-up text-center text-heading-2 font-bold text-heading'
+        >
+          {headline}
+        </span>
 
         {/* Short steps keep their answer at the bottom; a long one simply grows the
             page and scrolls. */}

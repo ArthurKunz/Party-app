@@ -24,7 +24,7 @@ export const sheetRowInputClass = `ml-auto min-w-0 flex-1 bg-transparent text-ri
 // The sheet's primary action is the black pill the overview already uses, not the
 // white one the dark pages use — a white pill on a white sheet is invisible.
 export const sheetButtonClass =
-  'flex h-14 w-full items-center justify-center rounded-full bg-button-primary text-button font-medium text-sheet transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95 disabled:bg-button-primary/40 disabled:text-sheet/60'
+  'flex h-14 w-full items-center justify-center rounded-full bg-button-primary text-button font-semibold text-sheet transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95 disabled:bg-button-primary/40 disabled:text-sheet/60'
 
 // Hairline between two rows, inset so it starts under the label.
 export const SheetRowDivider = () => (

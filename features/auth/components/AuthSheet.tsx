@@ -57,7 +57,7 @@ export default function AuthSheet({
         <button
           type='button'
           onClick={onCreateAccount}
-          className='h-14 w-full rounded-full bg-button-primary text-button font-medium text-sheet transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+          className='h-14 w-full rounded-full bg-button-primary text-button font-semibold text-sheet transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
         >
           Erstelle ein Account
         </button>
@@ -65,7 +65,7 @@ export default function AuthSheet({
         <button
           type='button'
           onClick={onSignIn}
-          className='h-14 w-full rounded-full bg-button-secondary text-button font-medium text-sheet-heading transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+          className='h-14 w-full rounded-full bg-button-secondary text-button font-semibold text-sheet-heading transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
         >
           Bei Account Anmelden
         </button>
@@ -74,7 +74,7 @@ export default function AuthSheet({
           type='button'
           onClick={handleGoogle}
           disabled={pending}
-          className='h-14 w-full flex items-center justify-center gap-2 rounded-full bg-button-secondary text-button font-medium text-sheet-heading transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95 disabled:text-sheet-body'
+          className='h-14 w-full flex items-center justify-center gap-2 rounded-full bg-button-secondary text-button font-semibold text-sheet-heading transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95 disabled:text-sheet-body'
         >
           {GoogleIcon}
           Google

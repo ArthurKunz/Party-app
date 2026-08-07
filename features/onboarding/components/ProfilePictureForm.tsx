@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Pencil, User } from 'lucide-react'
+import Image from 'next/image'
+import { Check, Pencil } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Avatar from '@/components/shared/Avatar'
 import Spinner from '@/components/shared/Spinner'
@@ -13,10 +14,11 @@ import { MAX_BYTES, BUCKET, AVATAR_COLORS, pickRandomAvatarColor } from '../cons
 import { getSession } from '../services/onboarding.service'
 
 // The same two ways of having an avatar as the profile's picture screen: a photo,
-// or initials on one of the nine party colours. One colour starts selected so the
-// circle is never empty and 'fertig' always leads somewhere.
+// or initials on one of the nine party colours. NOTHING is selected to begin with —
+// the circle shows the default silhouette until the user picks one or the other, so
+// the screen does not pretend a choice has been made for them.
 export default function ProfilePictureForm({ onSuccess, onClose, firstname, lastname }: ProfilePictureFormProps) {
-  const [color, setColor] = useState<string | null>(pickRandomAvatarColor)
+  const [color, setColor] = useState<string | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
@@ -108,9 +110,17 @@ export default function ProfilePictureForm({ onSuccess, onClose, firstname, last
                 className='transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
               />
             ) : (
-              <div className='flex h-43.75 w-43.75 items-center justify-center rounded-full bg-button-secondary transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'>
-                <User size={72} strokeWidth={1.5} className='text-sheet-body' />
-              </div>
+              <Image
+                src='/images/noProfilPicture.jpg'
+                alt=''
+                width={175}
+                height={175}
+                priority
+                // The asset is a grey figure on a WHITE ground, so on the white sheet
+                // the circle has no edge of its own — the hairline is what makes it
+                // read as an avatar rather than a shape floating in the page.
+                className='h-43.75 w-43.75 rounded-full border-border border-sheet-body/40 object-cover transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+              />
             )}
             <span className='absolute bottom-1 right-1 flex h-11.25 w-11.25 items-center justify-center rounded-full bg-button-primary transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] group-active:scale-95'>
               <Pencil size={18} strokeWidth={2.5} className='text-sheet' />

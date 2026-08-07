@@ -214,13 +214,27 @@ export default function CreateEventScreen() {
     setCreating(true)
 
     const code = generateInviteCode()
-    const event_date = `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:00`
+    // Both columns are timestamptz and the database session runs in UTC, so a naive
+    // `2026-08-15T19:00:00` would be READ AS 19:00 UTC and come back as 21:00 in
+    // Germany. The picked wall-clock time is therefore built as a real local Date and
+    // sent as an ISO string, which carries the offset — the same thing `ends_at` was
+    // already doing, which is why the two columns used to disagree by two hours.
+    const start = new Date(
+      Number(values.year),
+      Number(values.month) - 1,
+      Number(values.day),
+      Number(values.hour),
+      Number(values.minute),
+      0,
+      0
+    )
+    const event_date = start.toISOString()
+
     // The end time is optional, so the column simply stays null without one.
     let ends_at: string | null = null
     if (values.end_hour) {
       // An end earlier than the start means the party runs past midnight.
-      const start = new Date(event_date)
-      const end = new Date(event_date)
+      const end = new Date(start)
       end.setHours(Number(values.end_hour), Number(values.end_minute), 0, 0)
       if (end <= start) end.setDate(end.getDate() + 1)
       ends_at = end.toISOString()

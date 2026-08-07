@@ -35,12 +35,15 @@ export const SheetRowDivider = () => (
 
 export default function SheetLayout({
   title,
+  subtitle,
   onClose,
   appear = false,
   children,
 }: {
   // Omitted by the overview, which carries its own left-aligned headline instead.
   title?: string
+  // One line under the title, close to it rather than a full gap-5 away.
+  subtitle?: string
   onClose?: () => void
   // Slides the sheet up from the bottom edge on mount. Only the FIRST sheet a user
   // sees sets this — later steps swap their contents inside a panel that is already up.
@@ -75,12 +78,17 @@ export default function SheetLayout({
       )}
 
       <div
-        className={`fixed inset-x-0 bottom-0 z-40 flex max-h-[85dvh] flex-col gap-5 overflow-y-auto rounded-t-[2.5rem] bg-sheet px-7.5 pt-7.5 pb-10 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+        className={`fixed inset-x-0 bottom-0 z-40 flex max-h-[85dvh] flex-col gap-5 overflow-y-auto rounded-t-3xl bg-sheet px-7.5 pt-7.5 pb-10 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
           shown ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
         {title && (
-          <span className='text-center text-heading-3 font-semibold text-sheet-heading'>{title}</span>
+          <div className='flex flex-col gap-2'>
+            <span className='text-center text-heading-3 font-semibold text-sheet-heading'>{title}</span>
+            {subtitle && (
+              <span className='text-center text-subheading-1 text-sheet-body'>{subtitle}</span>
+            )}
+          </div>
         )}
 
         {children}

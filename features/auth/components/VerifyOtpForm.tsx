@@ -37,7 +37,7 @@ export default function VerifyOtpForm({ email, onSuccess, onClose }: VerifyProps
   }
 
   return (
-    <SheetLayout title='Verifizierung' onClose={onClose}>
+    <SheetLayout title='Verifizierung' subtitle='Schau in dein Postfach' onClose={onClose}>
       <div className='flex w-full gap-2'>
         {digits.map((digit, index) => (
           <input

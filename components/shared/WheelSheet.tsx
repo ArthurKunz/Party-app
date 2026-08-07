@@ -148,7 +148,7 @@ export default function WheelSheet({ columns, onClose }: { columns: WheelColumn[
         }`}
       >
         <div className='overflow-hidden'>
-          <div className='rounded-t-[2.5rem] bg-sheet px-4 pb-safe-rsvp pt-6 backdrop-blur-2xl'>
+          <div className='rounded-t-3xl bg-sheet px-4 pb-safe-rsvp pt-6 backdrop-blur-2xl'>
             <div className='relative flex w-full'>
               {/* Selection band sits behind the columns, dead centre. */}
               <div

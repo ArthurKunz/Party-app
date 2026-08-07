@@ -56,6 +56,17 @@ export default function PoolDraftForm({
   const filled = options.map((o) => o.value.trim()).filter(Boolean)
   const canAdd = question.trim().length > 0 && filled.length >= MIN_OPTIONS
 
+  // A poll asks something, so the question mark is not the host's job. Applied on SAVE
+  // rather than while typing, which would fight the cursor on every keystroke. A
+  // trailing full stop is REPLACED (it was meant to end the sentence), while '?' and
+  // '!' are left alone — the second is an imperative prompt like 'Bring was mit!', and
+  // appending would only produce '!?'.
+  const withQuestionMark = (value: string) => {
+    const trimmed = value.trim()
+    if (trimmed.endsWith('?') || trimmed.endsWith('!')) return trimmed
+    return trimmed.endsWith('.') ? `${trimmed.slice(0, -1)}?` : `${trimmed}?`
+  }
+
   const setOption = (id: number, value: string) =>
     setOptions((prev) => prev.map((o) => (o.id === id ? { ...o, value } : o)))
 
@@ -198,7 +209,7 @@ export default function PoolDraftForm({
               onClick={() =>
                 onAdd({
                   id: draft?.id ?? crypto.randomUUID(),
-                  question: question.trim(),
+                  question: withQuestionMark(question),
                   description: description.trim() || null,
                   options: filled,
                   allow_multiple: allowMultiple,

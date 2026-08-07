@@ -69,6 +69,20 @@
     input, textarea, select {
         font-size: 16px !important;
     }
+    /* Scrollbars are hidden everywhere, not just on the page: the sheets, the wheel
+       columns and the address list all scroll inside themselves, and a grey bar in
+       any of them reads as chrome in an app that has none. Scrolling itself is
+       untouched — only the indicator is gone. This is what the .scrollbar-none
+       utility below does, applied to everything instead of one element. */
+    * {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    *::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+    }
 }
 
 @keyframes skeleton-shimmer {

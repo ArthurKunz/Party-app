@@ -3,14 +3,17 @@
 import { useState } from 'react'
 import SheetLayout, { sheetButtonClass } from '@/components/shared/SheetLayout'
 import Spinner from '@/components/shared/Spinner'
+import WarningBanner from '@/components/shared/WarningBanner'
 import { alertError } from '@/lib/utils'
 import type { VerifyProps } from '../types/auth.types'
 import { OTP_LENGTH } from '../constants/auth.constants'
 import { useOtpInput } from '../hooks/useOtpInput'
 import { verifySignupOtp } from '../services/auth.service'
+import { authBannerMessage } from '../services/auth-errors'
 
 export default function VerifyOtpForm({ email, onSuccess, onClose }: VerifyProps) {
   const [saving, setSaving] = useState(false)
+  const [warning, setWarning] = useState<string | null>(null)
 
   // Six digits is the whole answer, so there is nothing left to confirm: the code is
   // verified the moment the last box is filled, without reaching for `weiter`.
@@ -23,6 +26,7 @@ export default function VerifyOtpForm({ email, onSuccess, onClose }: VerifyProps
   async function verify(value: string) {
     if (value.length !== OTP_LENGTH || saving) return
     setSaving(true)
+    setWarning(null)
     const { error } = await verifySignupOtp(email, value)
     if (error) {
       setSaving(false)
@@ -30,7 +34,12 @@ export default function VerifyOtpForm({ email, onSuccess, onClose }: VerifyProps
       // from firing again on the same wrong digits.
       setDigits(Array.from({ length: OTP_LENGTH }, () => ''))
       inputRefs.current[0]?.focus()
-      alertError('Der Code stimmt nicht. Bitte prüfe ihn noch einmal.', error.message)
+      const banner = authBannerMessage(error)
+      if (banner) {
+        setWarning(banner)
+        return
+      }
+      alertError('Der Code konnte nicht geprüft werden.', error.message)
       return
     }
     onSuccess()
@@ -58,6 +67,8 @@ export default function VerifyOtpForm({ email, onSuccess, onClose }: VerifyProps
           />
         ))}
       </div>
+
+      {warning && <WarningBanner message={warning} />}
 
       {/* Kept as the fallback for what the auto-submit cannot see: a retry after a
           wrong code, or a browser that fills the boxes without firing onChange. */}

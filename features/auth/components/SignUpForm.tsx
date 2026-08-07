@@ -15,12 +15,14 @@ import { alertError } from '@/lib/utils'
 import type { SignUpProps } from '../types/auth.types'
 import { usePasswordValidation } from '../hooks/usePasswordValidation'
 import { signUpWithEmail } from '../services/auth.service'
+import { authBannerMessage } from '../services/auth-errors'
 
 export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [saving, setSaving] = useState(false)
-  const [emailTaken, setEmailTaken] = useState(false)
+  // What the server said last time, held until the user changes something.
+  const [serverWarning, setServerWarning] = useState<string | null>(null)
   const { passwordWarning, isPasswordValid } = usePasswordValidation(password)
   const passwordRef = useRef<HTMLInputElement>(null)
 
@@ -28,11 +30,7 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
   // is already taken outranks the password rules: it is the one the user cannot fix by
   // typing more, and the password may well be fine already.
   const showPasswordWarning = password.length > 0 && !isPasswordValid
-  const warning = emailTaken
-    ? 'Diese Email hat schon ein Konto'
-    : showPasswordWarning
-      ? passwordWarning
-      : null
+  const warning = serverWarning ?? (showPasswordWarning ? passwordWarning : null)
   const canContinue = email.trim().length > 0 && isPasswordValid
 
   const handleEmailKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -48,10 +46,9 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
     setSaving(false)
 
     if (error) {
-      // Only reachable with email confirmation switched OFF; with it on, a taken
-      // address comes back as a success (see below).
-      if (/already registered|already exists/i.test(error.message)) {
-        setEmailTaken(true)
+      const banner = authBannerMessage(error)
+      if (banner) {
+        setServerWarning(banner)
         return
       }
       alertError('Dein Account konnte nicht erstellt werden.', error.message)
@@ -66,7 +63,7 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
     // verification step, whose code signed the user into the EXISTING account and then
     // failed on profiles_pkey at the end of onboarding.
     if (data.user?.identities?.length === 0) {
-      setEmailTaken(true)
+      setServerWarning('Diese Email hat schon ein Konto')
       return
     }
 
@@ -86,7 +83,7 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
             value={email}
             onChange={(e) => {
               setEmail(e.target.value)
-              setEmailTaken(false)
+              setServerWarning(null)
             }}
             onKeyDown={handleEmailKeyDown}
           />
@@ -103,7 +100,10 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
             placeholder='••••••••'
             className={sheetRowInputClass}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value)
+              setServerWarning(null)
+            }}
             onKeyDown={(e) => e.key === 'Enter' && handleSignUp()}
           />
         </label>

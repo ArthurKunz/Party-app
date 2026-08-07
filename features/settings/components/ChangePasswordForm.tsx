@@ -15,6 +15,7 @@ import Spinner from '@/components/shared/Spinner'
 import WarningBanner from '@/components/shared/WarningBanner'
 import { alertError } from '@/lib/utils'
 import { usePasswordValidation } from '@/features/auth/hooks/usePasswordValidation'
+import { authBannerMessage } from '@/features/auth/services/auth-errors'
 
 interface ChangePasswordFormProps {
   onSuccess?: () => void
@@ -28,6 +29,7 @@ export default function ChangePasswordForm({ onSuccess }: ChangePasswordFormProp
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [saving, setSaving] = useState(false)
+  const [serverWarning, setServerWarning] = useState<string | null>(null)
   const confirmRef = useRef<HTMLInputElement>(null)
   const { passwordWarning, isPasswordValid } = usePasswordValidation(password)
 
@@ -40,19 +42,27 @@ export default function ChangePasswordForm({ onSuccess }: ChangePasswordFormProp
   // Both warnings are live rather than waiting for the save: a mismatch beats a
   // weak-password hint, since it is the one that blocks the button.
   const mismatch = confirm.length > 0 && password !== confirm
-  const warning = mismatch
-    ? 'Passwörter stimmen nicht überein'
-    : password.length > 0 && passwordWarning
-      ? passwordWarning
-      : null
+  const warning = serverWarning
+    ?? (mismatch
+      ? 'Passwörter stimmen nicht überein'
+      : password.length > 0 && passwordWarning
+        ? passwordWarning
+        : null)
   const canSave = password.length > 0 && confirm.length > 0 && !mismatch && isPasswordValid
 
   const handleSave = async () => {
     if (!canSave || saving) return
     setSaving(true)
+    setServerWarning(null)
     const { error } = await supabase.auth.updateUser({ password })
     setSaving(false)
     if (error) {
+      const banner = authBannerMessage(error)
+      if (banner) {
+        setServerWarning(banner)
+        return
+      }
+      // Not fixable here — a dead recovery link needs a fresh one from the login screen.
       alertError('Dein Passwort konnte nicht geändert werden.', error.message)
       return
     }
@@ -69,7 +79,10 @@ export default function ChangePasswordForm({ onSuccess }: ChangePasswordFormProp
             id='new-password'
             type='password'
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value)
+              setServerWarning(null)
+            }}
             onKeyDown={handlePasswordKeyDown}
             autoComplete='new-password'
             enterKeyHint='next'

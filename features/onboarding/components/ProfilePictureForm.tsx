@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase/client'
 import Avatar from '@/components/shared/Avatar'
 import Spinner from '@/components/shared/Spinner'
 import SheetLayout, { sheetButtonClass } from '@/components/shared/SheetLayout'
+import WarningBanner from '@/components/shared/WarningBanner'
 import { alertError, cn } from '@/lib/utils'
 import type { ProfilePictureFormProps } from '../types/onboarding.types'
 import { MAX_BYTES, BUCKET, AVATAR_COLORS, pickRandomAvatarColor } from '../constants/onboarding.constants'
@@ -19,17 +20,21 @@ export default function ProfilePictureForm({ onSuccess, onClose, firstname, last
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
+  // Picking the wrong file is the user's to fix, right here, so it is a banner and
+  // not an alert — see features/auth/services/auth-errors.ts for the rule.
+  const [warning, setWarning] = useState<string | null>(null)
 
   const onPickFile = (picked: File | null) => {
     if (!picked) return
     if (!picked.type.startsWith('image/')) {
-      alertError('Bitte ein Bild auswählen (JPG, PNG, …).')
+      setWarning('Bitte ein Bild auswählen')
       return
     }
     if (picked.size > MAX_BYTES) {
-      alertError('Die Datei darf höchstens 5 MB groß sein.')
+      setWarning('Das Bild ist größer als 5 MB')
       return
     }
+    setWarning(null)
     // Photo and initials are alternatives, so picking one drops the other.
     setColor(null)
     setFile(picked)
@@ -140,6 +145,8 @@ export default function ProfilePictureForm({ onSuccess, onClose, firstname, last
             </button>
           ))}
         </div>
+
+        {warning && <div className='mt-7'><WarningBanner message={warning} /></div>}
 
         <button
           type='button'

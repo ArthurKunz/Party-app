@@ -10,9 +10,11 @@ import SheetLayout, {
   SheetRowDivider,
 } from '@/components/shared/SheetLayout'
 import Spinner from '@/components/shared/Spinner'
+import WarningBanner from '@/components/shared/WarningBanner'
 import { alertError } from '@/lib/utils'
 import type { SignInProps } from '../types/auth.types'
 import { sendResetPasswordEmail, signInWithPassword } from '../services/auth.service'
+import { authBannerMessage } from '../services/auth-errors'
 
 type SignInStep = 'signin' | 'forgot' | 'forgot-sent'
 
@@ -22,6 +24,8 @@ export default function SignInForm({ onSuccess, onClose }: SignInProps) {
   const [step, setStep] = useState<SignInStep>('signin')
   const [resetEmail, setResetEmail] = useState('')
   const [saving, setSaving] = useState(false)
+  // What the server said last time, held until the user changes something.
+  const [warning, setWarning] = useState<string | null>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
 
   const handleSignIn = async () => {
@@ -30,7 +34,12 @@ export default function SignInForm({ onSuccess, onClose }: SignInProps) {
     const { error } = await signInWithPassword(email, password)
     setSaving(false)
     if (error) {
-      alertError('Anmeldung fehlgeschlagen. Prüfe Email und Passwort.', error.message)
+      const banner = authBannerMessage(error)
+      if (banner) {
+        setWarning(banner)
+        return
+      }
+      alertError('Anmeldung fehlgeschlagen.', error.message)
       return
     }
     onSuccess()
@@ -48,6 +57,11 @@ export default function SignInForm({ onSuccess, onClose }: SignInProps) {
     const { error } = await sendResetPasswordEmail(resetEmail)
     setSaving(false)
     if (error) {
+      const banner = authBannerMessage(error)
+      if (banner) {
+        setWarning(banner)
+        return
+      }
       alertError('Die Email konnte nicht gesendet werden.', error.message)
       return
     }
@@ -66,11 +80,16 @@ export default function SignInForm({ onSuccess, onClose }: SignInProps) {
               placeholder='max.mustermann@gmail.com'
               className={sheetRowInputClass}
               value={resetEmail}
-              onChange={(e) => setResetEmail(e.target.value)}
+              onChange={(e) => {
+                setResetEmail(e.target.value)
+                setWarning(null)
+              }}
               onKeyDown={(e) => e.key === 'Enter' && handleForgotPassword()}
             />
           </label>
         </div>
+
+        {warning && <WarningBanner message={warning} />}
 
         <button
           type='button'
@@ -111,7 +130,10 @@ export default function SignInForm({ onSuccess, onClose }: SignInProps) {
               placeholder='max.mustermann@gmail.com'
               className={sheetRowInputClass}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setWarning(null)
+              }}
               onKeyDown={handleEmailKeyDown}
             />
           </label>
@@ -127,7 +149,10 @@ export default function SignInForm({ onSuccess, onClose }: SignInProps) {
               placeholder='••••••••'
               className={sheetRowInputClass}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                setWarning(null)
+              }}
               onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
             />
           </label>
@@ -141,6 +166,8 @@ export default function SignInForm({ onSuccess, onClose }: SignInProps) {
           Password vergessen?
         </button>
       </div>
+
+      {warning && <WarningBanner message={warning} />}
 
       <button
         type='button'

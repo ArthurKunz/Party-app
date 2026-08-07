@@ -45,7 +45,7 @@ const RSVP_MENU: { status: RsvpStatus; label: string; icon: string }[] = [
   { status: 'not_going', label: 'abgesagt', icon: '❌' },
 ]
 
-const iconButtonClass = 'h-11.25 w-11.25 bg-main/50 rounded-full flex justify-center items-center backdrop-blur-xs'
+const iconButtonClass = 'h-11.25 w-11.25 bg-main/50 rounded-full flex justify-center items-center backdrop-blur-xl'
 
 // The ••• button and the menu are ONE element: closed it is the 45px circle, open
 // it grows into the panel from the same top-right corner.
@@ -56,7 +56,7 @@ const MENU_CLOSED_SIZE = 45
 // radius looks like a pop, because the corner only stops being a semicircle in the
 // last frames, once the value drops under half the height.
 const menuContainerClass =
-  'absolute right-0 top-0 z-20 overflow-hidden rounded-[22.5px] bg-main/50 backdrop-blur-xs transition-[width,height] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]'
+  'absolute right-0 top-0 z-20 overflow-hidden rounded-[22.5px] bg-main/50 backdrop-blur-xl transition-[width,height] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]'
 
 export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   const router = useRouter()
@@ -355,7 +355,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                     aria-expanded={menuOpen}
                     aria-hidden={menuOpen}
                     tabIndex={menuOpen ? -1 : 0}
-                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 ${
+                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 backdrop-blur-xl ${
                       menuOpen ? 'pointer-events-none opacity-0' : 'opacity-100 delay-150'
                     }`}
                   >
@@ -378,8 +378,8 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                           type='button'
                           onClick={() => handleRsvp(status)}
                           disabled={rsvpLoading}
-                          className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-left ${
-                            rsvpStatus === status ? 'bg-tertiary backdrop-blur-xl' : ''
+                          className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-left backdrop-blur-xl ${
+                            rsvpStatus === status ? 'bg-tertiary' : ''
                           }`}
                         >
                           <span className='w-5 h-5 flex items-center justify-center text-md'>{icon}</span>

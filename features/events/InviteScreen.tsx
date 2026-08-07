@@ -553,7 +553,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
             onClick={() => handleRsvp('not_going')}
             disabled={rsvpLoading}
             aria-label='Absagen'
-            className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-warning/60 bg-warning/15 backdrop-blur-md disabled:opacity-50'
+            className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-warning/60 bg-warning/15 backdrop-blur-xl disabled:opacity-50'
           >
             {CrossIcon}
           </button>
@@ -562,7 +562,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
             type='button'
             onClick={() => handleRsvp('going')}
             disabled={rsvpLoading}
-            className='h-12.5 flex items-center justify-center gap-2 rounded-full border border-success/60 bg-success/15 px-6 backdrop-blur-md text-subheading-1 font-semibold text-success disabled:opacity-50'
+            className='h-12.5 flex items-center justify-center gap-2 rounded-full border border-success/60 bg-success/15 px-6 backdrop-blur-xl text-subheading-1 font-semibold text-success disabled:opacity-50'
           >
             <span>✅</span>
             zusagen
@@ -573,7 +573,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
             onClick={() => handleRsvp('maybe')}
             disabled={rsvpLoading}
             aria-label='Vielleicht'
-            className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-maybe/60 bg-maybe/15 backdrop-blur-md text-subheading-1 disabled:opacity-50'
+            className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-maybe/60 bg-maybe/15 backdrop-blur-xl text-subheading-1 disabled:opacity-50'
           >
             🤔
           </button>

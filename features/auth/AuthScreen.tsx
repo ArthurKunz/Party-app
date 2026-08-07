@@ -32,25 +32,15 @@ export default function AuthPage() {
     }
   }, [router, stepParam, onboardingHref])
 
-  // The password-reset link from the email lands here. It is the one step with no
-  // mockup, so it keeps the old full-screen dark layout instead of the sheet.
-  if (stepParam === 'reset-password') {
-    return (
-      <div className='relative w-full h-dvh overflow-hidden bg-main'>
-        <div className='relative z-10 w-full h-full flex flex-col items-center justify-center px-6'>
-          <div className='w-full max-w-sm'>
-            <ChangePasswordForm onSuccess={() => router.push('/parties')} />
-          </div>
-        </div>
-      </div>
-    )
-  }
+  // The reset link from the email carries its step in the URL, so it wins over
+  // whatever the local state says.
+  const effectiveStep = stepParam === 'reset-password' ? ('reset-password' as const) : step
 
   return (
     <div className='relative w-full h-dvh overflow-hidden bg-main'>
       <FloatingEmojis active seed />
 
-      {step === 'overview' && (
+      {effectiveStep === 'overview' && (
         <AuthSheet
           appear
           next={next}
@@ -59,7 +49,7 @@ export default function AuthPage() {
         />
       )}
 
-      {step === 'signup' && (
+      {effectiveStep === 'signup' && (
         <SignUpForm
           onClose={() => setStep('overview')}
           onSuccess={(email) => {
@@ -69,7 +59,7 @@ export default function AuthPage() {
         />
       )}
 
-      {step === 'verify' && (
+      {effectiveStep === 'verify' && (
         <VerifyOtpForm
           email={signupEmail}
           onClose={() => setStep('signup')}
@@ -77,8 +67,13 @@ export default function AuthPage() {
         />
       )}
 
-      {step === 'signin' && (
+      {effectiveStep === 'signin' && (
         <SignInForm onClose={() => setStep('overview')} onSuccess={() => router.push(next ?? '/parties')} />
+      )}
+
+      {/* Where the reset link from the email lands. */}
+      {effectiveStep === 'reset-password' && (
+        <ChangePasswordForm onSuccess={() => router.push('/parties')} />
       )}
     </div>
   )

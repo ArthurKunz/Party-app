@@ -1,94 +1,107 @@
 'use client'
 
-import { supabase } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
 import { useRef, useState, type KeyboardEvent } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase/client'
+import SheetLayout, {
+  sheetButtonClass,
+  sheetCardClass,
+  sheetRowClass,
+  sheetRowInputClass,
+  sheetRowLabelClass,
+  SheetRowDivider,
+} from '@/components/shared/SheetLayout'
+import Spinner from '@/components/shared/Spinner'
+import WarningBanner from '@/components/shared/WarningBanner'
+import { alertError } from '@/lib/utils'
 import { usePasswordValidation } from '@/features/auth/hooks/usePasswordValidation'
 
 interface ChangePasswordFormProps {
   onSuccess?: () => void
 }
 
+// The last step of the reset flow, reached from the link in the email. It is the same
+// sheet as every other auth and onboarding step, and the same two-row shape and live
+// warnings as the profile's Passwort screen.
 export default function ChangePasswordForm({ onSuccess }: ChangePasswordFormProps) {
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const { passwordWarning, isPasswordValid } = usePasswordValidation(newPassword)
-  const showPasswordWarning = newPassword.length > 0 && passwordWarning !== ''
   const router = useRouter()
-  const confirmPasswordRef = useRef<HTMLInputElement>(null)
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [saving, setSaving] = useState(false)
+  const confirmRef = useRef<HTMLInputElement>(null)
+  const { passwordWarning, isPasswordValid } = usePasswordValidation(password)
 
-  const handleNewPasswordKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handlePasswordKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return
     e.preventDefault()
-    if (newPassword.trim()) confirmPasswordRef.current?.focus()
+    if (password.trim()) confirmRef.current?.focus()
   }
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // Both warnings are live rather than waiting for the save: a mismatch beats a
+  // weak-password hint, since it is the one that blocks the button.
+  const mismatch = confirm.length > 0 && password !== confirm
+  const warning = mismatch
+    ? 'Passwörter stimmen nicht überein'
+    : password.length > 0 && passwordWarning
+      ? passwordWarning
+      : null
+  const canSave = password.length > 0 && confirm.length > 0 && !mismatch && isPasswordValid
 
-    if (!isPasswordValid) return
-
-    if (newPassword !== confirmPassword) {
-      alert('Passwörter stimmen nicht überein!')
-      return
-    }
-
-    const { error } = await supabase.auth.updateUser({ password: newPassword })
-
+  const handleSave = async () => {
+    if (!canSave || saving) return
+    setSaving(true)
+    const { error } = await supabase.auth.updateUser({ password })
+    setSaving(false)
     if (error) {
-      alert(error.message)
+      alertError('Dein Passwort konnte nicht geändert werden.', error.message)
       return
     }
-
-    if (onSuccess) {
-      onSuccess()
-    } else {
-      router.push('/parties')
-    }
+    if (onSuccess) onSuccess()
+    else router.push('/parties')
   }
 
   return (
-    <form onSubmit={handleChangePassword} className='w-full flex flex-col gap-8'>
-      <span className='block text-center text-3xl font-bold text-heading'>Neues Passwort</span>
-
-      <div className='flex flex-col gap-4'>
-        <div className='flex flex-col gap-2'>
-          <label className='text-sm text-label-small'>Neues Passwort</label>
+    <SheetLayout title='Passwort' onClose={() => router.push('/login')} appear>
+      <div className={sheetCardClass}>
+        <div className={sheetRowClass}>
+          <label htmlFor='new-password' className={sheetRowLabelClass}>neues Passwort</label>
           <input
+            id='new-password'
             type='password'
-            placeholder='Gib das Passwort ein'
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            onKeyDown={handleNewPasswordKeyDown}
-            required
-            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={handlePasswordKeyDown}
+            autoComplete='new-password'
+            enterKeyHint='next'
+            placeholder='••••••••'
+            className={sheetRowInputClass}
           />
-          {showPasswordWarning && (
-            <span className='text-xs text-red-400' role='alert'>
-              {passwordWarning}
-            </span>
-          )}
         </div>
-        <div className='flex flex-col gap-2'>
-          <label className='text-sm text-label-small'>Passwort bestätigen</label>
+
+        <SheetRowDivider />
+
+        <div className={sheetRowClass}>
+          <label htmlFor='confirm-password' className={sheetRowLabelClass}>Passwort wiederholen</label>
           <input
-            ref={confirmPasswordRef}
+            ref={confirmRef}
+            id='confirm-password'
             type='password'
-            placeholder='Gib das Passwort erneut ein'
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+            autoComplete='new-password'
+            enterKeyHint='done'
+            placeholder='••••••••'
+            className={sheetRowInputClass}
           />
         </div>
       </div>
 
-      <button
-        type='submit'
-        className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
-      >
-        Speichern
+      {warning && <WarningBanner message={warning} />}
+
+      <button type='button' onClick={handleSave} disabled={!canSave || saving} className={sheetButtonClass}>
+        {saving ? <Spinner /> : 'speichern'}
       </button>
-    </form>
+    </SheetLayout>
   )
 }

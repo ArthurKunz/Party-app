@@ -8,7 +8,7 @@ export const rowLabelClass = 'text-button text-label-large shrink-0'
 export const rowValueClass = 'text-button text-subheading'
 export const rowInputClass = `ml-auto min-w-0 flex-1 bg-transparent text-right outline-none ${rowValueClass}`
 export const primaryButtonClass =
-  'flex h-12.5 w-full items-center justify-center rounded-[25px] bg-sheet backdrop-blur-xl text-button font-semibold text-sheet-heading transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95 disabled:bg-sheet/40 disabled:text-sheet-heading/60'
+  'flex h-12.5 w-full items-center justify-center rounded-full bg-sheet backdrop-blur-xl text-button font-semibold text-sheet-heading transition-[transform,background-color,color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95 disabled:bg-sheet/40 disabled:text-sheet-heading/60'
 
 // Hairline between two rows, inset so it starts under the label.
 export const RowDivider = () => (

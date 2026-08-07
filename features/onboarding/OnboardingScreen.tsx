@@ -3,15 +3,14 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import { sanitizeNextPath } from '@/lib/utils'
+import { alertError, sanitizeNextPath } from '@/lib/utils'
+import FloatingEmojis from '@/features/events/components/FloatingEmojis'
 import { getSession } from './services/onboarding.service'
 import PersonalDataForm from './components/PersonalDataForm'
 import BirthdateForm from './components/BirthdateForm'
 import ProfilePictureForm from './components/ProfilePictureForm'
 
 type Step = 'name' | 'birthday' | 'picture'
-
-const STEPS: Step[] = ['name', 'birthday', 'picture']
 
 export default function OnboardingScreen() {
   const router = useRouter()
@@ -36,7 +35,10 @@ export default function OnboardingScreen() {
 
   const handlePictureDone = async (avatarUrl: string | null, avatarColor: string) => {
     const { data: { session } } = await getSession()
-    if (!session) return
+    if (!session) {
+      router.push('/login')
+      return
+    }
 
     const { error } = await supabase.from('profiles').insert({
       id: session.user.id,
@@ -47,32 +49,33 @@ export default function OnboardingScreen() {
       avatar_color: avatarColor,
     })
 
-    if (error) alert(error.message)
-    else router.push(next ?? '/parties')
+    if (error) {
+      alertError('Dein Profil konnte nicht gespeichert werden.', error.message)
+      return
+    }
+    router.push(next ?? '/parties')
   }
-
-  const stepIndex = STEPS.indexOf(step)
 
   return (
     <div className='relative w-full h-dvh overflow-hidden bg-main'>
-      <div className='relative z-10 w-full h-full flex flex-col items-center justify-center px-6'>
-        <div className='w-full max-w-sm'>
-          {step === 'name' && <PersonalDataForm onSuccess={handleNameDone} />}
-          {step === 'birthday' && <BirthdateForm onSuccess={handleBirthdateDone} />}
-          {step === 'picture' && <ProfilePictureForm onSuccess={handlePictureDone} />}
-        </div>
+      <FloatingEmojis active seed />
 
-        <div className='absolute bottom-8 flex gap-2 items-center'>
-          {STEPS.map((_, i) => (
-            <div
-              key={i}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                i === stepIndex ? 'w-6 bg-white' : 'w-2 bg-white/30 backdrop-blur-xl'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
+      {/* Only the Name sheet slides up (it sets `appear` itself): the later steps
+          swap their contents inside a panel that is already standing. */}
+      {step === 'name' && <PersonalDataForm onSuccess={handleNameDone} onClose={() => router.push('/login')} />}
+
+      {step === 'birthday' && (
+        <BirthdateForm onSuccess={handleBirthdateDone} onClose={() => setStep('name')} />
+      )}
+
+      {step === 'picture' && (
+        <ProfilePictureForm
+          firstname={firstname}
+          lastname={lastname}
+          onSuccess={handlePictureDone}
+          onClose={() => setStep('birthday')}
+        />
+      )}
     </div>
   )
 }

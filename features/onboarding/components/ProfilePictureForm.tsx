@@ -1,29 +1,37 @@
 'use client'
 
 import { useState } from 'react'
+import { Check, Pencil, User } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
+import Avatar from '@/components/shared/Avatar'
+import Spinner from '@/components/shared/Spinner'
+import SheetLayout, { sheetButtonClass } from '@/components/shared/SheetLayout'
+import { alertError, cn } from '@/lib/utils'
 import type { ProfilePictureFormProps } from '../types/onboarding.types'
-import { MAX_BYTES, BUCKET, pickRandomAvatarColor } from '../constants/onboarding.constants'
+import { MAX_BYTES, BUCKET, AVATAR_COLORS, pickRandomAvatarColor } from '../constants/onboarding.constants'
 import { getSession } from '../services/onboarding.service'
 
-export default function ProfilePictureForm({ onSuccess }: ProfilePictureFormProps) {
-  const [avatarColor] = useState(pickRandomAvatarColor)
+// The same two ways of having an avatar as the profile's picture screen: a photo,
+// or initials on one of the nine party colours. One colour starts selected so the
+// circle is never empty and 'fertig' always leads somewhere.
+export default function ProfilePictureForm({ onSuccess, onClose, firstname, lastname }: ProfilePictureFormProps) {
+  const [color, setColor] = useState<string | null>(pickRandomAvatarColor)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
 
   const onPickFile = (picked: File | null) => {
-    setError(null)
     if (!picked) return
     if (!picked.type.startsWith('image/')) {
-      setError('Bitte ein Bild (JPG, PNG, …) auswählen.')
+      alertError('Bitte ein Bild auswählen (JPG, PNG, …).')
       return
     }
     if (picked.size > MAX_BYTES) {
-      setError('Die Datei darf höchstens 5 MB groß sein.')
+      alertError('Die Datei darf höchstens 5 MB groß sein.')
       return
     }
+    // Photo and initials are alternatives, so picking one drops the other.
+    setColor(null)
     setFile(picked)
     setPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev)
@@ -31,15 +39,30 @@ export default function ProfilePictureForm({ onSuccess }: ProfilePictureFormProp
     })
   }
 
-  const handleUpload = async () => {
-    if (!file) return
-    setError(null)
-    setUploading(true)
+  const selectColor = (value: string) => {
+    setColor(value)
+    setFile(null)
+    setPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return null
+    })
+  }
+
+  const handleDone = async () => {
+    if (saving) return
+    setSaving(true)
+
+    // Initials: nothing to upload, the colour goes straight into the profile row.
+    if (!file) {
+      await onSuccess(null, color ?? pickRandomAvatarColor())
+      setSaving(false)
+      return
+    }
 
     const { data: { session } } = await getSession()
     if (!session) {
-      setUploading(false)
-      setError('Du bist nicht angemeldet.')
+      setSaving(false)
+      alertError('Du bist nicht angemeldet.')
       return
     }
 
@@ -50,57 +73,83 @@ export default function ProfilePictureForm({ onSuccess }: ProfilePictureFormProp
     const { error: uploadError } = await supabase.storage
       .from(BUCKET)
       .upload(path, file, { cacheControl: '3600', upsert: false })
-
-    setUploading(false)
-
     if (uploadError) {
-      setError(uploadError.message)
+      setSaving(false)
+      alertError('Dein Bild konnte nicht hochgeladen werden.', uploadError.message)
       return
     }
 
-    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path)
-    onSuccess(urlData.publicUrl, avatarColor)
+    const publicUrl = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
+    await onSuccess(publicUrl, pickRandomAvatarColor())
+    setSaving(false)
   }
 
   return (
-    <div className='flex flex-col items-center gap-12'>
-      <span className='text-3xl font-bold text-heading'>Wie siehst du aus?</span>
-
-      <label className='cursor-pointer'>
-        <div className='w-40 h-40 rounded-full overflow-hidden bg-tertiary backdrop-blur-xl'>
-          <img
-            src={previewUrl ?? '/images/noProfilPicture.jpg'}
-            alt='Profilbild'
-            className='w-full h-full object-cover'
+    <SheetLayout title='Profilbild' onClose={onClose}>
+      {/* One wrapper, so the sheet's gap-5 does not compound with the margins below:
+          the 36px and 28px here reproduce EditPictureScreen exactly, where a mt-6 grid
+          and a mt-4 button sit in SettingsPage's gap-3 column. */}
+      <div className='flex flex-col'>
+        {/* The circle is the file input; the pencil badge is decoration on top of it. */}
+        <label className='flex cursor-pointer justify-center'>
+          <div className='group relative'>
+            {previewUrl || color ? (
+              <Avatar
+                size={175}
+                url={previewUrl}
+                color={color}
+                firstname={firstname}
+                lastname={lastname}
+                className='transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+              />
+            ) : (
+              <div className='flex h-43.75 w-43.75 items-center justify-center rounded-full bg-button-secondary transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'>
+                <User size={72} strokeWidth={1.5} className='text-sheet-body' />
+              </div>
+            )}
+            <span className='absolute bottom-1 right-1 flex h-11.25 w-11.25 items-center justify-center rounded-full bg-button-primary transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] group-active:scale-95'>
+              <Pencil size={18} strokeWidth={2.5} className='text-sheet' />
+            </span>
+          </div>
+          <input
+            type='file'
+            accept='image/*'
+            className='hidden'
+            onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
           />
+        </label>
+
+        <div className='mt-9 grid grid-cols-3 gap-3'>
+          {AVATAR_COLORS.map((value) => (
+            <button key={value} type='button' onClick={() => selectColor(value)} className='flex flex-col items-center gap-2'>
+              <Avatar
+                size={90}
+                url={null}
+                color={value}
+                firstname={firstname}
+                lastname={lastname}
+                className='transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+              />
+              <span
+                className={`flex h-6 w-6 items-center justify-center rounded-full transition-colors duration-200 ${
+                  color === value ? 'bg-link' : 'border border-sheet-body/50'
+                }`}
+              >
+                {color === value && <Check size={14} strokeWidth={3} className='text-white animate-fade-in-up' />}
+              </span>
+            </button>
+          ))}
         </div>
-        <input
-          type='file'
-          accept='image/*'
-          className='hidden'
-          onChange={(e) => onPickFile(e.target.files?.[0] ?? null)}
-        />
-      </label>
 
-      {error && <span className='text-sm text-warning' role='alert'>{error}</span>}
-
-      <div className='flex flex-col items-center gap-4 w-full'>
         <button
           type='button'
-          className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading disabled:opacity-40'
-          disabled={!file || uploading}
-          onClick={() => void handleUpload()}
+          onClick={handleDone}
+          disabled={saving}
+          className={cn(sheetButtonClass, 'mt-7 h-12.5')}
         >
-          {uploading ? 'Wird hochgeladen…' : 'Weiter'}
-        </button>
-        <button
-          type='button'
-          className='text-sm text-subheading'
-          onClick={() => onSuccess(null, avatarColor)}
-        >
-          Überspringen →
+          {saving ? <Spinner /> : 'fertig'}
         </button>
       </div>
-    </div>
+    </SheetLayout>
   )
 }

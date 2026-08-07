@@ -1,60 +1,74 @@
 'use client'
 
+import { useState } from 'react'
+import SheetLayout, { sheetButtonClass } from '@/components/shared/SheetLayout'
+import Spinner from '@/components/shared/Spinner'
+import { alertError } from '@/lib/utils'
 import type { VerifyProps } from '../types/auth.types'
+import { OTP_LENGTH } from '../constants/auth.constants'
 import { useOtpInput } from '../hooks/useOtpInput'
 import { verifySignupOtp } from '../services/auth.service'
 
-export default function VerifyOtpForm({ email, onSuccess }: VerifyProps) {
-  const { digits, inputRefs, code, handleChange, handleKeyDown, handlePaste } = useOtpInput()
+export default function VerifyOtpForm({ email, onSuccess, onClose }: VerifyProps) {
+  const [saving, setSaving] = useState(false)
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const { error } = await verifySignupOtp(email, code)
+  // Six digits is the whole answer, so there is nothing left to confirm: the code is
+  // verified the moment the last box is filled, without reaching for `weiter`.
+  // A function DECLARATION, so it is hoisted above the hook call that references it —
+  // the two are mutually dependent (the hook needs `verify`, `verify` needs the hook's
+  // `setDigits`/`inputRefs`) and a const arrow cannot be read before it is declared.
+  const { digits, setDigits, inputRefs, code, handleChange, handleKeyDown, handlePaste } =
+    useOtpInput(OTP_LENGTH, verify)
+
+  async function verify(value: string) {
+    if (value.length !== OTP_LENGTH || saving) return
+    setSaving(true)
+    const { error } = await verifySignupOtp(email, value)
     if (error) {
-      console.error('Verify error:', error)
-      alert('Wrong code! ' + error.message)
+      setSaving(false)
+      // Emptying the boxes both readies the next attempt and stops the auto-submit
+      // from firing again on the same wrong digits.
+      setDigits(Array.from({ length: OTP_LENGTH }, () => ''))
+      inputRefs.current[0]?.focus()
+      alertError('Der Code stimmt nicht. Bitte prüfe ihn noch einmal.', error.message)
       return
     }
     onSuccess()
   }
 
   return (
-    <div className='w-full flex flex-col gap-8'>
-      <span className='block text-center text-3xl font-bold text-heading'>Verifizierung</span>
-
-      <div className='flex flex-col gap-2'>
-        <label className='text-sm text-label-small'>Verifizierungs-code</label>
-        <div className='w-full flex justify-between gap-2'>
-          {digits.map((digit, index) => (
-            <input
-              key={index}
-              ref={(el) => {
-                inputRefs.current[index] = el
-              }}
-              type='text'
-              inputMode='numeric'
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleChange(e.target.value, index)}
-              onKeyDown={(e) => {
-                handleKeyDown(e, index)
-                if (e.key !== 'Enter' || !digit) return
-                if (index < digits.length - 1) inputRefs.current[index + 1]?.focus()
-                else if (code.length === digits.length) handleVerify(e)
-              }}
-              onPaste={handlePaste}
-              className='w-full text-center h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
-            />
-          ))}
-        </div>
+    <SheetLayout title='Verifizierung' onClose={onClose}>
+      <div className='flex w-full gap-2'>
+        {digits.map((digit, index) => (
+          <input
+            key={index}
+            ref={(el) => {
+              inputRefs.current[index] = el
+            }}
+            type='text'
+            inputMode='numeric'
+            autoComplete={index === 0 ? 'one-time-code' : 'off'}
+            maxLength={1}
+            aria-label={`Ziffer ${index + 1}`}
+            value={digit}
+            onChange={(e) => handleChange(e.target.value, index)}
+            onKeyDown={(e) => handleKeyDown(e, index)}
+            onPaste={handlePaste}
+            className='h-12.5 min-w-0 flex-1 rounded-2xl bg-button-secondary text-center text-sheet-heading outline-none'
+          />
+        ))}
       </div>
 
+      {/* Kept as the fallback for what the auto-submit cannot see: a retry after a
+          wrong code, or a browser that fills the boxes without firing onChange. */}
       <button
-        className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
-        onClick={handleVerify}
+        type='button'
+        onClick={() => verify(code)}
+        disabled={code.length !== OTP_LENGTH || saving}
+        className={sheetButtonClass}
       >
-        Verify
+        {saving ? <Spinner /> : 'weiter'}
       </button>
-    </div>
+    </SheetLayout>
   )
 }

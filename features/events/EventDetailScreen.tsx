@@ -322,7 +322,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
                             type='button'
                             onClick={() => handleRsvp(status)}
                             disabled={rsvpLoading}
-                            className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-2xl text-left ${
+                            className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-left ${
                               rsvpStatus === status ? 'bg-tertiary backdrop-blur-xl' : ''
                             }`}
                           >

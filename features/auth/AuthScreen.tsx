@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { sanitizeNextPath } from '@/lib/utils'
+import FloatingEmojis from '@/features/events/components/FloatingEmojis'
+import AuthSheet from './components/AuthSheet'
 import SignInForm from './components/SignInForm'
 import SignUpForm from './components/SignUpForm'
 import VerifyOtpForm from './components/VerifyOtpForm'
@@ -17,7 +19,11 @@ export default function AuthPage() {
   const next = sanitizeNextPath(searchParams.get('next'))
   const onboardingHref = next ? `/onboarding?next=${encodeURIComponent(next)}` : '/onboarding'
 
-  const [step, setStep] = useState<'signup' | 'signin' | 'verify'>('signup')
+  // Arriving with no ?step= means the user just landed on the site: the overview
+  // sheet asks first whether they are signing up or signing in.
+  const [step, setStep] = useState<'overview' | 'signup' | 'signin' | 'verify'>(
+    stepParam === 'signup' ? 'signup' : stepParam === 'signin' ? 'signin' : 'overview'
+  )
   const [signupEmail, setSignupEmail] = useState('')
 
   useEffect(() => {
@@ -26,52 +32,54 @@ export default function AuthPage() {
     }
   }, [router, stepParam, onboardingHref])
 
-  const effectiveStep = stepParam === 'reset-password' ? ('reset-password' as const) : step
-  const activeDot = effectiveStep === 'verify' ? 1 : 0
+  // The password-reset link from the email lands here. It is the one step with no
+  // mockup, so it keeps the old full-screen dark layout instead of the sheet.
+  if (stepParam === 'reset-password') {
+    return (
+      <div className='relative w-full h-dvh overflow-hidden bg-main'>
+        <div className='relative z-10 w-full h-full flex flex-col items-center justify-center px-6'>
+          <div className='w-full max-w-sm'>
+            <ChangePasswordForm onSuccess={() => router.push('/parties')} />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className='relative w-full h-dvh overflow-hidden bg-main'>
-      {/* Content */}
-      <div className='relative z-10 w-full h-full flex flex-col items-center justify-center px-6'>
-        <div className='w-full max-w-sm'>
-          {effectiveStep === 'signup' && (
-            <SignUpForm
-              onSuccess={(email) => {
-                setSignupEmail(email)
-                setStep('verify')
-              }}
-              onGoToSignIn={() => setStep('signin')}
-            />
-          )}
+      <FloatingEmojis active seed />
 
-          {effectiveStep === 'verify' && (
-            <VerifyOtpForm email={signupEmail} onSuccess={() => router.push(onboardingHref)} />
-          )}
+      {step === 'overview' && (
+        <AuthSheet
+          appear
+          next={next}
+          onCreateAccount={() => setStep('signup')}
+          onSignIn={() => setStep('signin')}
+        />
+      )}
 
-          {effectiveStep === 'signin' && (
-            <SignInForm
-              onSuccess={() => router.push(next ?? '/parties')}
-              onGoToSignUp={() => setStep('signup')}
-            />
-          )}
+      {step === 'signup' && (
+        <SignUpForm
+          onClose={() => setStep('overview')}
+          onSuccess={(email) => {
+            setSignupEmail(email)
+            setStep('verify')
+          }}
+        />
+      )}
 
-          {effectiveStep === 'reset-password' && (
-            <ChangePasswordForm onSuccess={() => router.push('/parties')} />
-          )}
-        </div>
+      {step === 'verify' && (
+        <VerifyOtpForm
+          email={signupEmail}
+          onClose={() => setStep('signup')}
+          onSuccess={() => router.push(onboardingHref)}
+        />
+      )}
 
-        {/* Progress dots */}
-        <div className='absolute bottom-8 flex gap-2 items-center'>
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                activeDot === i ? 'w-6 bg-white' : 'w-2 bg-white/30 backdrop-blur-xl'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
+      {step === 'signin' && (
+        <SignInForm onClose={() => setStep('overview')} onSuccess={() => router.push(next ?? '/parties')} />
+      )}
     </div>
   )
 }

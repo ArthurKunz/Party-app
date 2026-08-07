@@ -1,36 +1,39 @@
 'use client'
 
 import { useRef, useState, type KeyboardEvent } from 'react'
-import Image from 'next/image'
+import SheetLayout, {
+  sheetButtonClass,
+  sheetCardClass,
+  sheetRowClass,
+  sheetRowInputClass,
+  sheetRowLabelClass,
+  SheetRowDivider,
+} from '@/components/shared/SheetLayout'
+import Spinner from '@/components/shared/Spinner'
+import { alertError } from '@/lib/utils'
 import type { SignInProps } from '../types/auth.types'
-import { sendResetPasswordEmail, signInWithGoogle, signInWithPassword } from '../services/auth.service'
+import { sendResetPasswordEmail, signInWithPassword } from '../services/auth.service'
 
 type SignInStep = 'signin' | 'forgot' | 'forgot-sent'
 
-export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
+export default function SignInForm({ onSuccess, onClose }: SignInProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [step, setStep] = useState<SignInStep>('signin')
   const [resetEmail, setResetEmail] = useState('')
+  const [saving, setSaving] = useState(false)
   const passwordRef = useRef<HTMLInputElement>(null)
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSignIn = async () => {
+    if (!email.trim() || !password || saving) return
+    setSaving(true)
     const { error } = await signInWithPassword(email, password)
+    setSaving(false)
     if (error) {
-      console.error('SignIn error:', error)
-      alert(error.message)
+      alertError('Anmeldung fehlgeschlagen. Prüfe Email und Passwort.', error.message)
       return
     }
     onSuccess()
-  }
-
-  const handleGoogleSignIn = async () => {
-    const { error } = await signInWithGoogle()
-    if (error) {
-      console.error('Google signin error:', error)
-      alert(error.message)
-    }
   }
 
   const handleEmailKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -39,127 +42,114 @@ export default function SignInForm({ onSuccess, onGoToSignUp }: SignInProps) {
     if (email.trim()) passwordRef.current?.focus()
   }
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleForgotPassword = async () => {
+    if (!resetEmail.trim() || saving) return
+    setSaving(true)
     const { error } = await sendResetPasswordEmail(resetEmail)
+    setSaving(false)
     if (error) {
-      alert(error.message)
+      alertError('Die Email konnte nicht gesendet werden.', error.message)
       return
     }
     setStep('forgot-sent')
   }
 
-  const handleResetEmailKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter') return
-    e.preventDefault()
-    if (resetEmail.trim()) handleForgotPassword(e)
-  }
-
   if (step === 'forgot') {
     return (
-      <div className='w-full flex flex-col gap-8'>
-        <span className='block text-center text-3xl font-bold text-heading'>Password zurücksetzen</span>
-
-        <div className='flex flex-col gap-2'>
-          <label className='text-sm text-label-small'>Email</label>
-          <input
-            type='email'
-            placeholder='Email'
-            value={resetEmail}
-            onChange={(e) => setResetEmail(e.target.value)}
-            onKeyDown={handleResetEmailKeyDown}
-            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
-          />
+      <SheetLayout title='Passwort' onClose={() => setStep('signin')}>
+        <div className={sheetCardClass}>
+          <label className={sheetRowClass}>
+            <span className={sheetRowLabelClass}>Email</span>
+            <input
+              type='email'
+              autoComplete='email'
+              placeholder='max.mustermann@gmail.com'
+              className={sheetRowInputClass}
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleForgotPassword()}
+            />
+          </label>
         </div>
 
         <button
           type='button'
           onClick={handleForgotPassword}
-          className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
+          disabled={!resetEmail.trim() || saving}
+          className={sheetButtonClass}
         >
-          Weiter
+          {saving ? <Spinner /> : 'weiter'}
         </button>
-      </div>
+      </SheetLayout>
     )
   }
 
   if (step === 'forgot-sent') {
     return (
-      <div className='w-full flex flex-col gap-8'>
-        <span className='text-3xl text-center font-bold text-heading'>Passwort zurücksetzen</span>
-
-        <span className='block text-center text-xs text-label-small'>
-          Wir haben einen Link an{' '}
-          <span className='text-body font-semibold'>{resetEmail}</span>{' '}
-          gesendet
+      <SheetLayout title='Passwort' onClose={onClose}>
+        <span className='text-center text-subheading-1 text-sheet-body'>
+          Wir haben einen Link an <span className='font-semibold text-sheet-heading'>{resetEmail}</span> gesendet.
+          Öffne ihn, um dir ein neues Passwort zu setzen.
         </span>
-      </div>
+
+        <button type='button' onClick={onClose} className={sheetButtonClass}>
+          fertig
+        </button>
+      </SheetLayout>
     )
   }
 
   return (
-    <div className='w-full flex flex-col gap-8'>
-      <span className='block text-center text-3xl font-bold text-heading'>Login</span>
+    <SheetLayout title='Login' onClose={onClose}>
+      <div className='flex flex-col gap-3'>
+        <div className={sheetCardClass}>
+          <label className={sheetRowClass}>
+            <span className={sheetRowLabelClass}>Email</span>
+            <input
+              type='email'
+              autoComplete='email'
+              placeholder='max.mustermann@gmail.com'
+              className={sheetRowInputClass}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={handleEmailKeyDown}
+            />
+          </label>
 
-      <form className='flex flex-col gap-4' onSubmit={handleSignIn} noValidate>
-        <div className='flex flex-col gap-2'>
-          <label className='text-sm text-label-small'>Email</label>
-          <input
-            type='email'
-            placeholder='max.mustermann@example.com'
-            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={handleEmailKeyDown}
-          />
-        </div>
-        <div className='flex flex-col gap-2'>
-          <label className='text-sm text-label-small'>Passwort</label>
-          <input
-            ref={passwordRef}
-            type='password'
-            placeholder='Gib dein Passwort ein'
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
-          />
-          <span
-            className='text-xs text-label-small cursor-pointer'
-            onClick={() => setStep('forgot')}
-          >
-            Passwort vergessen?
-          </span>
+          <SheetRowDivider />
+
+          <label className={sheetRowClass}>
+            <span className={sheetRowLabelClass}>Password</span>
+            <input
+              ref={passwordRef}
+              type='password'
+              autoComplete='current-password'
+              placeholder='••••••••'
+              className={sheetRowInputClass}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSignIn()}
+            />
+          </label>
         </div>
 
-        <div className='flex flex-col gap-4 mt-4'>
-          <button
-            type='submit'
-            className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
-          >
-            Login
-          </button>
-          <div className='flex items-center gap-3'>
-            <div className='flex-1 h-px bg-tertiary backdrop-blur-xl' />
-            <span className='text-xs text-subheading'>or</span>
-            <div className='flex-1 h-px bg-tertiary backdrop-blur-xl' />
-          </div>
-          <button
-            type='button'
-            onClick={handleGoogleSignIn}
-            className='flex w-full items-center justify-center gap-2 w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
-          >
-            <Image src='/icons/Google.png' alt='' width={18} height={18} className='shrink-0' />
-            Google
-          </button>
-        </div>
-      </form>
+        <button
+          type='button'
+          onClick={() => setStep('forgot')}
+          className='self-start px-1 text-subheading-1 text-sheet-body'
+        >
+          Password vergessen?
+        </button>
+      </div>
 
-      <span className='block text-center text-xs text-label-small'>
-        Noch kein Account?{' '}
-        <span className='text-body font-semibold cursor-pointer' onClick={onGoToSignUp}>
-          Sign Up
-        </span>
-      </span>
-    </div>
+      <button
+        type='button'
+        onClick={handleSignIn}
+        disabled={!email.trim() || !password || saving}
+        className={sheetButtonClass}
+      >
+        {saving ? <Spinner /> : 'weiter'}
+      </button>
+    </SheetLayout>
   )
 }

@@ -1,15 +1,15 @@
 export interface SignInProps {
   onSuccess: () => void
-  onGoToSignUp: () => void
+  onClose: () => void
 }
 
 export interface SignUpProps {
   onSuccess: (email: string) => void
-  onGoToSignIn: () => void
+  onClose: () => void
 }
 
 export interface VerifyProps {
   email: string
   onSuccess: () => void
+  onClose: () => void
 }
-

@@ -6,22 +6,20 @@ export async function signInWithPassword(email: string, password: string) {
   return supabase.auth.signInWithPassword({ email, password })
 }
 
-export async function signInWithGoogle() {
+// Comes back through /callback so the ?next= of an invite link survives the
+// round-trip and a brand-new OAuth user (who has no profiles row yet) can be
+// sent to onboarding.
+export async function signInWithGoogle(next?: string | null) {
+  const origin = getOrigin()
+  const query = next ? `?next=${encodeURIComponent(next)}` : ''
   return supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: getOrigin() },
+    options: { redirectTo: `${origin}${AUTH_CALLBACK_PATH}${query}` },
   })
 }
 
 export async function signUpWithEmail(email: string, password: string) {
   return supabase.auth.signUp({ email, password })
-}
-
-export async function signUpWithGoogle() {
-  return supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: getOrigin() },
-  })
 }
 
 export async function verifySignupOtp(email: string, token: string) {

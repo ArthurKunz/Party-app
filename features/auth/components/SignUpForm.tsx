@@ -1,17 +1,32 @@
 'use client'
 
 import { useRef, useState, type KeyboardEvent } from 'react'
-import Image from 'next/image'
+import SheetLayout, {
+  sheetButtonClass,
+  sheetCardClass,
+  sheetRowClass,
+  sheetRowInputClass,
+  sheetRowLabelClass,
+  SheetRowDivider,
+} from '@/components/shared/SheetLayout'
+import WarningBanner from '@/components/shared/WarningBanner'
+import Spinner from '@/components/shared/Spinner'
+import { alertError } from '@/lib/utils'
 import type { SignUpProps } from '../types/auth.types'
 import { usePasswordValidation } from '../hooks/usePasswordValidation'
-import { signUpWithEmail, signUpWithGoogle } from '../services/auth.service'
+import { signUpWithEmail } from '../services/auth.service'
 
-export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
+export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [saving, setSaving] = useState(false)
   const { passwordWarning, isPasswordValid } = usePasswordValidation(password)
-  const showPasswordWarning = password.length > 0 && passwordWarning !== ''
   const passwordRef = useRef<HTMLInputElement>(null)
+
+  // The banner only appears once there is something to complain about — it names the
+  // first unmet rule of the four (8 characters, a capital, a digit, a symbol).
+  const showPasswordWarning = password.length > 0 && !isPasswordValid
+  const canContinue = email.trim().length > 0 && isPasswordValid
 
   const handleEmailKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return
@@ -19,88 +34,56 @@ export default function SignUpForm({ onSuccess, onGoToSignIn }: SignUpProps) {
     if (email.trim()) passwordRef.current?.focus()
   }
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!isPasswordValid) return
-    const { error: signUpError } = await signUpWithEmail(email, password)
-    if (signUpError) {
-      console.error('SignUp error:', signUpError)
-      alert(signUpError.message)
+  const handleSignUp = async () => {
+    if (!canContinue || saving) return
+    setSaving(true)
+    const { error } = await signUpWithEmail(email, password)
+    setSaving(false)
+    if (error) {
+      alertError('Dein Account konnte nicht erstellt werden.', error.message)
       return
     }
     onSuccess(email)
   }
 
-  const handleGoogleSignUp = async () => {
-    const { error } = await signUpWithGoogle()
-    if (error) {
-      console.error('Google signup error:', error)
-      alert(error.message)
-    }
-  }
-
   return (
-    <div className='w-full flex flex-col gap-8'>
-      <span className='block text-center text-3xl font-bold text-heading'>Sign Up</span>
-
-      <form className='flex flex-col gap-4' onSubmit={handleSignUp} noValidate>
-        <div className='flex flex-col gap-2'>
-          <label className='text-sm text-label-small'>Email</label>
+    <SheetLayout title='Sign Up' onClose={onClose}>
+      <div className={sheetCardClass}>
+        <label className={sheetRowClass}>
+          <span className={sheetRowLabelClass}>Email</span>
           <input
             type='email'
-            placeholder='max.mustermann@example.com'
-            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            autoComplete='email'
+            placeholder='max.mustermann@gmail.com'
+            className={sheetRowInputClass}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={handleEmailKeyDown}
           />
-        </div>
-        <div className='flex flex-col gap-2'>
-          <label className='text-sm text-label-small'>Passwort</label>
+        </label>
+
+        <SheetRowDivider />
+
+        <label className={sheetRowClass}>
+          <span className={sheetRowLabelClass}>Password</span>
           <input
             ref={passwordRef}
             type='password'
-            placeholder='Erstelle ein Passwort'
+            autoComplete='new-password'
+            placeholder='••••••••'
+            className={sheetRowInputClass}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className='w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
+            onKeyDown={(e) => e.key === 'Enter' && handleSignUp()}
           />
-          {showPasswordWarning && (
-            <span className='text-xs text-red-400' role='alert'>
-              {passwordWarning}
-            </span>
-          )}
-        </div>
+        </label>
+      </div>
 
-        <div className='flex flex-col gap-4 mt-4'>
-          <button
-            type='submit'
-            className='w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
-          >
-            Sign up
-          </button>
-          <div className='flex items-center gap-3'>
-            <div className='flex-1 h-px bg-tertiary backdrop-blur-xl' />
-            <span className='text-xs text-subheading'>or</span>
-            <div className='flex-1 h-px bg-tertiary backdrop-blur-xl' />
-          </div>
-          <button
-            type='button'
-            onClick={handleGoogleSignUp}
-            className='flex w-full items-center justify-center gap-2 w-full h-12 rounded-full bg-tertiary backdrop-blur-xl text-button text-sm font-semibold text-heading'
-          >
-            <Image src='/icons/Google.png' alt='' width={18} height={18} className='shrink-0' />
-            Google
-          </button>
-        </div>
-      </form>
+      {showPasswordWarning && <WarningBanner message={passwordWarning} />}
 
-      <span className='block text-center text-xs text-label-small'>
-        Du hast schon ein Account?{' '}
-        <span className='text-body font-semibold cursor-pointer' onClick={onGoToSignIn}>
-          Login
-        </span>
-      </span>
-    </div>
+      <button type='button' onClick={handleSignUp} disabled={!canContinue || saving} className={sheetButtonClass}>
+        {saving ? <Spinner /> : 'weiter'}
+      </button>
+    </SheetLayout>
   )
 }

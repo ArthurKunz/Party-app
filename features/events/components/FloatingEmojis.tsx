@@ -22,6 +22,9 @@ type Floater = {
   left: number
   size: number
   duration: number
+  // Seconds already flown when it appears, rendered as a NEGATIVE animation-delay.
+  // 0 for everything the interval spawns, which always starts below the fold.
+  offset: number
   expires: number
 }
 
@@ -39,13 +42,38 @@ function makeFloater(id: number): Floater {
     left: random(-2, 96),
     size: random(MIN_SIZE, MAX_SIZE),
     duration,
+    offset: 0,
     expires: Date.now() + duration * 1000,
   }
 }
 
+// How many are already in the air when a seeded page opens. The steady state of one
+// spawn every 5s across a 20–35s flight is about five on screen, so this matches it.
+const SEED_COUNT = 5
+
+// The flight runs 115dvh → -25dvh, and the layer's mask fades the outer edges, so a
+// floater is fully visible only between roughly 0.15 and 0.8 of its path. Seeding
+// spreads the batch evenly across exactly that band, one per slot, so they arrive
+// scattered up the screen instead of clumped at one height.
+const SEED_FROM = 0.15
+const SEED_TO = 0.8
+
+function makeSeededFloater(id: number, index: number): Floater {
+  const base = makeFloater(id)
+  const progress = SEED_FROM + (SEED_TO - SEED_FROM) * ((index + 0.5) / SEED_COUNT)
+  const offset = base.duration * progress
+  // It has already used up `offset` of its life, so it must expire that much sooner.
+  return { ...base, offset, expires: Date.now() + (base.duration - offset) * 1000 }
+}
+
 // `active` is the page's "content is ready" flag: nothing spawns while the skeletons
 // are up, so the screen starts empty and fills from the bottom as the page settles.
-export default function FloatingEmojis({ active }: { active: boolean }) {
+//
+// `seed` is for the pages that have no skeletons — the auth and onboarding sheets —
+// where that fill-from-empty is just a wait: they open with a screenful already in
+// the air. It stays OFF on the parties page on purpose; seeding was tried there and
+// removed, because emojis hanging behind the skeletons is exactly what it looks like.
+export default function FloatingEmojis({ active, seed = false }: { active: boolean; seed?: boolean }) {
   // Empty on the server too: everything here is random, so it can only be built
   // after mount — otherwise the markup would not match and hydration would fail.
   const [floaters, setFloaters] = useState<Floater[]>([])
@@ -61,16 +89,22 @@ export default function FloatingEmojis({ active }: { active: boolean }) {
       setFloaters((prev) => [...prev.filter((f) => f.expires > now), makeFloater(nextId++)])
     }
 
-    // The first one comes from a frame callback rather than straight from the effect
+    // The first batch comes from a frame callback rather than straight from the effect
     // body, which would be a synchronous setState (cascading render, and a lint error).
-    const first = requestAnimationFrame(spawn)
+    const first = requestAnimationFrame(() => {
+      if (!seed) {
+        spawn()
+        return
+      }
+      setFloaters(Array.from({ length: SEED_COUNT }, (_, i) => makeSeededFloater(nextId++, i)))
+    })
     const interval = setInterval(spawn, SPAWN_INTERVAL)
 
     return () => {
       cancelAnimationFrame(first)
       clearInterval(interval)
     }
-  }, [active])
+  }, [active, seed])
 
   return (
     <>
@@ -85,7 +119,7 @@ export default function FloatingEmojis({ active }: { active: boolean }) {
           WebkitMaskImage: EDGE_FADE,
         }}
       >
-        {floaters.map(({ id, emoji, left, size, duration }) => (
+        {floaters.map(({ id, emoji, left, size, duration, offset }) => (
           <span
             key={id}
             className='absolute top-0 flex items-center justify-center leading-none animate-float-up'
@@ -94,6 +128,8 @@ export default function FloatingEmojis({ active }: { active: boolean }) {
               width: size,
               height: size,
               animationDuration: `${duration}s`,
+              // Negative: the browser plays it as though it started `offset` ago.
+              animationDelay: `-${offset}s`,
               // No circle behind them any more, so the emoji itself carries the size.
               fontSize: size,
             }}

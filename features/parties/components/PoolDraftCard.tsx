@@ -3,7 +3,7 @@
 import { useRef, useState, type TouchEvent } from 'react'
 import { Trash2 } from 'lucide-react'
 import { cardClass, RowDivider, rowClass, rowLabelClass, rowValueClass } from '@/components/shared/Card'
-import type { PoolDraft } from '../types/events.types'
+import type { PoolDraft } from '../types/parties.types'
 
 const ACTION_WIDTH = 80
 const GAP = 12

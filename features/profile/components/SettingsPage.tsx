@@ -2,11 +2,11 @@
 
 import { useRouter } from 'next/navigation'
 import { ChevronLeft } from 'lucide-react'
-import FloatingEmojis from '@/features/events/components/FloatingEmojis'
+import FloatingEmojis from '@/features/parties/components/FloatingEmojis'
 
 // Shared by every profile sub-page: emoji background, back button, centred title,
 // and content pinned to the bottom of the screen with the save button under it.
-// The card and row styles live in components/shared/Card so the create-event flow
+// The card and row styles live in components/shared/Card so the create-party flow
 // uses the very same ones; they are re-exported here for the existing importers.
 export {
   cardClass,

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-export default function EventMap({ location }: { location: string }) {
+export default function PartyMap({ location }: { location: string }) {
   const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY
   const query = encodeURIComponent(location)
   // A static PNG decodes before onLoad fires, unlike the old iframe embed whose

@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from 'react'
 
 /**
- * Event description clamped to 3 lines. If it overflows, a '… Mehr anzeigen'
+ * Party description clamped to 3 lines. If it overflows, a '… Mehr anzeigen'
  * button sits at the end of the third line; expanded, a 'Weniger anzeigen'
  * button sits below the full text. Expanding animates the height between the
  * two measured pixel values.
  */
-export default function EventDescription({ text }: { text: string }) {
+export default function PartyDescription({ text }: { text: string }) {
   const boxRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLParagraphElement>(null)
   const [expanded, setExpanded] = useState(false)
@@ -58,7 +58,7 @@ export default function EventDescription({ text }: { text: string }) {
           aria-hidden={expanded}
           style={{ top: collapsedHeight ?? 0 }}
           className={`absolute right-0 -translate-y-full flex items-center bg-main text-body-1 transition-opacity duration-200 motion-reduce:transition-none ${
-            expanded ? 'pointer-events-none opacity-0' : 'opacity-100'
+            expanded ? 'pointer-parties-none opacity-0' : 'opacity-100'
           }`}
         >
           <span className='absolute right-full h-full w-8 bg-gradient-to-r from-transparent to-main' />

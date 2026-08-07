@@ -1,4 +1,4 @@
-export type CreateEventPayload = {
+export type CreatePartyPayload = {
   host_id: string
   title: string
   description: string | null
@@ -11,7 +11,7 @@ export type CreateEventPayload = {
   max_guests: number | null
 }
 
-export type CreateEventFormValues = {
+export type CreatePartyFormValues = {
   title: string
   description: string
   day: string
@@ -26,7 +26,7 @@ export type CreateEventFormValues = {
   max_guests: string
 }
 
-export type EventWithCount = {
+export type PartyWithCount = {
   id: string
   title: string
   event_date: string
@@ -43,7 +43,7 @@ export type EventWithCount = {
   attendees?: Attendee[]
 }
 
-export type EventDetail = {
+export type PartyDetail = {
   id: string
   host_id: string
   title: string
@@ -65,7 +65,7 @@ export type Attendee = {
   status: 'going' | 'maybe' | 'not_going'
 }
 
-export type EventHost = {
+export type PartyHost = {
   firstname: string | null
   lastname: string | null
   avatar_url: string | null

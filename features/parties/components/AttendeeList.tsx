@@ -2,7 +2,7 @@
 
 import { calculateAge } from '@/lib/utils'
 import Avatar from '@/components/shared/Avatar'
-import type { Attendee } from '../types/events.types'
+import type { Attendee } from '../types/parties.types'
 
 const STATUS_CONFIG = {
   going: { label: 'zugesagt', icon: '✅', color: 'bg-success/50' },

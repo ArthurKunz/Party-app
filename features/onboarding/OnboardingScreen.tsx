@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { alertError, sanitizeNextPath } from '@/lib/utils'
-import FloatingEmojis from '@/features/events/components/FloatingEmojis'
+import FloatingEmojis from '@/features/parties/components/FloatingEmojis'
 import { getSession } from './services/onboarding.service'
 import PersonalDataForm from './components/PersonalDataForm'
 import BirthdateForm from './components/BirthdateForm'
@@ -15,7 +15,7 @@ type Step = 'name' | 'birthday' | 'picture'
 export default function OnboardingScreen() {
   const router = useRouter()
   // Carried over from the auth flow, so a user who started on an invite link
-  // lands back on that event once their profile exists.
+  // lands back on that party once their profile exists.
   const next = sanitizeNextPath(useSearchParams().get('next'))
   const [step, setStep] = useState<Step>('name')
   const [firstname, setFirstname] = useState('')

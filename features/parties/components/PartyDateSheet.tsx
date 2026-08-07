@@ -14,15 +14,15 @@ const YEARS = [CURRENT_YEAR, CURRENT_YEAR + 1, CURRENT_YEAR + 2]
 
 const daysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate()
 
-export type EventDate = { day: number; month: number; year: number }
+export type PartyDate = { day: number; month: number; year: number }
 
-export default function EventDateSheet({
+export default function PartyDateSheet({
   value,
   onChange,
   onClose,
 }: {
-  value: EventDate
-  onChange: (next: EventDate) => void
+  value: PartyDate
+  onChange: (next: PartyDate) => void
   onClose: () => void
 }) {
   const maxDay = daysInMonth(value.month, value.year)

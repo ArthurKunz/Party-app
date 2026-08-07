@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 const links = [
   {
     href: '/parties',
-    label: 'Meine Events',
+    label: 'Meine Partys',
     icon: (
       <svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
         <path d='M5.8 11.3 2 22l10.7-3.79' />
@@ -40,15 +40,15 @@ export default function BottomNav() {
   if (/^\/parties\/.+/.test(pathname)) return null
   // Hide on profile sub-pages (e.g. /profile/picture) that carry their own back button
   if (/^\/profile\/.+/.test(pathname)) return null
-  // Hide during the create-event flow, which has its own bottom progress bar
-  if (pathname === '/create-event') return null
+  // Hide during the create-party flow, which has its own bottom progress bar
+  if (pathname === '/create-party') return null
 
   return (
     <nav className='fixed bottom-0 z-30 w-full bg-background-main flex justify-center items-center pt-2'>
       <div className='flex items-center gap-4'>
         <Link
           href='/parties'
-          aria-label='Meine Events'
+          aria-label='Meine Partys'
           className={`flex h-11 w-15 items-center justify-center rounded-full transition-colors ${
             pathname === '/parties' ? 'bg-black/15 backdrop-blur-xl text-white' : 'text-hint hover:text-body'
           }`}
@@ -57,8 +57,8 @@ export default function BottomNav() {
         </Link>
 
         <Link
-          href='/create-event'
-          aria-label='Event erstellen'
+          href='/create-party'
+          aria-label='Party erstellen'
           className='flex h-11 w-11 items-center justify-center rounded-full bg-black/15 backdrop-blur-xl text-white transition-transform hover:scale-105'
         >
           <svg width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>

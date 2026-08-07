@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 
 // Reveal by HEIGHT, via the `grid-rows-[0fr]` → `[1fr]` idiom already used by
-// Section, EventDescription and WheelSheet. It is the only kind of reveal that
+// Section, PartyDescription and WheelSheet. It is the only kind of reveal that
 // survives a `backdrop-blur` in the subtree: animating opacity or transform would
 // make this element the blurred child's backdrop root and leave the card flat and
 // unblurred for the animation's full duration. It also reaches the content's

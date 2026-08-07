@@ -1,7 +1,7 @@
 export const MAX_BYTES = 5 * 1024 * 1024
 
 // Per field, so a full name tops out at 41 characters with the space. The same
-// number the event title uses, and enough for the longest names this app will see;
+// number the party title uses, and enough for the longest names this app will see;
 // beyond it the name is only ever shown truncated (the profile's Name row) or
 // wrapped (the 25px heading above it) anyway.
 export const NAME_MAX = 20

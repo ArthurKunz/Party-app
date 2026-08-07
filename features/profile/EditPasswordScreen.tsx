@@ -103,7 +103,7 @@ export default function EditPasswordScreen() {
         </div>
       </div>
 
-      {/* Same warning surface as the event pages' "nearly full" notice. */}
+      {/* Same warning surface as the party pages' "nearly full" notice. */}
       {warning && <WarningBanner message={warning} />}
 
       <button type='button' onClick={handleSave} disabled={!canSave || saving} className={saveButtonClass}>

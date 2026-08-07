@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
-import type { Pool, PoolOption, PoolResponse, PoolType } from '../types/events.types'
+import type { Pool, PoolOption, PoolResponse, PoolType } from '../types/parties.types'
 
 type RawPoolRow = {
   id: string
@@ -19,14 +19,14 @@ type RawOptionRow = {
   position: number
 }
 
-export async function getEventPools(eventId: string): Promise<Pool[]> {
+export async function getPartyPools(partyId: string): Promise<Pool[]> {
   const [{ data: poolRows }, { data: responseRows }] = await Promise.all([
     supabase
       .from('pools')
       .select('id, event_id, question, description, type, allow_text_response, allow_multiple, created_at')
-      .eq('event_id', eventId)
+      .eq('event_id', partyId)
       .order('created_at'),
-    supabase.rpc('get_pool_responses_by_event', { p_event_id: eventId }),
+    supabase.rpc('get_pool_responses_by_event', { p_event_id: partyId }),
   ])
 
   if (!poolRows || poolRows.length === 0) return []

@@ -57,7 +57,7 @@ export default function CreateStepLayout({
     </>
   )
 
-  // No background of its own: CreateEventScreen paints it once, below every step, so
+  // No background of its own: CreatePartyScreen paints it once, below every step, so
   // the floating emojis survive the switch from one question to the next.
   return (
     <div className='relative w-full min-h-dvh'>

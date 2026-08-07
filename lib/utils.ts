@@ -50,8 +50,8 @@ const COVER_GRADIENTS = [
   'from-brand-blue to-brand-pink',
 ]
 
-// Deterministic per-event cover gradient (no event images in V1, so we fake a "cover photo").
-export function eventCoverGradient(id: string): string {
+// Deterministic per-party cover gradient (no party images in V1, so we fake a "cover photo").
+export function partyCoverGradient(id: string): string {
   const hash = id.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0)
   return COVER_GRADIENTS[hash % COVER_GRADIENTS.length]
 }

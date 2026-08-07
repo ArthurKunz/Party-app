@@ -1,5 +1,5 @@
 // The label/value row pattern, shared by the profile settings pages and the
-// create-event flow so the two cannot drift. Rows are 50px tall and the card's
+// create-party flow so the two cannot drift. Rows are 50px tall and the card's
 // radius is half that, which makes a one-row card a pill.
 export const cardClass = 'w-full rounded-[25px] bg-secondary backdrop-blur-xl overflow-hidden'
 export const rowClass =

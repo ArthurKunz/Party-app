@@ -7,7 +7,7 @@ import { ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { calculateAge } from '@/lib/utils'
 import Avatar from '@/components/shared/Avatar'
-import FloatingEmojis from '@/features/events/components/FloatingEmojis'
+import FloatingEmojis from '@/features/parties/components/FloatingEmojis'
 import { getMyProfile, type Profile } from './services/profile.service'
 
 const ChevronIcon = <ChevronRight size={20} strokeWidth={2.5} className='text-subheading' />

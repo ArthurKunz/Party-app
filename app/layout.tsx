@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Student Connect',
-  description: 'Entdecke und erstelle Events für Studierende',
+  description: 'Entdecke und erstelle Partys für Studierende',
 };
 
 export const viewport: Viewport = {

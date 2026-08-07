@@ -1,4 +1,4 @@
-import FloatingEmojis from '@/features/events/components/FloatingEmojis'
+import FloatingEmojis from '@/features/parties/components/FloatingEmojis'
 import ChangePasswordForm from '@/features/settings/components/ChangePasswordForm'
 
 export default function ResetPasswordPage() {

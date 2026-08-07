@@ -6,13 +6,13 @@ import { cardClass, primaryButtonClass, RowDivider, rowClass, rowInputClass, row
 import Switch from '@/components/shared/Switch'
 import Collapse from '@/components/shared/Collapse'
 import WarningBanner from '@/components/shared/WarningBanner'
-import type { PoolDraft } from '../types/events.types'
+import type { PoolDraft } from '../types/parties.types'
 
 const MIN_OPTIONS = 2
 const MAX_OPTIONS = 10
 const DESCRIPTION_MAX = 300
 const QUESTION_MAX = 60
-// An option is one `truncate`d row on the event page: `text-label-1` (13px) across
+// An option is one `truncate`d row on the party page: `text-label-1` (13px) across
 // roughly 215px once the radio and a full voter stack have taken their share, which
 // is about 33 characters.
 const OPTION_MAX = 30
@@ -29,7 +29,7 @@ const toOptions = (values: string[]): Option[] =>
   values.map((value) => ({ id: nextOptionId++, value }))
 
 // One poll being written, inside the create flow. Nothing here touches Supabase —
-// the finished draft is handed back and only written when the event is created.
+// the finished draft is handed back and only written when the party is created.
 // Passing `draft` opens it on an existing poll; handing back the same id is what
 // makes the caller replace it instead of adding a second one.
 export default function PoolDraftForm({

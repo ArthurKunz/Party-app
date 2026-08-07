@@ -7,25 +7,25 @@ import { supabase } from '@/lib/supabase/client'
 import { alertError, getOrigin } from '@/lib/utils'
 import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
 import {
-  getEventByInviteCode,
-  getEventAttendees,
-  getEventHost,
+  getPartyByInviteCode,
+  getPartyAttendees,
+  getPartyHost,
   getMyRsvpStatus,
   setRsvp,
-  deleteEvent,
+  deleteParty,
   deleteRsvp,
   getRsvpCountsByStatus,
-} from './services/events.service'
-import { getEventPools } from './services/pools.service'
+} from './services/parties.service'
+import { getPartyPools } from './services/pools.service'
 import Avatar from '@/components/shared/Avatar'
 import Section from './components/Section'
 import AuthSheet from '@/features/auth/components/AuthSheet'
 import CapacityWarning, { isNearlyFull } from './components/CapacityWarning'
-import EventDescription from './components/EventDescription'
+import PartyDescription from './components/PartyDescription'
 import PoolsSection from './components/PoolsSection'
 import AttendeeList from './components/AttendeeList'
-import EventMap from './components/EventMap'
-import type { EventDetail, Attendee, EventHost, RsvpStatus, Pool } from './types/events.types'
+import PartyMap from './components/PartyMap'
+import type { PartyDetail, Attendee, PartyHost, RsvpStatus, Pool } from './types/parties.types'
 
 const BackIcon = <ChevronLeft size={24} strokeWidth={3} className='text-white' />
 
@@ -60,9 +60,9 @@ const menuContainerClass =
 
 export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   const router = useRouter()
-  const [event, setEvent] = useState<EventDetail | null>(null)
+  const [party, setParty] = useState<PartyDetail | null>(null)
   const [attendees, setAttendees] = useState<Attendee[]>([])
-  const [host, setHost] = useState<EventHost | null>(null)
+  const [host, setHost] = useState<PartyHost | null>(null)
   const [isHost, setIsHost] = useState(false)
   const [rsvpStatus, setRsvpStatus] = useState<RsvpStatus | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
@@ -79,7 +79,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   const [openSections, setOpenSections] = useState({ location: true, polls: true, guests: true })
 
   // One flag per block, so every section clears its own skeleton the moment its data lands.
-  const [eventLoading, setEventLoading] = useState(true)
+  const [partyLoading, setPartyLoading] = useState(true)
   const [countsLoading, setCountsLoading] = useState(true)
   const [poolsLoading, setPoolsLoading] = useState(true)
   const [attendeesLoading, setAttendeesLoading] = useState(true)
@@ -89,7 +89,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
 
   // The gate only goes up once we know there is no session — otherwise it would
   // flash over the skeletons on every load.
-  const showAuthGate = !eventLoading && !userId
+  const showAuthGate = !partyLoading && !userId
 
   // Signing up from an invite has to come back to that invite, not to the parties list.
   const inviteNext = `/e/${inviteCode}`
@@ -97,11 +97,11 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
 
   // A signed-in guest who has not answered yet must answer first: the header
   // controls are hidden and the three RSVP buttons take over the bottom.
-  const showRsvpGate = !eventLoading && !!userId && !isHost && rsvpStatus === null
+  const showRsvpGate = !partyLoading && !!userId && !isHost && rsvpStatus === null
 
-  // While the event is loading we do not yet know whether this is the host, a
+  // While the party is loading we do not yet know whether this is the host, a
   // guest or someone without an account, so the header stays completely empty.
-  const showHeaderControls = !eventLoading && !showAuthGate && !showRsvpGate
+  const showHeaderControls = !partyLoading && !showAuthGate && !showRsvpGate
 
   // Clipping the page container is not enough: the document itself stays
   // scrollable, and mobile Safari scrolls it right through a fixed overlay.
@@ -120,14 +120,14 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   useEffect(() => {
     let cancelled = false
 
-    // The invite code has to resolve to an event before anything else can be fetched,
+    // The invite code has to resolve to an party before anything else can be fetched,
     // so this is one await followed by the same parallel block the detail page uses.
     async function load() {
-      const eventData = await getEventByInviteCode(inviteCode)
+      const partyData = await getPartyByInviteCode(inviteCode)
       if (cancelled) return
-      if (!eventData) {
+      if (!partyData) {
         setNotFound(true)
-        setEventLoading(false)
+        setPartyLoading(false)
         return
       }
 
@@ -135,32 +135,32 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
       if (cancelled) return
       const uid = session?.user.id ?? null
       setUserId(uid)
-      setEvent(eventData)
-      setIsHost(eventData.host_id === uid)
+      setParty(partyData)
+      setIsHost(partyData.host_id === uid)
 
       void Promise.all([
-        getEventHost(eventData.id),
-        uid ? getMyRsvpStatus(eventData.id, uid) : Promise.resolve(null),
+        getPartyHost(partyData.id),
+        uid ? getMyRsvpStatus(partyData.id, uid) : Promise.resolve(null),
       ]).then(([hostData, status]) => {
         if (cancelled) return
         setHost(hostData)
         setRsvpStatus(status)
-        setEventLoading(false)
+        setPartyLoading(false)
       })
 
-      void getRsvpCountsByStatus(eventData.id).then((data) => {
+      void getRsvpCountsByStatus(partyData.id).then((data) => {
         if (cancelled) return
         setCounts(data)
         setCountsLoading(false)
       })
 
-      void getEventAttendees(eventData.id).then((data) => {
+      void getPartyAttendees(partyData.id).then((data) => {
         if (cancelled) return
         setAttendees(data)
         setAttendeesLoading(false)
       })
 
-      void getEventPools(eventData.id).then((data) => {
+      void getPartyPools(partyData.id).then((data) => {
         if (cancelled) return
         setPools(data)
         setPoolsLoading(false)
@@ -180,8 +180,8 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   }, [inviteCode])
 
   const refreshPools = () => {
-    if (!event) return
-    void getEventPools(event.id).then(setPools)
+    if (!party) return
+    void getPartyPools(party.id).then(setPools)
   }
 
   // Measured on open (the rows are static, so this is read lazily rather than watched)
@@ -193,36 +193,36 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   }
 
   const handleCopy = async () => {
-    if (!event) return
-    await navigator.clipboard.writeText(`${getOrigin()}/e/${event.invite_code}`)
+    if (!party) return
+    await navigator.clipboard.writeText(`${getOrigin()}/e/${party.invite_code}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleDeleteEvent = async () => {
-    if (!event) return
-    if (!confirm('Event wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return
+  const handleDeleteParty = async () => {
+    if (!party) return
+    if (!confirm('Party wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return
     setMenuOpen(false)
-    const { error } = await deleteEvent(event.id)
-    if (error) { alertError('Event konnte nicht gelöscht werden.', error.message); return }
+    const { error } = await deleteParty(party.id)
+    if (error) { alertError('Party konnte nicht gelöscht werden.', error.message); return }
     router.push('/parties')
   }
 
-  const handleLeaveEvent = async () => {
-    if (!event || !userId) return
-    if (!confirm('Event für dich löschen? Du kannst über den Einladungslink jederzeit wieder beitreten.')) return
+  const handleLeaveParty = async () => {
+    if (!party || !userId) return
+    if (!confirm('Party für dich löschen? Du kannst über den Einladungslink jederzeit wieder beitreten.')) return
     setMenuOpen(false)
-    const { error } = await deleteRsvp(event.id, userId)
-    if (error) { alertError('Du konntest nicht aus dem Event entfernt werden.', error.message); return }
+    const { error } = await deleteRsvp(party.id, userId)
+    if (error) { alertError('Du konntest nicht aus der Party entfernt werden.', error.message); return }
     router.push('/parties')
   }
 
   const handleRsvp = async (status: RsvpStatus) => {
-    if (!event) return
+    if (!party) return
     // Anonymous visitors have to sign up before they can answer.
     if (!userId) { router.push(loginHref); return }
     setRsvpLoading(true)
-    const { error } = await setRsvp(event.id, userId, status)
+    const { error } = await setRsvp(party.id, userId, status)
     if (error) {
       alertError('Deine Antwort konnte nicht gespeichert werden.', error.message)
       setRsvpLoading(false)
@@ -248,33 +248,33 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   if (notFound) {
     return (
       <div className='relative w-full min-h-dvh flex items-center justify-center bg-main'>
-        <span className='text-label-1 text-label-small'>Dieses Event existiert nicht (mehr).</span>
+        <span className='text-label-1 text-label-small'>Diese Party existiert nicht (mehr).</span>
       </div>
     )
   }
 
-  const statsLoading = eventLoading || countsLoading
+  const statsLoading = partyLoading || countsLoading
 
-  const stats: { label: string; value: string; warn?: boolean }[] = event
+  const stats: { label: string; value: string; warn?: boolean }[] = party
     ? [
         {
           label: 'Datum',
-          value: new Date(event.event_date).toLocaleDateString('de-DE', {
+          value: new Date(party.event_date).toLocaleDateString('de-DE', {
             day: '2-digit', month: '2-digit', year: '2-digit',
           }),
         },
         {
           label: 'Uhrzeit',
-          value: new Date(event.event_date).toLocaleTimeString('de-DE', {
+          value: new Date(party.event_date).toLocaleTimeString('de-DE', {
             hour: '2-digit', minute: '2-digit',
           }) + ' Uhr',
         },
         // Occupancy, not just the cap: "10/50" reads as zugesagt out of max.
-        ...(event.max_guests != null
+        ...(party.max_guests != null
           ? [{
               label: 'Max. Gäste',
-              value: `${counts.going}/${event.max_guests}`,
-              warn: isNearlyFull(counts.going, event.max_guests),
+              value: `${counts.going}/${party.max_guests}`,
+              warn: isNearlyFull(counts.going, party.max_guests),
             }]
           : []),
         { label: 'zugesagt', value: String(counts.going) },
@@ -283,18 +283,18 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
       ]
     : []
 
-  const locationCommaIndex = event ? event.location.lastIndexOf(',') : -1
-  const address = !event ? '' : locationCommaIndex === -1 ? event.location : event.location.slice(0, locationCommaIndex).trim()
-  const city = !event || locationCommaIndex === -1 ? '' : event.location.slice(locationCommaIndex + 1).trim()
+  const locationCommaIndex = party ? party.location.lastIndexOf(',') : -1
+  const address = !party ? '' : locationCommaIndex === -1 ? party.location : party.location.slice(0, locationCommaIndex).trim()
+  const city = !party || locationCommaIndex === -1 ? '' : party.location.slice(locationCommaIndex + 1).trim()
 
   return (
     <div className={`relative w-full bg-main ${showAuthGate ? 'h-dvh overflow-hidden' : ''}`}>
 
       <div className='relative w-full h-100 overflow-hidden'>
-        {event?.background_url ? (
+        {party?.background_url ? (
           <>
             <img
-              src={event.background_url}
+              src={party.background_url}
               alt=''
               onLoad={() => setHeroLoaded(true)}
               className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
@@ -303,12 +303,12 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
             />
             {!heroLoaded && <div className='absolute inset-0 skeleton' />}
           </>
-        ) : eventLoading ? (
+        ) : partyLoading ? (
           <div className='absolute inset-0 skeleton' />
         ) : (
           <div className='absolute inset-0 bg-secondary backdrop-blur-xl' />
         )}
-        <div className='absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-main to-transparent pointer-events-none' />
+        <div className='absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-main to-transparent pointer-parties-none' />
 
         <div className='relative z-10 px-4 py-7.5'>
           <div className='relative w-full h-10'>
@@ -334,7 +334,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                 aria-hidden={menuOpen}
                 tabIndex={menuOpen ? -1 : 0}
                 className={`absolute right-13.75 top-0 ${iconButtonClass} transition-opacity duration-150 ${
-                  menuOpen ? 'pointer-events-none opacity-0' : 'opacity-100 delay-150'
+                  menuOpen ? 'pointer-parties-none opacity-0' : 'opacity-100 delay-150'
                 }`}
               >
                 {copied ? <span className='text-label-1 text-heading'>✓</span> : CopyIcon}
@@ -356,7 +356,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                     aria-hidden={menuOpen}
                     tabIndex={menuOpen ? -1 : 0}
                     className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 backdrop-blur-xl ${
-                      menuOpen ? 'pointer-events-none opacity-0' : 'opacity-100 delay-150'
+                      menuOpen ? 'pointer-parties-none opacity-0' : 'opacity-100 delay-150'
                     }`}
                   >
                     {MoreIcon}
@@ -367,10 +367,10 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                     ref={menuContentRef}
                     aria-hidden={!menuOpen}
                     className={`w-56.25 p-2 flex flex-col transition-opacity duration-150 ${
-                      menuOpen ? 'opacity-100 delay-150' : 'pointer-events-none opacity-0'
+                      menuOpen ? 'opacity-100 delay-150' : 'pointer-parties-none opacity-0'
                     }`}
                   >
-                    {/* The host cannot RSVP to their own event — they only get the delete row. */}
+                    {/* The host cannot RSVP to their own party — they only get the delete row. */}
                     {!isHost &&
                       RSVP_MENU.map(({ status, label, icon }) => (
                         <button
@@ -394,7 +394,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                         {!isHost && <div className='h-0.25 w-full bg-[#3D3D3D] my-2' />}
                         <button
                           type='button'
-                          onClick={isHost ? handleDeleteEvent : handleLeaveEvent}
+                          onClick={isHost ? handleDeleteParty : handleLeaveParty}
                           className='flex items-center gap-3.25 w-full px-4 py-3'
                         >
                           <span className='w-5 h-5 flex items-center justify-center'>{TrashIcon}</span>
@@ -414,7 +414,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
       <div className={`relative px-4 bg-main flex flex-col gap-12.5 ${showRsvpGate ? 'pb-safe-rsvp-content' : 'pb-7.5'}`}>
 
         <div className='w-full flex flex-col gap-5'>
-          {eventLoading ? (
+          {partyLoading ? (
             <div className='w-full flex flex-col gap-3'>
               <div className='w-full flex flex-col gap-2'>
                 <div className='h-9 w-3/4 rounded-lg skeleton' />
@@ -431,7 +431,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
           ) : (
             <div className='w-full flex flex-col gap-3'>
               <div className='w-full flex flex-col'>
-                <span className='text-heading-1 font-semibold text-heading'>{event?.title}</span>
+                <span className='text-heading-1 font-semibold text-heading'>{party?.title}</span>
                 <div className='flex items-center gap-2'>
                   <Avatar
                     size={25}
@@ -445,7 +445,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                   </span>
                 </div>
               </div>
-              {event?.description && <EventDescription text={event.description} />}
+              {party?.description && <PartyDescription text={party.description} />}
             </div>
           )}
 
@@ -475,12 +475,12 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
             )}
           </div>
 
-          {!statsLoading && <CapacityWarning going={counts.going} maxGuests={event?.max_guests ?? null} />}
+          {!statsLoading && <CapacityWarning going={counts.going} maxGuests={party?.max_guests ?? null} />}
         </div>
 
         <div className='relative flex flex-col gap-5'>
           <Section title='Location' open={openSections.location} onToggle={() => toggleSection('location')}>
-            {eventLoading || !event ? (
+            {partyLoading || !party ? (
               <div className='w-full pb-7.5'>
                 <div className='h-33 w-full rounded-2xl skeleton' />
                 <div className='flex flex-col gap-1.5 mt-2'>
@@ -490,7 +490,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
               </div>
             ) : (
               <div className='w-full pb-7.5'>
-                <EventMap location={event.location} />
+                <PartyMap location={party.location} />
                 <div className='flex flex-col mt-2'>
                   <span className='truncate font-md text-label-1 text-label-large'>{address}</span>
                   <span className='truncate text-label-2 text-label-small'>{city && `in ${city}`}</span>
@@ -580,7 +580,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
         </div>
       )}
 
-      {/* Anonymous visitors see the event through a blur, but cannot act on it without an account. */}
+      {/* Anonymous visitors see the party through a blur, but cannot act on it without an account. */}
       {showAuthGate && (
         <>
           <div className='fixed inset-0 z-30 touch-none overscroll-none bg-main/30 backdrop-blur-xl' />

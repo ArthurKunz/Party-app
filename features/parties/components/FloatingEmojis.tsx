@@ -113,7 +113,7 @@ export default function FloatingEmojis({ active, seed = false }: { active: boole
           pass behind a card, and they never pop in or out at the screen edge. */}
       <div
         aria-hidden='true'
-        className='pointer-events-none fixed inset-0 z-0 overflow-hidden'
+        className='pointer-parties-none fixed inset-0 z-0 overflow-hidden'
         style={{
           maskImage: EDGE_FADE,
           WebkitMaskImage: EDGE_FADE,
@@ -142,7 +142,7 @@ export default function FloatingEmojis({ active, seed = false }: { active: boole
       {/* Colourless veil sitting between the emojis and the page content: it blurs
           what is painted BELOW it (the emojis), while everything above — cards,
           buttons, tabs — stays sharp. */}
-      <div aria-hidden='true' className='pointer-events-none fixed inset-0 z-[1] backdrop-blur-xs' />
+      <div aria-hidden='true' className='pointer-parties-none fixed inset-0 z-[1] backdrop-blur-xs' />
     </>
   )
 }

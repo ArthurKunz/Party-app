@@ -5,12 +5,12 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
-import { getHostedEvents, getAttendedEvents } from './services/events.service'
+import { getHostedParties, getAttendedParties } from './services/parties.service'
 import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
-import EventCard from './components/EventCard'
+import PartyCard from './components/PartyCard'
 import FloatingEmojis from './components/FloatingEmojis'
 import Avatar from '@/components/shared/Avatar'
-import type { EventWithCount } from './types/events.types'
+import type { PartyWithCount } from './types/parties.types'
 
 type Tab = 'hosting' | 'attending'
 
@@ -35,8 +35,8 @@ function CardSkeleton({ featured = false }: { featured?: boolean }) {
 }
 
 // Both tabs share this: the same card mockup and layout, only the wording differs.
-// Either way the one thing a user with no events can do is create their own party
-// (V1 has no explore page), so both buttons go to /create-event.
+// Either way the one thing a user with no parties can do is create their own party
+// (V1 has no explore page), so both buttons go to /create-party.
 function EmptyState({ title, text, actionLabel }: { title: string; text: string; actionLabel: string }) {
   return (
     <div className='flex flex-1 flex-col items-center justify-center gap-8'>
@@ -63,7 +63,7 @@ function EmptyState({ title, text, actionLabel }: { title: string; text: string;
       {/* bg-sheet/text-sheet-heading are the app's white-surface pair, so the
           button needs no new tokens. */}
       <Link
-        href='/create-event'
+        href='/create-party'
         className='flex h-12.5 items-center gap-2 rounded-full bg-sheet px-6 text-button font-semibold text-sheet-heading transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
       >
         <Plus size={20} strokeWidth={3} />
@@ -76,8 +76,8 @@ function EmptyState({ title, text, actionLabel }: { title: string; text: string;
 export default function PartiesScreen() {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('attending')
-  const [hosted, setHosted] = useState<EventWithCount[]>([])
-  const [attended, setAttended] = useState<EventWithCount[]>([])
+  const [hosted, setHosted] = useState<PartyWithCount[]>([])
+  const [attended, setAttended] = useState<PartyWithCount[]>([])
   const [loading, setLoading] = useState(true)
   const [profileLoading, setProfileLoading] = useState(true)
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -97,12 +97,12 @@ export default function PartiesScreen() {
         setProfileLoading(false)
       })
 
-      const [hostedEvents, attendedEvents] = await Promise.all([
-        getHostedEvents(userId),
-        getAttendedEvents(userId),
+      const [hostedParties, attendedParties] = await Promise.all([
+        getHostedParties(userId),
+        getAttendedParties(userId),
       ])
-      setHosted(hostedEvents)
-      setAttended(attendedEvents)
+      setHosted(hostedParties)
+      setAttended(attendedParties)
       setLoading(false)
     })
   }, [router])
@@ -127,10 +127,10 @@ export default function PartiesScreen() {
       <div className='relative z-10 flex min-h-dvh flex-col items-center gap-10 px-4 pt-7.5 pb-safe-nav'>
         <div className='w-full flex flex-col gap-6'>
           <div className='flex w-full items-center justify-between'>
-            <Link href='/create-event' aria-label='Event erstellen' className={iconButtonClass}>
+            <Link href='/create-party' aria-label='Party erstellen' className={iconButtonClass}>
               {PlusIcon}
             </Link>
-            <span className='font-bold text-heading-2 text-heading'>Events</span>
+            <span className='font-bold text-heading-2 text-heading'>Partys</span>
             {profileLoading ? (
               <div className='h-11.25 w-11.25 rounded-full skeleton' />
             ) : (
@@ -205,14 +205,14 @@ export default function PartiesScreen() {
           ) : (
             <>
               <Link href={`/parties/${currentList[0].id}`} className='block'>
-                <EventCard event={currentList[0]} isHost={tab === 'hosting'} featured />
+                <PartyCard party={currentList[0]} isHost={tab === 'hosting'} featured />
               </Link>
 
               {currentList.length > 1 && (
                 <div className='grid grid-cols-2 gap-3'>
-                  {currentList.slice(1).map((event) => (
-                    <Link key={event.id} href={`/parties/${event.id}`} className='block'>
-                      <EventCard event={event} isHost={tab === 'hosting'} />
+                  {currentList.slice(1).map((party) => (
+                    <Link key={party.id} href={`/parties/${party.id}`} className='block'>
+                      <PartyCard party={party} isHost={tab === 'hosting'} />
                     </Link>
                   ))}
                 </div>

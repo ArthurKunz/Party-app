@@ -1,4 +1,4 @@
-import PartiesScreen from '@/features/events/PartiesScreen'
+import PartiesScreen from '@/features/parties/PartiesScreen'
 
 export default function PartiesPage() {
   return <PartiesScreen />

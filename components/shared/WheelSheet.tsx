@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 
 // iOS-style wheel in a sheet: N scroll-snapping columns under one selection band.
 // Sizes are fixed because the maths below (padding, scrollTop → index) depends on
-// them. Used for the birthday (day/month/year) and the event's date and times.
+// them. Used for the birthday (day/month/year) and the party's date and times.
 const ITEM_HEIGHT = 36
 const VISIBLE_ITEMS = 7
 const LIST_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS
@@ -22,7 +22,7 @@ export type WheelColumn = {
 function Column({ labels, index, onChange }: WheelColumn) {
   const ref = useRef<HTMLDivElement>(null)
   const frame = useRef(0)
-  // True from the first scroll event until 150ms after the last one. Without it the
+  // True from the first scroll party until 150ms after the last one. Without it the
   // effect below would yank the list back mid-flick, because every index change the
   // user's own scrolling causes looks exactly like one coming from outside.
   const userScrolling = useRef(false)
@@ -153,7 +153,7 @@ export default function WheelSheet({ columns, onClose }: { columns: WheelColumn[
               {/* Selection band sits behind the columns, dead centre. */}
               <div
                 aria-hidden='true'
-                className='pointer-events-none absolute inset-x-0 rounded-xl bg-button-secondary/80'
+                className='pointer-parties-none absolute inset-x-0 rounded-xl bg-button-secondary/80'
                 style={{ height: ITEM_HEIGHT, top: EDGE_PADDING }}
               />
               {columns.map((column, i) => (

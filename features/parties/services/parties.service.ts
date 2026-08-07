@@ -1,17 +1,17 @@
 import { supabase } from '@/lib/supabase/client'
-import type { CreateEventPayload, EventWithCount, EventDetail, Attendee, EventHost, RsvpStatus } from '../types/events.types'
+import type { CreatePartyPayload, PartyWithCount, PartyDetail, Attendee, PartyHost, RsvpStatus } from '../types/parties.types'
 
-export async function createEvent(payload: CreateEventPayload) {
+export async function createParty(payload: CreatePartyPayload) {
   return supabase.from('events').insert(payload).select('id, invite_code').single()
 }
 
-async function attachCountAndAttendees(event: Omit<EventWithCount, 'attendee_count' | 'attendees'>): Promise<EventWithCount> {
+async function attachCountAndAttendees(party: Omit<PartyWithCount, 'attendee_count' | 'attendees'>): Promise<PartyWithCount> {
   const [countResult, attendeesResult] = await Promise.all([
-    supabase.rpc('get_rsvp_count', { p_event_id: event.id }),
-    supabase.rpc('get_event_attendees', { p_event_id: event.id }),
+    supabase.rpc('get_rsvp_count', { p_event_id: party.id }),
+    supabase.rpc('get_event_attendees', { p_event_id: party.id }),
   ])
   return {
-    ...event,
+    ...party,
     attendee_count: countResult.data ?? 0,
     attendees: ((attendeesResult.data as Attendee[] | null) ?? []).slice(0, 10),
   }
@@ -36,7 +36,7 @@ interface HostedRow {
 
 interface AttendedRsvpRow {
   status: string
-  events: {
+  parties: {
     id: string
     title: string
     event_date: string
@@ -48,7 +48,7 @@ interface AttendedRsvpRow {
   } | null
 }
 
-export async function getHostedEvents(userId: string): Promise<EventWithCount[]> {
+export async function getHostedParties(userId: string): Promise<PartyWithCount[]> {
   const { data, error } = await supabase
     .from('events')
     .select('id, title, event_date, location, invite_code, background_url, max_guests')
@@ -72,116 +72,116 @@ export async function getHostedEvents(userId: string): Promise<EventWithCount[]>
   )
 }
 
-export async function getAttendedEvents(userId: string): Promise<EventWithCount[]> {
+export async function getAttendedParties(userId: string): Promise<PartyWithCount[]> {
   // 'going', 'not_going' and 'maybe' RSVPs all appear under "Ich bin Gast"
   const { data, error } = await supabase
     .from('rsvps')
-    .select('status, events(id, title, event_date, location, invite_code, background_url, host_id, max_guests)')
+    .select('status, parties(id, title, event_date, location, invite_code, background_url, host_id, max_guests)')
     .eq('user_id', userId)
   if (error || !data) return []
 
   const rows = (data as unknown as AttendedRsvpRow[])
     // You are never a guest at your own party — it belongs on the 'Gastgeber' tab only.
-    .filter((r) => r.events !== null && r.events.host_id !== userId)
-    .map((r) => ({ status: r.status as RsvpStatus, event: r.events! }))
-    .sort((a, b) => new Date(a.event.event_date).getTime() - new Date(b.event.event_date).getTime())
+    .filter((r) => r.parties !== null && r.parties.host_id !== userId)
+    .map((r) => ({ status: r.status as RsvpStatus, party: r.parties! }))
+    .sort((a, b) => new Date(a.party.event_date).getTime() - new Date(b.party.event_date).getTime())
 
   if (rows.length === 0) return []
 
   return Promise.all(
-    rows.map(async ({ status, event }) => {
+    rows.map(async ({ status, party }) => {
       // get_event_host is SECURITY DEFINER so it bypasses profiles RLS
       const [hostResult, countResult, attendeesResult] = await Promise.all([
-        supabase.rpc('get_event_host', { p_event_id: event.id }),
-        supabase.rpc('get_rsvp_count', { p_event_id: event.id }),
-        supabase.rpc('get_event_attendees', { p_event_id: event.id }),
+        supabase.rpc('get_event_host', { p_event_id: party.id }),
+        supabase.rpc('get_rsvp_count', { p_event_id: party.id }),
+        supabase.rpc('get_event_attendees', { p_event_id: party.id }),
       ])
-      const host = (hostResult.data as EventHost[] | null)?.[0] ?? null
+      const host = (hostResult.data as PartyHost[] | null)?.[0] ?? null
       // get_event_attendees / get_rsvp_count already include the host themselves.
       const attendees = (attendeesResult.data as Attendee[] | null) ?? []
       return {
-        id: event.id,
-        title: event.title,
-        event_date: event.event_date,
-        location: event.location,
-        invite_code: event.invite_code,
-        background_url: event.background_url,
-        max_guests: event.max_guests,
+        id: party.id,
+        title: party.title,
+        event_date: party.event_date,
+        location: party.location,
+        invite_code: party.invite_code,
+        background_url: party.background_url,
+        max_guests: party.max_guests,
         attendee_count: countResult.data ?? 0,
         attendees: attendees.slice(0, 10),
         rsvp_status: status,
         host_firstname: host?.firstname ?? null,
         host_lastname: host?.lastname ?? null,
-        host_avatar_color: host?.avatar_color ?? hostColor(event.host_id),
+        host_avatar_color: host?.avatar_color ?? hostColor(party.host_id),
         host_avatar_url: host?.avatar_url ?? null,
       }
     })
   )
 }
 
-const EVENT_DETAIL_COLUMNS = 'id, host_id, title, description, event_date, location, invite_code, background_url, max_guests'
+const PARTY_DETAIL_COLUMNS = 'id, host_id, title, description, event_date, location, invite_code, background_url, max_guests'
 
-export async function getEventById(eventId: string): Promise<EventDetail | null> {
+export async function getPartyById(partyId: string): Promise<PartyDetail | null> {
   const { data, error } = await supabase
     .from('events')
-    .select(EVENT_DETAIL_COLUMNS)
-    .eq('id', eventId)
+    .select(PARTY_DETAIL_COLUMNS)
+    .eq('id', partyId)
     .maybeSingle()
   if (error || !data) return null
   return data
 }
 
-export async function getEventByInviteCode(inviteCode: string): Promise<EventDetail | null> {
+export async function getPartyByInviteCode(inviteCode: string): Promise<PartyDetail | null> {
   const { data, error } = await supabase
     .from('events')
-    .select(EVENT_DETAIL_COLUMNS)
+    .select(PARTY_DETAIL_COLUMNS)
     .eq('invite_code', inviteCode)
     .maybeSingle()
   if (error || !data) return null
   return data
 }
 
-export async function getEventHost(eventId: string): Promise<EventHost | null> {
-  const { data, error } = await supabase.rpc('get_event_host', { p_event_id: eventId })
+export async function getPartyHost(partyId: string): Promise<PartyHost | null> {
+  const { data, error } = await supabase.rpc('get_event_host', { p_event_id: partyId })
   if (error || !data || data.length === 0) return null
-  return data[0] as unknown as EventHost
+  return data[0] as unknown as PartyHost
 }
 
-export async function getEventAttendees(eventId: string): Promise<Attendee[]> {
-  const { data, error } = await supabase.rpc('get_event_attendees', { p_event_id: eventId })
+export async function getPartyAttendees(partyId: string): Promise<Attendee[]> {
+  const { data, error } = await supabase.rpc('get_event_attendees', { p_event_id: partyId })
   if (error || !data) return []
   return data as unknown as Attendee[]
 }
 
 interface RsvpCountRow { going_count: number; maybe_count: number; not_going_count: number }
 
-export async function getRsvpCountsByStatus(eventId: string): Promise<{ going: number; maybe: number; not_going: number }> {
-  const { data } = await (supabase.rpc as unknown as (fn: string, args: Record<string, string>) => Promise<{ data: unknown }>)('get_rsvp_counts_by_status', { p_event_id: eventId })
+export async function getRsvpCountsByStatus(partyId: string): Promise<{ going: number; maybe: number; not_going: number }> {
+  const { data } = await (supabase.rpc as unknown as (fn: string, args: Record<string, string>) => Promise<{ data: unknown }>)('get_rsvp_counts_by_status', { p_event_id: partyId })
   const row = (data as RsvpCountRow[] | null)?.[0]
   return { going: row?.going_count ?? 0, maybe: row?.maybe_count ?? 0, not_going: row?.not_going_count ?? 0 }
 }
 
-export async function getMyRsvpStatus(eventId: string, userId: string): Promise<RsvpStatus | null> {
+export async function getMyRsvpStatus(partyId: string, userId: string): Promise<RsvpStatus | null> {
   const { data, error } = await supabase
     .from('rsvps')
     .select('status')
-    .eq('event_id', eventId)
+    .eq('event_id', partyId)
     .eq('user_id', userId)
     .maybeSingle()
   if (error || !data) return null
   return data.status as RsvpStatus
 }
 
-export async function setRsvp(eventId: string, userId: string, status: RsvpStatus) {
+export async function setRsvp(partyId: string, userId: string, status: RsvpStatus) {
   return supabase
     .from('rsvps')
-    .upsert({ event_id: eventId, user_id: userId, status }, { onConflict: 'event_id,user_id' })
+    .upsert({ event_id: partyId, user_id: userId, status }, { onConflict: 'event_id,user_id' })
 }
 
-export async function deleteEvent(eventId: string) {
-  return supabase.from('events').delete().eq('id', eventId)
+export async function deleteParty(partyId: string) {
+  return supabase.from('events').delete().eq('id', partyId)
 }
 
-export async function deleteRsvp(eventId: string, userId: string) {
-  return supabase.from('rsvps').delete().eq('event_id', eventId).eq('user_id', userId)
+export async function deleteRsvp(partyId: string, userId: string) {
+  return supabase.from('rsvps').delete().eq('event_id', partyId).eq('user_id', userId)
 }

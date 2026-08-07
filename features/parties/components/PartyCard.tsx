@@ -1,18 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import type { EventWithCount } from '../types/events.types'
+import type { PartyWithCount } from '../types/parties.types'
 
-export default function EventCard({
-  event,
+export default function PartyCard({
+  party,
   isHost = false,
   featured = false,
 }: {
-  event: EventWithCount
+  party: PartyWithCount
   isHost?: boolean
   featured?: boolean
 }) {
-  const hostName = [event.host_firstname, event.host_lastname].filter(Boolean).join(' ')
+  const hostName = [party.host_firstname, party.host_lastname].filter(Boolean).join(' ')
   // Same pattern as the detail page hero: shimmer until the image is decoded, then cross-fade.
   const [imgLoaded, setImgLoaded] = useState(false)
 
@@ -23,10 +23,10 @@ export default function EventCard({
           featured ? 'aspect-[2/1]' : 'aspect-square'
         }`}
       >
-        {event.background_url && (
+        {party.background_url && (
           <>
             <img
-              src={event.background_url}
+              src={party.background_url}
               alt=''
               aria-hidden='true'
               onLoad={() => setImgLoaded(true)}
@@ -41,7 +41,7 @@ export default function EventCard({
 
       <div className='flex flex-col min-w-0'>
         <span className='truncate font-md text-label-1 text-label-large'>
-          {event.title}
+          {party.title}
         </span>
         {!isHost && (
           <span className='truncate text-label-2 text-label-small'>von {hostName || 'Unbekannt'}</span>

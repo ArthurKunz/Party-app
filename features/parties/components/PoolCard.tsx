@@ -5,7 +5,7 @@ import { alertError } from '@/lib/utils'
 import type { Profile } from '@/features/profile/services/profile.service'
 import { addPoolResponse, removePoolResponse, upsertPoolResponse } from '../services/pools.service'
 import Avatar from '@/components/shared/Avatar'
-import type { Pool, PoolResponse } from '../types/events.types'
+import type { Pool, PoolResponse } from '../types/parties.types'
 
 type Props = {
   pool: Pool

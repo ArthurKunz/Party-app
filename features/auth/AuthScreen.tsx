@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { sanitizeNextPath } from '@/lib/utils'
-import FloatingEmojis from '@/features/events/components/FloatingEmojis'
+import FloatingEmojis from '@/features/parties/components/FloatingEmojis'
 import AuthSheet from './components/AuthSheet'
 import SignInForm from './components/SignInForm'
 import SignUpForm from './components/SignUpForm'

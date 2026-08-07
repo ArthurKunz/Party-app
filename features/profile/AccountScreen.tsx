@@ -24,7 +24,7 @@ export default function AccountScreen() {
   // delete_self is a SECURITY DEFINER RPC: it removes the profile row and the auth
   // user, so the sign-out afterwards only clears the local session.
   const handleDeleteAccount = async () => {
-    if (!confirm('Account wirklich löschen? Alle deine Events und Antworten gehen verloren.')) return
+    if (!confirm('Account wirklich löschen? Alle deine Partys und Antworten gehen verloren.')) return
     const { error } = await supabase.rpc('delete_self')
     if (error) {
       alertError('Dein Account konnte nicht gelöscht werden.', error.message)

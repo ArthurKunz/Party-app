@@ -1,11 +1,11 @@
 import { useMemo, useRef, useState } from 'react'
 import { OTP_LENGTH } from '../constants/auth.constants'
 
-// `onComplete` fires from the event that fills the last box — typing the final digit
+// `onComplete` fires from the party that fills the last box — typing the final digit
 // or pasting the whole code — and is handed the finished code, because the state it
 // comes from has not rendered yet. It is deliberately NOT an effect watching `code`:
 // this repo's React 19 lint forbids setState inside an effect body, and submitting
-// from the event is the more direct expression of "the answer is complete" anyway.
+// from the party is the more direct expression of "the answer is complete" anyway.
 export function useOtpInput(length: number = OTP_LENGTH, onComplete?: (code: string) => void) {
   const [digits, setDigits] = useState<string[]>(() => Array.from({ length }, () => ''))
   const inputRefs = useRef<(HTMLInputElement | null)[]>([])

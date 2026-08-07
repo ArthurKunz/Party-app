@@ -7,8 +7,8 @@ import { supabase } from '@/lib/supabase/client'
 import Spinner from '@/components/shared/Spinner'
 import { generateInviteCode, getOrigin } from '@/lib/utils'
 import AddressSearchField from './components/AddressSearchField'
-import EventDateSheet from './components/EventDateSheet'
-import EventTimeSheet from './components/EventTimeSheet'
+import PartyDateSheet from './components/PartyDateSheet'
+import PartyTimeSheet from './components/PartyTimeSheet'
 import StepProgress from './components/StepProgress'
 import CreateStepLayout from './components/CreateStepLayout'
 import FloatingEmojis from './components/FloatingEmojis'
@@ -18,16 +18,16 @@ import PoolDraftCard from './components/PoolDraftCard'
 import Switch from '@/components/shared/Switch'
 import Collapse from '@/components/shared/Collapse'
 import WarningBanner from '@/components/shared/WarningBanner'
-import { createEvent } from './services/events.service'
+import { createParty } from './services/parties.service'
 import { createPool, addPoolOption } from './services/pools.service'
-import type { CreateEventFormValues, PoolDraft } from './types/events.types'
+import type { CreatePartyFormValues, PoolDraft } from './types/parties.types'
 
 const inputClass =
   'w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
 
 const BG_MAX_BYTES = 10 * 1024 * 1024
 
-// The title is `text-heading-1` (35px semibold) on the event page and must not wrap:
+// The title is `text-heading-1` (35px semibold) on the party page and must not wrap:
 // roughly 18px per character across 343px of content leaves about 19, so 20.
 const TITLE_MAX = 20
 const DESCRIPTION_MAX = 500
@@ -37,7 +37,7 @@ const POOLS_MAX = 5
 const COLLAPSE_MS = 300
 
 // Ready-made party backgrounds from /public: picking one writes its path straight
-// into events.background_url, so nothing is uploaded.
+// into parties.background_url, so nothing is uploaded.
 const BG_PRESETS = Array.from({ length: 8 }, (_, i) => `/backgrounds/bg-${i + 1}.jpg`)
 
 type StepId = 'name' | 'description' | 'date' | 'time' | 'location' | 'guests' | 'background' | 'pools' | 'done'
@@ -51,7 +51,7 @@ const HEADLINES: Record<StepId, string> = {
   name: 'Wie nennst du deine Party?',
   description: 'Worum geht es?',
   date: 'An welchem Tag steigt die Party?',
-  time: 'Um wie viel Uhr findet das Event statt?',
+  time: 'Um wie viel Uhr findet die Party statt?',
   location: 'Wo findet sie statt?',
   guests: 'Wie viele Gäste?',
   background: 'Hintergrundbild',
@@ -61,7 +61,7 @@ const HEADLINES: Record<StepId, string> = {
 
 // The eight wallpapers are ~1.1MB together and arrive one at a time, so each tile
 // shimmers until ITS OWN image has decoded and then cross-fades it in — the same
-// treatment the event hero and EventCard give their images. It has to be a component
+// treatment the party hero and PartyCard give their images. It has to be a component
 // rather than inline markup: the loaded flag is per-tile, and state cannot live
 // inside the parent's map.
 function PresetTile({
@@ -104,7 +104,7 @@ function PresetTile({
   )
 }
 
-export default function CreateEventScreen() {
+export default function CreatePartyScreen() {
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
   const [step, setStep] = useState<StepId>('name')
@@ -126,7 +126,7 @@ export default function CreateEventScreen() {
   const [bgPreviewUrl, setBgPreviewUrl] = useState<string | null>(null)
   const [bgPreviewLoaded, setBgPreviewLoaded] = useState(false)
   const [bgError, setBgError] = useState<string | null>(null)
-  const [values, setValues] = useState<CreateEventFormValues>({
+  const [values, setValues] = useState<CreatePartyFormValues>({
     title: '',
     description: '',
     day: '',
@@ -165,7 +165,7 @@ export default function CreateEventScreen() {
   const stepIndex = STEPS.indexOf(step)
   const shareLink = inviteCode ? `${getOrigin()}/e/${inviteCode}` : ''
 
-  const setField = (field: keyof CreateEventFormValues, value: string) =>
+  const setField = (field: keyof CreatePartyFormValues, value: string) =>
     setValues((v) => ({ ...v, [field]: value }))
 
   const canContinue = (() => {
@@ -180,7 +180,7 @@ export default function CreateEventScreen() {
         )
       case 'location':
         // Typed text is never enough: the answer has to be a picked suggestion, so
-        // every event ends up on an address a guest can actually be sent to.
+        // every party ends up on an address a guest can actually be sent to.
         return locationPicked && values.location.trim().length > 0
       default:
         return true
@@ -241,7 +241,7 @@ export default function CreateEventScreen() {
     }
     const max_guests = values.max_guests ? parseInt(values.max_guests, 10) : null
 
-    const { data, error } = await createEvent({
+    const { data, error } = await createParty({
       host_id: userId,
       title: values.title.trim(),
       description: values.description.trim() || null,
@@ -260,26 +260,26 @@ export default function CreateEventScreen() {
       return
     }
 
-    const newEventId = data.id
+    const newPartyId = data.id
 
     if (bgPreset) {
-      await supabase.from('events').update({ background_url: bgPreset }).eq('id', newEventId)
+      await supabase.from('events').update({ background_url: bgPreset }).eq('id', newPartyId)
     } else if (bgFile) {
       const ext = bgFile.name.split('.').pop()?.toLowerCase() || 'jpg'
       const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'jpg'
-      const path = `${userId}/${newEventId}/background.${safeExt}`
+      const path = `${userId}/${newPartyId}/background.${safeExt}`
       const { error: uploadError } = await supabase.storage
-        .from('event-backgrounds')
+        .from('party-backgrounds')
         .upload(path, bgFile, { cacheControl: '3600', upsert: true })
       if (!uploadError) {
-        const { data: urlData } = supabase.storage.from('event-backgrounds').getPublicUrl(path)
-        await supabase.from('events').update({ background_url: urlData.publicUrl }).eq('id', newEventId)
+        const { data: urlData } = supabase.storage.from('party-backgrounds').getPublicUrl(path)
+        await supabase.from('events').update({ background_url: urlData.publicUrl }).eq('id', newPartyId)
       }
     }
 
     for (const pool of localPools) {
       const { data: poolData } = await createPool({
-        event_id: newEventId,
+        event_id: newPartyId,
         question: pool.question,
         description: pool.description,
         type: 'options',
@@ -340,7 +340,7 @@ export default function CreateEventScreen() {
   }
 
   const handleSelectStep = (index: number) => {
-    // Locked once the event exists; before that any question can be revisited.
+    // Locked once the party exists; before that any question can be revisited.
     if (created) return
     goToStep(STEPS[index])
   }
@@ -616,7 +616,7 @@ export default function CreateEventScreen() {
                   tabIndex={-1}
                   value={formattedDate}
                   placeholder='auswählen'
-                  className={`${rowInputClass} pointer-events-none`}
+                  className={`${rowInputClass} pointer-parties-none`}
                 />
               </button>
             </div>
@@ -633,7 +633,7 @@ export default function CreateEventScreen() {
                     tabIndex={-1}
                     value={values.hour ? `${values.hour}:${values.minute}` : ''}
                     placeholder='auswählen'
-                    className={`${rowInputClass} pointer-events-none`}
+                    className={`${rowInputClass} pointer-parties-none`}
                   />
                 </button>
                 {/* Unfolds out of the card rather than appearing in it, so the
@@ -648,7 +648,7 @@ export default function CreateEventScreen() {
                       tabIndex={-1}
                       value={values.end_hour ? `${values.end_hour}:${values.end_minute}` : ''}
                       placeholder='auswählen'
-                      className={`${rowInputClass} pointer-events-none`}
+                      className={`${rowInputClass} pointer-parties-none`}
                     />
                   </button>
                 </Collapse>
@@ -660,10 +660,10 @@ export default function CreateEventScreen() {
         </CreateStepLayout>
 
         {dateSheetOpen && (
-          <EventDateSheet value={dateValue} onChange={setDate} onClose={() => setDateSheetOpen(false)} />
+          <PartyDateSheet value={dateValue} onChange={setDate} onClose={() => setDateSheetOpen(false)} />
         )}
         {timeSheet && (
-          <EventTimeSheet
+          <PartyTimeSheet
             value={timeValue(timeSheet)}
             onChange={(next) => setTime(timeSheet, next)}
             onClose={() => setTimeSheet(null)}

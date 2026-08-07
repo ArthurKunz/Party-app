@@ -1,7 +1,7 @@
 'use client'
 
 import type { Profile } from '@/features/profile/services/profile.service'
-import type { Pool } from '../types/events.types'
+import type { Pool } from '../types/parties.types'
 import PoolCard from './PoolCard'
 
 type Props = {

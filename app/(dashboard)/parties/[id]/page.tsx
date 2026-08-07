@@ -1,6 +1,6 @@
-import EventDetailScreen from '@/features/events/EventDetailScreen'
+import PartyDetailScreen from '@/features/parties/PartyDetailScreen'
 
-export default async function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PartyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  return <EventDetailScreen eventId={id} />
+  return <PartyDetailScreen partyId={id} />
 }

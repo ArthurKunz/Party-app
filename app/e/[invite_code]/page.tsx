@@ -1,4 +1,4 @@
-import InviteScreen from '@/features/events/InviteScreen'
+import InviteScreen from '@/features/parties/InviteScreen'
 
 export default async function InvitePage({ params }: { params: Promise<{ invite_code: string }> }) {
   const { invite_code } = await params

@@ -7,24 +7,24 @@ import { supabase } from '@/lib/supabase/client'
 import { alertError, getOrigin } from '@/lib/utils'
 import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
 import {
-  getEventById,
-  getEventAttendees,
-  getEventHost,
+  getPartyById,
+  getPartyAttendees,
+  getPartyHost,
   getMyRsvpStatus,
   setRsvp,
-  deleteEvent,
+  deleteParty,
   deleteRsvp,
   getRsvpCountsByStatus,
-} from './services/events.service'
-import { getEventPools } from './services/pools.service'
+} from './services/parties.service'
+import { getPartyPools } from './services/pools.service'
 import Avatar from '@/components/shared/Avatar'
 import Section from './components/Section'
 import CapacityWarning, { isNearlyFull } from './components/CapacityWarning'
-import EventDescription from './components/EventDescription'
+import PartyDescription from './components/PartyDescription'
 import PoolsSection from './components/PoolsSection'
 import AttendeeList from './components/AttendeeList'
-import EventMap from './components/EventMap'
-import type { EventDetail, Attendee, EventHost, RsvpStatus, Pool } from './types/events.types'
+import PartyMap from './components/PartyMap'
+import type { PartyDetail, Attendee, PartyHost, RsvpStatus, Pool } from './types/parties.types'
 
 const BackIcon = <ChevronLeft size={24} strokeWidth={3} className='text-white' />
 
@@ -55,11 +55,11 @@ const MENU_CLOSED_SIZE = 45
 const menuContainerClass =
   'absolute right-0 top-0 z-20 overflow-hidden rounded-[22.5px] bg-main/50 backdrop-blur-xl transition-[width,height] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]'
 
-export default function EventDetailScreen({ eventId }: { eventId: string }) {
+export default function PartyDetailScreen({ partyId }: { partyId: string }) {
   const router = useRouter()
-  const [event, setEvent] = useState<EventDetail | null>(null)
+  const [party, setParty] = useState<PartyDetail | null>(null)
   const [attendees, setAttendees] = useState<Attendee[]>([])
-  const [host, setHost] = useState<EventHost | null>(null)
+  const [host, setHost] = useState<PartyHost | null>(null)
   const [isHost, setIsHost] = useState(false)
   const [rsvpStatus, setRsvpStatus] = useState<RsvpStatus | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
@@ -75,7 +75,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
   const [openSections, setOpenSections] = useState({ location: true, polls: true, guests: true })
 
   // One flag per block, so every section clears its own skeleton the moment its data lands.
-  const [eventLoading, setEventLoading] = useState(true)
+  const [partyLoading, setPartyLoading] = useState(true)
   const [countsLoading, setCountsLoading] = useState(true)
   const [poolsLoading, setPoolsLoading] = useState(true)
   const [attendeesLoading, setAttendeesLoading] = useState(true)
@@ -93,36 +93,36 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
       setUserId(uid)
 
       void Promise.all([
-        getEventById(eventId),
-        getEventHost(eventId),
-        getMyRsvpStatus(eventId, uid),
-      ]).then(([eventData, hostData, status]) => {
+        getPartyById(partyId),
+        getPartyHost(partyId),
+        getMyRsvpStatus(partyId, uid),
+      ]).then(([partyData, hostData, status]) => {
         if (cancelled) return
-        if (!eventData) {
-          alertError('Dieses Event konnte nicht geladen werden.')
+        if (!partyData) {
+          alertError('Diese Party konnte nicht geladen werden.')
           router.push('/parties')
           return
         }
-        setEvent(eventData)
+        setParty(partyData)
         setHost(hostData)
-        setIsHost(eventData.host_id === uid)
+        setIsHost(partyData.host_id === uid)
         setRsvpStatus(status)
-        setEventLoading(false)
+        setPartyLoading(false)
       })
 
-      void getRsvpCountsByStatus(eventId).then((data) => {
+      void getRsvpCountsByStatus(partyId).then((data) => {
         if (cancelled) return
         setCounts(data)
         setCountsLoading(false)
       })
 
-      void getEventAttendees(eventId).then((data) => {
+      void getPartyAttendees(partyId).then((data) => {
         if (cancelled) return
         setAttendees(data)
         setAttendeesLoading(false)
       })
 
-      void getEventPools(eventId).then((data) => {
+      void getPartyPools(partyId).then((data) => {
         if (cancelled) return
         setPools(data)
         setPoolsLoading(false)
@@ -135,10 +135,10 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
     })
 
     return () => { cancelled = true }
-  }, [eventId, router])
+  }, [partyId, router])
 
   const refreshPools = () => {
-    void getEventPools(eventId).then(setPools)
+    void getPartyPools(partyId).then(setPools)
   }
 
   // Measured on open (the rows are static, so this is read lazily rather than watched)
@@ -150,34 +150,34 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
   }
 
   const handleCopy = async () => {
-    if (!event) return
-    await navigator.clipboard.writeText(`${getOrigin()}/e/${event.invite_code}`)
+    if (!party) return
+    await navigator.clipboard.writeText(`${getOrigin()}/e/${party.invite_code}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleDeleteEvent = async () => {
-    if (!event) return
-    if (!confirm('Event wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return
+  const handleDeleteParty = async () => {
+    if (!party) return
+    if (!confirm('Party wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return
     setMenuOpen(false)
-    const { error } = await deleteEvent(event.id)
-    if (error) { alertError('Event konnte nicht gelöscht werden.', error.message); return }
+    const { error } = await deleteParty(party.id)
+    if (error) { alertError('Party konnte nicht gelöscht werden.', error.message); return }
     router.push('/parties')
   }
 
-  const handleLeaveEvent = async () => {
-    if (!event || !userId) return
-    if (!confirm('Event für dich löschen? Du kannst über den Einladungslink jederzeit wieder beitreten.')) return
+  const handleLeaveParty = async () => {
+    if (!party || !userId) return
+    if (!confirm('Party für dich löschen? Du kannst über den Einladungslink jederzeit wieder beitreten.')) return
     setMenuOpen(false)
-    const { error } = await deleteRsvp(event.id, userId)
-    if (error) { alertError('Du konntest nicht aus dem Event entfernt werden.', error.message); return }
+    const { error } = await deleteRsvp(party.id, userId)
+    if (error) { alertError('Du konntest nicht aus der Party entfernt werden.', error.message); return }
     router.push('/parties')
   }
 
   const handleRsvp = async (status: RsvpStatus) => {
-    if (!event || !userId) return
+    if (!party || !userId) return
     setRsvpLoading(true)
-    const { error } = await setRsvp(event.id, userId, status)
+    const { error } = await setRsvp(party.id, userId, status)
     if (error) {
       alertError('Deine Antwort konnte nicht gespeichert werden.', error.message)
       setRsvpLoading(false)
@@ -200,28 +200,28 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
     setTimeout(() => setMenuOpen(false), 600)
   }
 
-  const statsLoading = eventLoading || countsLoading
+  const statsLoading = partyLoading || countsLoading
 
-  const stats: { label: string; value: string; warn?: boolean }[] = event
+  const stats: { label: string; value: string; warn?: boolean }[] = party
     ? [
         {
           label: 'Datum',
-          value: new Date(event.event_date).toLocaleDateString('de-DE', {
+          value: new Date(party.event_date).toLocaleDateString('de-DE', {
             day: '2-digit', month: '2-digit', year: '2-digit',
           }),
         },
         {
           label: 'Uhrzeit',
-          value: new Date(event.event_date).toLocaleTimeString('de-DE', {
+          value: new Date(party.event_date).toLocaleTimeString('de-DE', {
             hour: '2-digit', minute: '2-digit',
           }) + ' Uhr',
         },
         // Occupancy, not just the cap: "10/50" reads as zugesagt out of max.
-        ...(event.max_guests != null
+        ...(party.max_guests != null
           ? [{
               label: 'Max. Gäste',
-              value: `${counts.going}/${event.max_guests}`,
-              warn: isNearlyFull(counts.going, event.max_guests),
+              value: `${counts.going}/${party.max_guests}`,
+              warn: isNearlyFull(counts.going, party.max_guests),
             }]
           : []),
         { label: 'zugesagt', value: String(counts.going) },
@@ -230,18 +230,18 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
       ]
     : []
 
-  const locationCommaIndex = event ? event.location.lastIndexOf(',') : -1
-  const address = !event ? '' : locationCommaIndex === -1 ? event.location : event.location.slice(0, locationCommaIndex).trim()
-  const city = !event || locationCommaIndex === -1 ? '' : event.location.slice(locationCommaIndex + 1).trim()
+  const locationCommaIndex = party ? party.location.lastIndexOf(',') : -1
+  const address = !party ? '' : locationCommaIndex === -1 ? party.location : party.location.slice(0, locationCommaIndex).trim()
+  const city = !party || locationCommaIndex === -1 ? '' : party.location.slice(locationCommaIndex + 1).trim()
 
   return (
     <div className='relative w-full bg-main'>
 
       <div className='relative w-full h-100 overflow-hidden'>
-        {event?.background_url ? (
+        {party?.background_url ? (
           <>
             <img
-              src={event.background_url}
+              src={party.background_url}
               alt=''
               onLoad={() => setHeroLoaded(true)}
               className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${
@@ -250,12 +250,12 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
             />
             {!heroLoaded && <div className='absolute inset-0 skeleton' />}
           </>
-        ) : eventLoading ? (
+        ) : partyLoading ? (
           <div className='absolute inset-0 skeleton' />
         ) : (
           <div className='absolute inset-0 bg-secondary backdrop-blur-xl' />
         )}
-        <div className='absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-main to-transparent pointer-events-none' />
+        <div className='absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-main to-transparent pointer-parties-none' />
 
         <div className='relative z-10 px-4 py-7.5'>
           <div className='relative w-full h-10'>
@@ -267,25 +267,25 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
               {BackIcon}
             </button>
 
-            {/* Role is unknown until the event loads, so hold the spot with a skeleton circle. */}
-            {eventLoading && <div className='absolute right-0 top-0 h-11.25 w-11.25 rounded-full skeleton' />}
+            {/* Role is unknown until the party loads, so hold the spot with a skeleton circle. */}
+            {partyLoading && <div className='absolute right-0 top-0 h-11.25 w-11.25 rounded-full skeleton' />}
 
             {/* The panel expands over this spot, so the copy button steps aside. */}
-            {!eventLoading && isHost && (
+            {!partyLoading && isHost && (
               <button
                 onClick={handleCopy}
                 aria-label='Link kopieren'
                 aria-hidden={menuOpen}
                 tabIndex={menuOpen ? -1 : 0}
                 className={`absolute right-13.75 top-0 ${iconButtonClass} transition-opacity duration-150 ${
-                  menuOpen ? 'pointer-events-none opacity-0' : 'opacity-100 delay-150'
+                  menuOpen ? 'pointer-parties-none opacity-0' : 'opacity-100 delay-150'
                 }`}
               >
                 {copied ? <span className='text-label-1 text-heading'>✓</span> : CopyIcon}
               </button>
             )}
 
-            {!eventLoading && (
+            {!partyLoading && (
               <>
                 {menuOpen && <div className='fixed inset-0 z-10' onClick={() => setMenuOpen(false)} />}
 
@@ -300,7 +300,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
                     aria-hidden={menuOpen}
                     tabIndex={menuOpen ? -1 : 0}
                     className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 backdrop-blur-xl ${
-                      menuOpen ? 'pointer-events-none opacity-0' : 'opacity-100 delay-150'
+                      menuOpen ? 'pointer-parties-none opacity-0' : 'opacity-100 delay-150'
                     }`}
                   >
                     {MoreIcon}
@@ -311,7 +311,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
                     ref={menuContentRef}
                     aria-hidden={!menuOpen}
                     className={`w-56.25 p-2 flex flex-col transition-opacity duration-150 ${
-                      menuOpen ? 'opacity-100 delay-150' : 'pointer-events-none opacity-0'
+                      menuOpen ? 'opacity-100 delay-150' : 'pointer-parties-none opacity-0'
                     }`}
                   >
                     {!isHost && (
@@ -336,7 +336,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
                     )}
                     <button
                       type='button'
-                      onClick={isHost ? handleDeleteEvent : handleLeaveEvent}
+                      onClick={isHost ? handleDeleteParty : handleLeaveParty}
                       className='flex items-center gap-3.25 w-full px-4 py-3'
                     >
                       <span className='w-5 h-5 flex items-center justify-center'>{TrashIcon}</span>
@@ -354,7 +354,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
       <div className='relative px-4 pb-7.5 bg-main flex flex-col gap-12.5'>
 
         <div className='w-full flex flex-col gap-5'>
-          {eventLoading ? (
+          {partyLoading ? (
             <div className='w-full flex flex-col gap-3'>
               <div className='w-full flex flex-col gap-2'>
                 <div className='h-9 w-3/4 rounded-lg skeleton' />
@@ -371,7 +371,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
           ) : (
             <div className='w-full flex flex-col gap-3'>
               <div className='w-full flex flex-col'>
-                <span className='text-heading-1 font-semibold text-heading'>{event?.title}</span>
+                <span className='text-heading-1 font-semibold text-heading'>{party?.title}</span>
                 <div className='flex items-center gap-2'>
                   <Avatar
                     size={25}
@@ -385,7 +385,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
                   </span>
                 </div>
               </div>
-              {event?.description && <EventDescription text={event.description} />}
+              {party?.description && <PartyDescription text={party.description} />}
             </div>
           )}
 
@@ -415,12 +415,12 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
             )}
           </div>
 
-          {!statsLoading && <CapacityWarning going={counts.going} maxGuests={event?.max_guests ?? null} />}
+          {!statsLoading && <CapacityWarning going={counts.going} maxGuests={party?.max_guests ?? null} />}
         </div>
 
         <div className='relative flex flex-col gap-5'>
           <Section title='Location' open={openSections.location} onToggle={() => toggleSection('location')}>
-            {eventLoading || !event ? (
+            {partyLoading || !party ? (
               <div className='w-full pb-7.5'>
                 <div className='h-33 w-full rounded-2xl skeleton' />
                 <div className='flex flex-col gap-1.5 mt-2'>
@@ -430,7 +430,7 @@ export default function EventDetailScreen({ eventId }: { eventId: string }) {
               </div>
             ) : (
               <div className='w-full pb-7.5'>
-                <EventMap location={event.location} />
+                <PartyMap location={party.location} />
                 <div className='flex flex-col mt-2'>
                   <span className='truncate font-md text-label-1 text-label-large'>{address}</span>
                   <span className='truncate text-label-2 text-label-small'>{city && `in ${city}`}</span>

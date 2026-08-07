@@ -6,15 +6,15 @@ const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
 // Five-minute steps: nobody starts a party at 23:07.
 const MINUTES = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'))
 
-export type EventTime = { hour: number; minute: number }
+export type PartyTime = { hour: number; minute: number }
 
-export default function EventTimeSheet({
+export default function PartyTimeSheet({
   value,
   onChange,
   onClose,
 }: {
-  value: EventTime
-  onChange: (next: EventTime) => void
+  value: PartyTime
+  onChange: (next: PartyTime) => void
   onClose: () => void
 }) {
   return (

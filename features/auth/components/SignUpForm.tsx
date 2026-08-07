@@ -20,12 +20,19 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [saving, setSaving] = useState(false)
+  const [emailTaken, setEmailTaken] = useState(false)
   const { passwordWarning, isPasswordValid } = usePasswordValidation(password)
   const passwordRef = useRef<HTMLInputElement>(null)
 
-  // The banner only appears once there is something to complain about — it names the
-  // first unmet rule of the four (8 characters, a capital, a digit, a symbol).
+  // The banner only appears once there is something to complain about. An address that
+  // is already taken outranks the password rules: it is the one the user cannot fix by
+  // typing more, and the password may well be fine already.
   const showPasswordWarning = password.length > 0 && !isPasswordValid
+  const warning = emailTaken
+    ? 'Diese Email hat schon ein Konto'
+    : showPasswordWarning
+      ? passwordWarning
+      : null
   const canContinue = email.trim().length > 0 && isPasswordValid
 
   const handleEmailKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -37,12 +44,32 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
   const handleSignUp = async () => {
     if (!canContinue || saving) return
     setSaving(true)
-    const { error } = await signUpWithEmail(email, password)
+    const { data, error } = await signUpWithEmail(email, password)
     setSaving(false)
+
     if (error) {
+      // Only reachable with email confirmation switched OFF; with it on, a taken
+      // address comes back as a success (see below).
+      if (/already registered|already exists/i.test(error.message)) {
+        setEmailTaken(true)
+        return
+      }
       alertError('Dein Account konnte nicht erstellt werden.', error.message)
       return
     }
+
+    // Supabase will not say that an address is taken — that would make this form an
+    // account-enumeration oracle for every user in the project. With email
+    // confirmation on (mailer_autoconfirm is false here) it answers a repeat signup
+    // with a DECOY user carrying an empty `identities` array and sends no session,
+    // which is the documented way to spot it. Without this the flow walked on to the
+    // verification step, whose code signed the user into the EXISTING account and then
+    // failed on profiles_pkey at the end of onboarding.
+    if (data.user?.identities?.length === 0) {
+      setEmailTaken(true)
+      return
+    }
+
     onSuccess(email)
   }
 
@@ -57,7 +84,10 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
             placeholder='max.mustermann@gmail.com'
             className={sheetRowInputClass}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value)
+              setEmailTaken(false)
+            }}
             onKeyDown={handleEmailKeyDown}
           />
         </label>
@@ -79,7 +109,7 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
         </label>
       </div>
 
-      {showPasswordWarning && <WarningBanner message={passwordWarning} />}
+      {warning && <WarningBanner message={warning} />}
 
       <button type='button' onClick={handleSignUp} disabled={!canContinue || saving} className={sheetButtonClass}>
         {saving ? <Spinner /> : 'weiter'}

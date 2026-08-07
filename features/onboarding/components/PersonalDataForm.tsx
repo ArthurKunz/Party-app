@@ -9,6 +9,8 @@ import SheetLayout, {
   sheetRowLabelClass,
   SheetRowDivider,
 } from '@/components/shared/SheetLayout'
+import WarningBanner from '@/components/shared/WarningBanner'
+import { NAME_MAX } from '../constants/onboarding.constants'
 import type { NameFormProps } from '../types/onboarding.types'
 
 export default function PersonalDataForm({ onSuccess, onClose }: NameFormProps) {
@@ -17,6 +19,7 @@ export default function PersonalDataForm({ onSuccess, onClose }: NameFormProps) 
   const lastnameRef = useRef<HTMLInputElement>(null)
 
   const canContinue = firstname.trim().length > 0 && lastname.trim().length > 0
+  const atLimit = firstname.length >= NAME_MAX || lastname.length >= NAME_MAX
 
   const handleFirstnameKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return
@@ -33,6 +36,7 @@ export default function PersonalDataForm({ onSuccess, onClose }: NameFormProps) 
             type='text'
             autoComplete='given-name'
             placeholder='Vorname'
+            maxLength={NAME_MAX}
             className={sheetRowInputClass}
             value={firstname}
             onChange={(e) => setFirstname(e.target.value)}
@@ -49,6 +53,7 @@ export default function PersonalDataForm({ onSuccess, onClose }: NameFormProps) 
             type='text'
             autoComplete='family-name'
             placeholder='Nachname'
+            maxLength={NAME_MAX}
             className={sheetRowInputClass}
             value={lastname}
             onChange={(e) => setLastname(e.target.value)}
@@ -56,6 +61,8 @@ export default function PersonalDataForm({ onSuccess, onClose }: NameFormProps) 
           />
         </label>
       </div>
+
+      {atLimit && <WarningBanner message={`Maximal ${NAME_MAX} Zeichen`} />}
 
       <button
         type='button'

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import Spinner from '@/components/shared/Spinner'
+import WarningBanner from '@/components/shared/WarningBanner'
+import { NAME_MAX } from '@/features/onboarding/constants/onboarding.constants'
 import { alertError } from '@/lib/utils'
 import { getMyProfile, updateProfileName } from './services/profile.service'
 import SettingsPage, {
@@ -50,6 +52,7 @@ export default function EditNameScreen() {
 
   const changed = firstname.trim() !== stored.firstname || lastname.trim() !== stored.lastname
   const canSave = firstname.trim().length > 0 && lastname.trim().length > 0 && changed
+  const atLimit = firstname.length >= NAME_MAX || lastname.length >= NAME_MAX
 
   const handleSave = async () => {
     if (!canSave) return
@@ -84,6 +87,7 @@ export default function EditNameScreen() {
             autoComplete='given-name'
             enterKeyHint='next'
             placeholder={stored.firstname || 'Vorname'}
+            maxLength={NAME_MAX}
             className={rowInputClass}
           />
         </div>
@@ -104,11 +108,14 @@ export default function EditNameScreen() {
             autoComplete='family-name'
             enterKeyHint='done'
             placeholder={stored.lastname || 'Nachname'}
+            maxLength={NAME_MAX}
             className={rowInputClass}
           />
         </div>
       </div>
       )}
+
+      {atLimit && <WarningBanner message={`Maximal ${NAME_MAX} Zeichen`} />}
 
       <button type='button' onClick={handleSave} disabled={loading || !canSave || saving} className={saveButtonClass}>
         {saving ? <Spinner /> : 'speichern'}

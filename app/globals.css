@@ -106,6 +106,13 @@
     100% { opacity: 0.15; }
 }
 
+/* BottomNav: the icon that just became active swells while the capsule slides under it. */
+@keyframes nav-icon-pop {
+    0%   { transform: scale(1); }
+    45%  { transform: scale(1.22); }
+    100% { transform: scale(1); }
+}
+
 @keyframes fade-in-up {
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: none; }
@@ -161,6 +168,14 @@
         .spinner-blade { animation: none; opacity: 0.5; }
     }
 
+    /* Replayed by remounting the icon on a key change, so it fires on every switch. */
+    .animate-nav-icon-pop {
+        animation: nav-icon-pop 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .animate-nav-icon-pop { animation: none; }
+    }
+
     /* Enter animation for content that swaps in place (e.g. the parties tab list). */
     .animate-fade-in-up {
         animation: fade-in-up 0.3s cubic-bezier(0.32, 0.72, 0, 1) both;
@@ -179,9 +194,9 @@
         height: 0;
     }
 
-    /* BottomNav safe-area positioning (accounts for iPhone home indicator) */
+    /* BottomNav sits flush with the bottom edge, per Arthur */
     .bottom-safe-nav {
-        bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+        bottom: 0;
     }
 
     /* Content bottom padding: clears BottomNav + safe area */

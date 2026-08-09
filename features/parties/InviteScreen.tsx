@@ -18,9 +18,10 @@ import {
 } from './services/parties.service'
 import { getPartyPools } from './services/pools.service'
 import Avatar from '@/components/shared/Avatar'
+import WarningBanner from '@/components/shared/WarningBanner'
 import Section from './components/Section'
 import AuthSheet from '@/features/auth/components/AuthSheet'
-import CapacityWarning, { isNearlyFull } from './components/CapacityWarning'
+import CapacityWarning, { isFull, isNearlyFull } from './components/CapacityWarning'
 import PartyDescription from './components/PartyDescription'
 import PoolsSection from './components/PoolsSection'
 import AttendeeList from './components/AttendeeList'
@@ -102,6 +103,19 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   // While the party is loading we do not yet know whether this is the host, a
   // guest or someone without an account, so the header stays completely empty.
   const showHeaderControls = !partyLoading && !showAuthGate && !showRsvpGate
+
+  // The counts land a moment after the party itself, and until they do we must not
+  // claim the party is full — that would blink the zusagen button away and back.
+  const full = !countsLoading && isFull(counts.going, party?.max_guests ?? null)
+
+  // Who the capacity banner is FOR: the host, who is planning around it, and guests
+  // holding no seat. Someone who already said yes has their place and does not need
+  // to be told the party is full; someone who has not answered at all gets the same
+  // message down at the RSVP row instead, where their decision actually happens.
+  const showCapacityNotice = isHost || rsvpStatus === 'maybe' || rsvpStatus === 'not_going'
+
+  // You cannot take a seat that is gone — unless you are the one already sitting in it.
+  const seatBlocked = full && rsvpStatus !== 'going'
 
   // Clipping the page container is not enough: the document itself stays
   // scrollable, and mobile Safari scrolls it right through a fixed overlay.
@@ -377,21 +391,26 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                   >
                     {/* The host cannot RSVP to their own party — they only get the delete row. */}
                     {!isHost &&
-                      RSVP_MENU.map(({ status, label, icon }) => (
+                      RSVP_MENU.map(({ status, label, icon }) => {
+                        // Only 'zugesagt' costs a place, so it is the only row a full
+                        // party takes away. Saying maybe or no stays open either way.
+                        const blocked = seatBlocked && status === 'going'
+                        return (
                         <button
                           key={status}
                           type='button'
                           onClick={() => handleRsvp(status)}
-                          disabled={rsvpLoading}
+                          disabled={rsvpLoading || blocked}
                           className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-left backdrop-blur-xl ${
                             rsvpStatus === status ? 'bg-tertiary' : ''
-                          }`}
+                          } ${blocked ? 'opacity-40' : ''}`}
                         >
                           <span className='w-5 h-5 flex items-center justify-center text-md'>{icon}</span>
                           <span className='text-label-1 text-label-large'>{label}</span>
                           {rsvpStatus === status && <span className='ml-auto flex items-center'>{CheckIcon}</span>}
                         </button>
-                      ))}
+                        )
+                      })}
 
                     {/* A guest has nothing to leave until they have actually answered. */}
                     {(isHost || rsvpStatus !== null) && (
@@ -480,7 +499,9 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
             )}
           </div>
 
-          {!statsLoading && <CapacityWarning going={counts.going} maxGuests={party?.max_guests ?? null} />}
+          {!statsLoading && showCapacityNotice && (
+            <CapacityWarning going={counts.going} maxGuests={party?.max_guests ?? null} />
+          )}
         </div>
 
         <div className='relative flex flex-col gap-5'>
@@ -552,36 +573,74 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
       </div>
 
       {showRsvpGate && (
-        <div className='fixed inset-x-0 bottom-0 z-20 flex items-center justify-center gap-3 px-4 pb-safe-rsvp'>
-          <button
-            type='button'
-            onClick={() => handleRsvp('not_going')}
-            disabled={rsvpLoading}
-            aria-label='Absagen'
-            className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-warning/60 bg-warning/15 backdrop-blur-xl disabled:opacity-50'
-          >
-            {CrossIcon}
-          </button>
+        // A column now, not a row: when the party is full the notice sits directly
+        // above the buttons it explains, in the same fixed block, so the answer and
+        // the reason for it are read as one thing. The two round buttons keep their
+        // places either side of where the zusagen pill was, so nothing jumps.
+        <div className='fixed inset-x-0 bottom-0 z-20 flex flex-col items-center gap-3 px-4 pb-safe-rsvp'>
+          {full && <WarningBanner message='Keine Plätze mehr frei.' />}
 
-          <button
-            type='button'
-            onClick={() => handleRsvp('going')}
-            disabled={rsvpLoading}
-            className='h-12.5 flex items-center justify-center gap-2 rounded-full border border-success/60 bg-success/15 px-6 backdrop-blur-xl text-subheading-1 font-semibold text-success disabled:opacity-50'
-          >
-            <span>✅</span>
-            zusagen
-          </button>
+          {full ? (
+            /* With zusagen gone the row would be two lonely circles under a full-width
+               banner. Instead the two remaining answers split that same width in half
+               and take the label the green pill used to carry — so the block reads as
+               one piece, and each answer says what it does instead of relying on a
+               symbol. Emoji rather than the lucide cross, to match the ✅ zusagen wore
+               and the ❌ the ••• menu already uses for the same answer. */
+            <div className='flex w-full items-center gap-3'>
+              <button
+                type='button'
+                onClick={() => handleRsvp('not_going')}
+                disabled={rsvpLoading}
+                className='h-12.5 flex-1 flex items-center justify-center gap-2 rounded-full border border-warning/60 bg-warning/15 backdrop-blur-xl text-subheading-1 font-semibold text-warning disabled:opacity-50'
+              >
+                <span>❌</span>
+                absagen
+              </button>
 
-          <button
-            type='button'
-            onClick={() => handleRsvp('maybe')}
-            disabled={rsvpLoading}
-            aria-label='Vielleicht'
-            className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-maybe/60 bg-maybe/15 backdrop-blur-xl text-subheading-1 disabled:opacity-50'
-          >
-            🤔
-          </button>
+              <button
+                type='button'
+                onClick={() => handleRsvp('maybe')}
+                disabled={rsvpLoading}
+                className='h-12.5 flex-1 flex items-center justify-center gap-2 rounded-full border border-maybe/60 bg-maybe/15 backdrop-blur-xl text-subheading-1 font-semibold text-maybe disabled:opacity-50'
+              >
+                <span>🤔</span>
+                vielleicht
+              </button>
+            </div>
+          ) : (
+            <div className='flex items-center justify-center gap-3'>
+              <button
+                type='button'
+                onClick={() => handleRsvp('not_going')}
+                disabled={rsvpLoading}
+                aria-label='Absagen'
+                className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-warning/60 bg-warning/15 backdrop-blur-xl disabled:opacity-50'
+              >
+                {CrossIcon}
+              </button>
+
+              <button
+                type='button'
+                onClick={() => handleRsvp('going')}
+                disabled={rsvpLoading}
+                className='h-12.5 flex items-center justify-center gap-2 rounded-full border border-success/60 bg-success/15 px-6 backdrop-blur-xl text-subheading-1 font-semibold text-success disabled:opacity-50'
+              >
+                <span>✅</span>
+                zusagen
+              </button>
+
+              <button
+                type='button'
+                onClick={() => handleRsvp('maybe')}
+                disabled={rsvpLoading}
+                aria-label='Vielleicht'
+                className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-maybe/60 bg-maybe/15 backdrop-blur-xl text-subheading-1 disabled:opacity-50'
+              >
+                🤔
+              </button>
+            </div>
+          )}
         </div>
       )}
 

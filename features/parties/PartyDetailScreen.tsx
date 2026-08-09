@@ -19,7 +19,7 @@ import {
 import { getPartyPools } from './services/pools.service'
 import Avatar from '@/components/shared/Avatar'
 import Section from './components/Section'
-import CapacityWarning, { isNearlyFull } from './components/CapacityWarning'
+import CapacityWarning, { isFull, isNearlyFull } from './components/CapacityWarning'
 import PartyDescription from './components/PartyDescription'
 import PoolsSection from './components/PoolsSection'
 import AttendeeList from './components/AttendeeList'
@@ -136,6 +136,14 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
 
     return () => { cancelled = true }
   }, [partyId, router])
+
+  // Same three rules as the invite screen, so the ••• menu cannot be used to take a
+  // seat the invite page refuses to hand out. There is no RSVP gate here — everyone
+  // on this screen is the host or has already answered — so the capacity notice is
+  // the only surface the rules touch.
+  const full = !countsLoading && isFull(counts.going, party?.max_guests ?? null)
+  const showCapacityNotice = isHost || rsvpStatus === 'maybe' || rsvpStatus === 'not_going'
+  const seatBlocked = full && rsvpStatus !== 'going'
 
   const refreshPools = () => {
     void getPartyPools(partyId).then(setPools)
@@ -316,21 +324,25 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
                   >
                     {!isHost && (
                       <>
-                        {RSVP_MENU.map(({ status, label, icon }) => (
+                        {RSVP_MENU.map(({ status, label, icon }) => {
+                          // Only 'zugesagt' costs a place.
+                          const blocked = seatBlocked && status === 'going'
+                          return (
                           <button
                             key={status}
                             type='button'
                             onClick={() => handleRsvp(status)}
-                            disabled={rsvpLoading}
+                            disabled={rsvpLoading || blocked}
                             className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-left backdrop-blur-xl ${
                               rsvpStatus === status ? 'bg-tertiary' : ''
-                            }`}
+                            } ${blocked ? 'opacity-40' : ''}`}
                           >
                             <span className='w-5 h-5 flex items-center justify-center text-md'>{icon}</span>
                             <span className='text-label-1 text-label-large'>{label}</span>
                             {rsvpStatus === status && <span className='ml-auto flex items-center'>{CheckIcon}</span>}
                           </button>
-                        ))}
+                          )
+                        })}
                         <div className='h-0.25 w-full bg-[#3D3D3D] my-2' />
                       </>
                     )}
@@ -415,7 +427,9 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
             )}
           </div>
 
-          {!statsLoading && <CapacityWarning going={counts.going} maxGuests={party?.max_guests ?? null} />}
+          {!statsLoading && showCapacityNotice && (
+            <CapacityWarning going={counts.going} maxGuests={party?.max_guests ?? null} />
+          )}
         </div>
 
         <div className='relative flex flex-col gap-5'>

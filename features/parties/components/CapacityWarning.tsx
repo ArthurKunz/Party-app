@@ -8,6 +8,12 @@ const WARN_RATIO = 0.1
 export const isNearlyFull = (going: number, maxGuests: number | null): boolean =>
   maxGuests != null && maxGuests - going <= maxGuests * WARN_RATIO
 
+// A different question from "nearly full": the banner above warns for the last 10% of
+// the places, but a seat is only actually gone once every one of them is taken. The
+// host counts towards `going`, so max_guests is the whole party, host included.
+export const isFull = (going: number, maxGuests: number | null): boolean =>
+  maxGuests != null && going >= maxGuests
+
 export default function CapacityWarning({ going, maxGuests }: { going: number; maxGuests: number | null }) {
   if (maxGuests == null || !isNearlyFull(going, maxGuests)) return null
 

@@ -263,7 +263,7 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
         ) : (
           <div className='absolute inset-0 bg-secondary backdrop-blur-xl' />
         )}
-        <div className='absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-main to-transparent pointer-parties-none' />
+        <div className='absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-main to-transparent pointer-events-none' />
 
         <div className='relative z-10 px-4 py-7.5'>
           <div className='relative w-full h-10'>
@@ -286,7 +286,7 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
                 aria-hidden={menuOpen}
                 tabIndex={menuOpen ? -1 : 0}
                 className={`absolute right-13.75 top-0 ${iconButtonClass} transition-opacity duration-150 ${
-                  menuOpen ? 'pointer-parties-none opacity-0' : 'opacity-100 delay-150'
+                  menuOpen ? 'pointer-events-none opacity-0' : 'opacity-100 delay-150'
                 }`}
               >
                 {copied ? <span className='text-label-1 text-heading'>✓</span> : CopyIcon}
@@ -308,7 +308,7 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
                     aria-hidden={menuOpen}
                     tabIndex={menuOpen ? -1 : 0}
                     className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 backdrop-blur-xl ${
-                      menuOpen ? 'pointer-parties-none opacity-0' : 'opacity-100 delay-150'
+                      menuOpen ? 'pointer-events-none opacity-0' : 'opacity-100 delay-150'
                     }`}
                   >
                     {MoreIcon}
@@ -319,7 +319,7 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
                     ref={menuContentRef}
                     aria-hidden={!menuOpen}
                     className={`w-56.25 p-2 flex flex-col transition-opacity duration-150 ${
-                      menuOpen ? 'opacity-100 delay-150' : 'pointer-parties-none opacity-0'
+                      menuOpen ? 'opacity-100 delay-150' : 'pointer-events-none opacity-0'
                     }`}
                   >
                     {!isHost && (

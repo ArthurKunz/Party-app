@@ -153,7 +153,7 @@ export default function WheelSheet({ columns, onClose }: { columns: WheelColumn[
               {/* Selection band sits behind the columns, dead centre. */}
               <div
                 aria-hidden='true'
-                className='pointer-parties-none absolute inset-x-0 rounded-xl bg-button-secondary/80'
+                className='pointer-events-none absolute inset-x-0 rounded-xl bg-button-secondary/80'
                 style={{ height: ITEM_HEIGHT, top: EDGE_PADDING }}
               />
               {columns.map((column, i) => (

@@ -58,7 +58,7 @@ export default function PartyDescription({ text }: { text: string }) {
           aria-hidden={expanded}
           style={{ top: collapsedHeight ?? 0 }}
           className={`absolute right-0 -translate-y-full flex items-center bg-main text-body-1 transition-opacity duration-200 motion-reduce:transition-none ${
-            expanded ? 'pointer-parties-none opacity-0' : 'opacity-100'
+            expanded ? 'pointer-events-none opacity-0' : 'opacity-100'
           }`}
         >
           <span className='absolute right-full h-full w-8 bg-gradient-to-r from-transparent to-main' />

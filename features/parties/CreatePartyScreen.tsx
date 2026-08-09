@@ -627,7 +627,7 @@ export default function CreatePartyScreen() {
                   tabIndex={-1}
                   value={formattedDate}
                   placeholder='auswählen'
-                  className={`${rowInputClass} pointer-parties-none`}
+                  className={`${rowInputClass} pointer-events-none`}
                 />
               </button>
             </div>
@@ -644,7 +644,7 @@ export default function CreatePartyScreen() {
                     tabIndex={-1}
                     value={values.hour ? `${values.hour}:${values.minute}` : ''}
                     placeholder='auswählen'
-                    className={`${rowInputClass} pointer-parties-none`}
+                    className={`${rowInputClass} pointer-events-none`}
                   />
                 </button>
                 {/* Unfolds out of the card rather than appearing in it, so the
@@ -659,7 +659,7 @@ export default function CreatePartyScreen() {
                       tabIndex={-1}
                       value={values.end_hour ? `${values.end_hour}:${values.end_minute}` : ''}
                       placeholder='auswählen'
-                      className={`${rowInputClass} pointer-parties-none`}
+                      className={`${rowInputClass} pointer-events-none`}
                     />
                   </button>
                 </Collapse>

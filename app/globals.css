@@ -27,6 +27,10 @@
     --color-success: #30D158;
     --color-maybe: #FFD60A;
     --color-warning: #FF453A;
+    /* The host is not one of the three answers — they never RSVP at all — so the
+       guest list marks them in the fourth system colour instead. A step lighter than
+       Apple's #0A84FF, which sits too dark on black once the label halves it. */
+    --color-host: #409CFF;
 
     /* LIGHT SURFACE (the sign-up sheet over the invite page — the only light UI in the app) */
     --color-sheet: #FFFFFF;

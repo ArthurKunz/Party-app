@@ -5,6 +5,9 @@ import Avatar from '@/components/shared/Avatar'
 import type { Attendee } from '../types/parties.types'
 
 const STATUS_CONFIG = {
+  // The host is not an answer, they are the reason there is something to answer —
+  // hence a fourth colour rather than one of the three, and no counting anywhere.
+  host: { label: 'Gastgeber', icon: '👑', color: 'bg-host/50' },
   going: { label: 'zugesagt', icon: '✅', color: 'bg-success/50' },
   maybe: { label: 'vielleicht', icon: '🤔', color: 'bg-maybe/50' },
   not_going: { label: 'abgesagt', icon: '❌', color: 'bg-warning/50' },

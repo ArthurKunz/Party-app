@@ -62,7 +62,9 @@ export type Attendee = {
   birthday: string | null
   avatar_url: string | null
   avatar_color: string | null
-  status: 'going' | 'maybe' | 'not_going'
+  // 'host' never comes from the rsvps table — the host cannot RSVP to their own
+  // party (the insert policy forbids it) and get_event_attendees labels them.
+  status: 'going' | 'maybe' | 'not_going' | 'host'
 }
 
 export type PartyHost = {

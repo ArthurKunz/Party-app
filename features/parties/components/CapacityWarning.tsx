@@ -10,7 +10,8 @@ export const isNearlyFull = (going: number, maxGuests: number | null): boolean =
 
 // A different question from "nearly full": the banner above warns for the last 10% of
 // the places, but a seat is only actually gone once every one of them is taken. The
-// host counts towards `going`, so max_guests is the whole party, host included.
+// host is NOT part of `going` — they never RSVP — so max_guests counts guests only,
+// and a party capped at 20 holds 20 guests plus whoever is throwing it.
 export const isFull = (going: number, maxGuests: number | null): boolean =>
   maxGuests != null && going >= maxGuests
 

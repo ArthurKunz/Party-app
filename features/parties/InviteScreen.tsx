@@ -241,6 +241,11 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
     })
     setRsvpStatus(status)
     setRsvpLoading(false)
+    // Poll answers are only readable once you belong to the party, and this very
+    // click is what made that true — the copy in state was fetched a moment ago,
+    // when the answer was still none of this visitor's business, so it came back
+    // empty. Without this refetch the polls would sit there answerless until a reload.
+    if (oldStatus === null) refreshPools()
     // Hold the menu open briefly so the ✓ visibly lands on the row that was tapped.
     setTimeout(() => setMenuOpen(false), 600)
   }

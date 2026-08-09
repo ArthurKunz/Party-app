@@ -182,6 +182,25 @@ from the code: the setting itself, and the custom SMTP it needs first — Supaba
 built-in mailer refuses delivery to any address outside the project team, so turning
 confirmation back on without SMTP would lock out every real signup.
 
+POLL ANSWERS were the last 'any account reads everything' hole and are now scoped to
+party MEMBERS — the host, or anyone holding an RSVP of any status, since a guest who
+said 'not_going' still belongs to the party. The catch worth remembering: the read path
+is `get_pool_responses_by_event`, which is SECURITY DEFINER and therefore BYPASSES RLS,
+so tightening the table policies alone would have changed nothing for the only caller
+that matters — the membership test had to go INSIDE the function as well. The
+`pool_responses` policies were tightened too (select/insert/update all require
+membership now, not just `user_id = auth.uid()`), which is what actually stops a
+stranger voting in someone else's poll, since that path writes to the table directly.
+VERIFIED with real rows inside a transaction that was rolled back via a deliberate
+RAISE: reading gave host=1, RSVP'd guest=1, outsider=0, and voting was ERLAUBT for the
+guest and BLOCKIERT for the outsider. That change had ONE regression, fixed in the same
+pass: `InviteScreen` loads the polls before the visitor has answered, when the answers
+are correctly still none of their business, so the copy in state came back empty and
+stayed empty after they said yes — `handleRsvp` now calls `refreshPools()` when the
+previous status was null. Left alone: `pools` and `pool_options` are still
+`select_public`, so the QUESTIONS are readable by anyone; only who answered what is
+protected.
+
 STILL OPEN, deliberately: `events` is `FOR SELECT TO public USING (true)`, so anyone
 with the anon key can read every party including its exact address and invite_code,
 and any signed-in account can open any party by id. Both need the public invite page

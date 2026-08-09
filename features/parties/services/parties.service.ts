@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client'
+import { isPartyOver } from '@/lib/utils'
 import type { CreatePartyPayload, PartyWithCount, PartyDetail, Attendee, PartyHost, RsvpStatus } from '../types/parties.types'
 
 export async function createParty(payload: CreatePartyPayload) {
@@ -28,6 +29,7 @@ interface HostedRow {
   id: string
   title: string
   event_date: string
+  ends_at: string | null
   location: string
   invite_code: string
   background_url: string | null
@@ -40,6 +42,7 @@ interface AttendedRsvpRow {
     id: string
     title: string
     event_date: string
+    ends_at: string | null
     location: string
     invite_code: string
     background_url: string | null
@@ -51,14 +54,19 @@ interface AttendedRsvpRow {
 export async function getHostedParties(userId: string): Promise<PartyWithCount[]> {
   const { data, error } = await supabase
     .from('events')
-    .select('id, title, event_date, location, invite_code, background_url, max_guests')
+    .select('id, title, event_date, ends_at, location, invite_code, background_url, max_guests')
     .eq('host_id', userId)
     .order('event_date', { ascending: true })
   if (error || !data) return []
 
+  // A finished party drops out HERE rather than in the screen, so the two RPCs below
+  // never fire for a party nobody is going to see. The row itself stays in the
+  // database: the invite link keeps working and the host keeps their guest list.
+  const upcoming = (data as unknown as HostedRow[]).filter((e) => !isPartyOver(e.event_date, e.ends_at))
+
   // get_event_attendees / get_rsvp_count already include the host themselves.
   return Promise.all(
-    (data as unknown as HostedRow[]).map((e) =>
+    upcoming.map((e) =>
       attachCountAndAttendees({
         id: e.id,
         title: e.title,
@@ -76,13 +84,19 @@ export async function getAttendedParties(userId: string): Promise<PartyWithCount
   // 'going', 'not_going' and 'maybe' RSVPs all appear under "Ich bin Gast"
   const { data, error } = await supabase
     .from('rsvps')
-    .select('status, parties(id, title, event_date, location, invite_code, background_url, host_id, max_guests)')
+    .select('status, parties(id, title, event_date, ends_at, location, invite_code, background_url, host_id, max_guests)')
     .eq('user_id', userId)
   if (error || !data) return []
 
   const rows = (data as unknown as AttendedRsvpRow[])
-    // You are never a guest at your own party — it belongs on the 'Gastgeber' tab only.
-    .filter((r) => r.parties !== null && r.parties.host_id !== userId)
+    // You are never a guest at your own party — it belongs on the 'Gastgeber' tab only,
+    // and a party that is over belongs on neither.
+    .filter(
+      (r) =>
+        r.parties !== null &&
+        r.parties.host_id !== userId &&
+        !isPartyOver(r.parties.event_date, r.parties.ends_at)
+    )
     .map((r) => ({ status: r.status as RsvpStatus, party: r.parties! }))
     .sort((a, b) => new Date(a.party.event_date).getTime() - new Date(b.party.event_date).getTime())
 

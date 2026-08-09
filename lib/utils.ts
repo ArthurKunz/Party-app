@@ -38,6 +38,18 @@ export function calculateAge(birthday: string): number {
   return age
 }
 
+// How long a party is assumed to run when the host set no end time. Six hours means
+// one that starts at 20:00 counts as over at 02:00 — not at 20:01, while the guests
+// are still looking up the address.
+const ASSUMED_PARTY_HOURS = 6
+
+export function isPartyOver(eventDate: string, endsAt?: string | null): boolean {
+  const end = endsAt
+    ? new Date(endsAt)
+    : new Date(new Date(eventDate).getTime() + ASSUMED_PARTY_HOURS * 60 * 60 * 1000)
+  return end.getTime() < Date.now()
+}
+
 export function getInitials(firstname: string | null, lastname: string | null): string {
   const first = firstname?.trim()?.[0] ?? ''
   const last = lastname?.trim()?.[0] ?? ''

@@ -54,7 +54,12 @@ export default function AuthPage() {
           initialEmail={signupEmail}
           onClose={() => setStep('overview')}
           onSignIn={() => setStep('signin')}
-          onSuccess={(email) => {
+          onSuccess={(email, alreadySignedIn) => {
+            // Auto-confirmed: the account is live and there is no code to enter.
+            if (alreadySignedIn) {
+              router.push(onboardingHref)
+              return
+            }
             setSignupEmail(email)
             setStep('verify')
           }}

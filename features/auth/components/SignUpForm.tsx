@@ -72,7 +72,13 @@ export default function SignUpForm({ onSuccess, onClose, onSignIn, initialEmail 
       return
     }
 
-    onSuccess(email)
+    // Whether a code is on its way is NOT ours to assume: it depends on the project's
+    // email-confirmation setting. With confirmation ON, signUp returns a user and no
+    // session, and the code is in the user's inbox. With it OFF, signUp returns a
+    // SESSION and no mail is ever sent — sending them to the verification sheet then
+    // parks them in front of six empty boxes forever, and 'Code erneut senden'
+    // answers 200 while delivering nothing. The session is the honest signal.
+    onSuccess(email, data.session !== null)
   }
 
   return (

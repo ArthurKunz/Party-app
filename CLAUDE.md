@@ -165,6 +165,23 @@ is clear the party itself was still created. And `app/(auth)/callback/route.ts` 
 password-reset link answered with a 500 instead of a redirect; it now logs and
 redirects to `/login`, which is where the `code` branch below it already sent failures.
 
+THEN A LAUNCH-BLOCKER surfaced from a live test: EMAIL CONFIRMATION IS CURRENTLY OFF
+on the hosted project. A test signup with a foreign address came back with an
+access_token straight away, `email_confirmed_at` set and `confirmation_sent_at` NULL —
+no mail was ever sent (the test user was deleted again). Two consequences: anyone can
+register an address they do not own, and — this is the code half — `signUp` returns a
+SESSION, while AuthScreen still switched to `step: 'verify'` and asked for a code that
+does not exist. `resend` answers 200 and delivers nothing, so the sheet I added
+yesterday cheerfully claimed a new code was on its way. FIXED so the app is correct
+under BOTH settings rather than pinned to one: `SignUpForm` passes
+`data.session !== null` up as `alreadySignedIn`, and AuthScreen pushes straight to
+onboarding when a session came back, keeping the verification sheet for the case where
+signUp returns a user and no session. The session is the honest signal — whether a code
+is on its way is a project setting, not something the client may assume. NOT fixable
+from the code: the setting itself, and the custom SMTP it needs first — Supabase's
+built-in mailer refuses delivery to any address outside the project team, so turning
+confirmation back on without SMTP would lock out every real signup.
+
 STILL OPEN, deliberately: `events` is `FOR SELECT TO public USING (true)`, so anyone
 with the anon key can read every party including its exact address and invite_code,
 and any signed-in account can open any party by id. Both need the public invite page

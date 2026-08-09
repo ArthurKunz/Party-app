@@ -4,7 +4,9 @@ export interface SignInProps {
 }
 
 export interface SignUpProps {
-  onSuccess: (email: string) => void
+  // The flag says whether signUp already handed back a SESSION, which happens when
+  // the project auto-confirms: there is nothing left to verify in that case.
+  onSuccess: (email: string, alreadySignedIn: boolean) => void
   onClose: () => void
   // Handed back when the user returns from the verification step, so the address
   // they already typed is still standing there.

@@ -30,7 +30,14 @@ export async function GET(request: Request) {
     if (token_hash && type === 'recovery') {
         const { error } = await supabase.auth.verifyOtp({ token_hash, type: 'recovery' })
 
-        if (error) alert(error.message)
+        // alert() does not exist in Node: this threw a ReferenceError and answered an
+        // expired recovery link with a 500. On failure there is no session either, so
+        // /forgot-password could not have worked anyway — /login is where a new link
+        // is requested, and it is where the code branch below already sends failures.
+        if (error) {
+            console.error('Callback recovery error:', error)
+            return NextResponse.redirect(`${requestUrl.origin}/login`)
+        }
 
         return NextResponse.redirect(
             `${requestUrl.origin}/forgot-password`

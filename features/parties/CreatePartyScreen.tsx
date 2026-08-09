@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Check, Copy, ImagePlus, Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Spinner from '@/components/shared/Spinner'
-import { generateInviteCode, getOrigin } from '@/lib/utils'
+import { alertError, generateInviteCode, getOrigin } from '@/lib/utils'
 import AddressSearchField from './components/AddressSearchField'
 import PartyDateSheet from './components/PartyDateSheet'
 import PartyTimeSheet from './components/PartyTimeSheet'
@@ -26,6 +26,9 @@ const inputClass =
   'w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
 
 const BG_MAX_BYTES = 10 * 1024 * 1024
+
+// The bucket is still called event-backgrounds; only the app renamed events to parties.
+const BG_BUCKET = 'event-backgrounds'
 
 // The title is `text-heading-1` (35px semibold) on the party page and must not wrap:
 // roughly 18px per character across 343px of content leaves about 19, so 20.
@@ -268,11 +271,19 @@ export default function CreatePartyScreen() {
       const ext = bgFile.name.split('.').pop()?.toLowerCase() || 'jpg'
       const safeExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) ? ext : 'jpg'
       const path = `${userId}/${newPartyId}/background.${safeExt}`
+      // 'event-backgrounds', not 'party-backgrounds': the event->party rename swept
+      // through this string too, but the BUCKET kept its name, so every upload since
+      // has failed against a bucket that does not exist.
       const { error: uploadError } = await supabase.storage
-        .from('party-backgrounds')
+        .from(BG_BUCKET)
         .upload(path, bgFile, { cacheControl: '3600', upsert: true })
-      if (!uploadError) {
-        const { data: urlData } = supabase.storage.from('party-backgrounds').getPublicUrl(path)
+      if (uploadError) {
+        // The party itself is already saved, so this is a warning about the picture
+        // and nothing else — it used to be swallowed, which is how the broken bucket
+        // stayed invisible.
+        alertError('Dein Hintergrundbild konnte nicht hochgeladen werden. Die Party wurde trotzdem erstellt.', uploadError.message)
+      } else {
+        const { data: urlData } = supabase.storage.from(BG_BUCKET).getPublicUrl(path)
         await supabase.from('events').update({ background_url: urlData.publicUrl }).eq('id', newPartyId)
       }
     }

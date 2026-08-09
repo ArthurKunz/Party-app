@@ -125,57 +125,55 @@ Key fields:
 Never hardcode these. Always read from process.env.
 
 ## Current state
-The auth funnel had three ways to strand a user, all of them reachable with the back
-button, and they are now closed. THE ROOT CAUSE was that the rule 'a session without a
-`profiles` row still owes us onboarding' lived in exactly one place — `app/(auth)/callback/route.ts`
-— which only ever runs for Google. An email user who verified their code and then walked
-BACKWARDS out of onboarding was signed in, profile-less and stuck on `/login`: signing
-up again hit their OWN account (Supabase answers a repeat signup with a decoy user
-carrying `identities: []`, so the sheet said 'diese Email hat schon ein Konto'), and
-signing in worked but dropped them on `/parties` with no profile.
+An audit turned up a set of holes; this pass fixed the ones that carry no behavioural
+risk for signed-in users, and deliberately left the two that need a design decision
+first. Everything below was verified against the live project, not just read.
 
-That gate now lives in `proxy.ts`, where it holds for every route and every way in,
-including a typed URL. After `getUser()` it reads `profiles.id` once (RLS already lets a
-user read their own row) and applies two mirrored rules: a session WITHOUT a profile is
-sent to `/onboarding`, and a session WITH one is sent off `/login` and `/onboarding` to
-`?next=` or `/parties`. The intent survives the bounce — on `/login` it comes from the
-query (an invite link put it there), anywhere else it is the path itself, so a profile-less
-visitor on `/e/abc` onboards and lands back on that party. TWO ROUTES ARE EXEMPT
-(`GATE_EXEMPT`) because they legitimately run with a session on a half-finished account:
-`/callback`, which routes itself, and `/forgot-password`, where a recovery link lands —
-verifying that token CREATES a session, so gating it would make password reset
-unreachable. The signed-out branch is unchanged (verified: `/` and `/parties` still 307 to
-`/login`, carrying `?next=`). Note this costs one indexed query per authenticated
-navigation, next to the `getUser()` roundtrip that was already there. The duplicate checks
-in `/callback` and in `app/page.tsx` are now redundant but were left alone.
+TWO MIGRATIONS, both applied. (1) `20260809120000_lock_down_storage_and_anon_rpcs`:
+the `event-backgrounds` storage policies checked only the bucket, so ANY signed-in
+account could delete or replace EVERY party's background — they are now scoped to
+`(storage.foldername(name))[1] = auth.uid()`, the same shape the avatars bucket
+already used, which is safe because all 41 objects are written as
+`{user_id}/{party_id}/background.ext` and none of them mismatched. An UPDATE policy
+was added because the uploader passes `upsert: true` and there was none. Both buckets
+got a `file_size_limit` and an `allowed_mime_types` list matching what the upload
+screens already enforce in the client (5 MB avatars, 10 MB backgrounds, jpeg/png/webp/gif;
+the largest existing file is 4.6 MB, so nothing was invalidated). `delete_self` got
+`SET search_path = ''` — it was the only SECURITY DEFINER function without one, and
+both names in its body were already schema-qualified. And the SECURITY DEFINER
+functions that hand out profile data — `get_event_attendees` (firstname, lastname and
+BIRTHDAY of every guest), `get_attendee_avatars_for_events`, `get_pool_responses_by_event`
+— were callable WITHOUT AN ACCOUNT and are now `authenticated` only. NOTE the revoke
+has to strip PUBLIC, not just `anon`: Postgres grants EXECUTE to PUBLIC by default,
+which is how anon got in. (2) `20260809121000` did the same for `get_host_info_for_events`,
+which nothing in the app calls. Verified by curling the REST API with the anon key:
+those four now answer 401, while `get_event_host`, `get_rsvp_count` and
+`get_rsvp_counts_by_status` still answer 200 — who is inviting you and how many are
+coming is what an invitation is for, and they carry no personal data beyond the host's
+name. THE ONE VISIBLE CONSEQUENCE: a logged-out visitor on `/e/[invite_code]` no longer
+sees the guest list or the poll answers behind the sign-up sheet. Both callers already
+map an error to an empty list, so nothing breaks, and it matches the V1 line that
+non-users see basic info. Reversible with a single GRANT if that reads wrong.
 
-Three consequences in the UI. (1) Onboarding step one HAS NO BACK CHEVRON any more
-(`PersonalDataForm` simply passes no `onClose`, which is what `SheetLayout` keys the
-button off). With the gate in place the browser's own back button already bounces back
-into onboarding, so a chevron that instead signed the user out was the one control in
-the flow doing something other than what it looked like — press it by reflex and you
-were at the start screen wondering what you broke, then tried 'Account erstellen' again
-and hit your own account. The exit still exists, but SPELLED OUT: a quiet 'Mit einem
-anderen Konto anmelden' under the weiter button (`onSwitchAccount`), which calls the new
-`signOut()` in `features/onboarding/services/onboarding.service.ts` and then `/login`.
-It only matters to someone who picked the wrong GOOGLE account — an emailed code that
-was verified already proves the address belongs to the user — hence quiet, not primary.
-(2) The verification sheet got its own 'Code erneut senden' (`resendSignupOtp` →
-`supabase.auth.resend({ type: 'signup' })`), because the only route to a fresh code used
-to lead backwards through the sign-up form. It stays clickable after a successful send —
-a second mail is the whole point for someone whose first never arrived, and the send rate
-limit is what says when to stop, surfacing as the existing `over_email_send_rate_limit`
-banner. (3) The 'diese Email hat schon ein Konto' warning now carries a 'Stattdessen
-anmelden' action (`emailTaken` state, set from both the decoy-user check and the
-`user_already_exists`/`email_exists` codes), and going back from verify keeps the typed
-address in the field via `initialEmail`. Not touched: the sign-in sheet does not prefill
-that address, and abandoned unconfirmed signups still leave a row in `auth.users` — it is
-reused by the next signup with the same address, so it is harmless.
+TWO CODE FIXES. `CreatePartyScreen` uploaded to a bucket named `party-backgrounds` —
+the event->party rename swept through the string but the BUCKET kept its name, so
+every custom background since that commit failed against a bucket that does not
+exist, and `if (!uploadError)` had no else, so it failed silently. It now uses a
+`BG_BUCKET` constant with the real name and alerts if the upload fails, worded so it
+is clear the party itself was still created. And `app/(auth)/callback/route.ts` called
+`alert()` in the recovery branch — `alert` does not exist in Node, so an expired
+password-reset link answered with a 500 instead of a redirect; it now logs and
+redirects to `/login`, which is where the `code` branch below it already sent failures.
 
-NOTE `npm run build` fails on `/profile/account` with `TypeError: Cannot read properties
-of null (reading 'useContext')` during prerender. That is PRE-EXISTING — verified by
-building a clean tree — and unrelated to any of the above; `tsc --noEmit` and eslint are
-clean.
+STILL OPEN, deliberately: `events` is `FOR SELECT TO public USING (true)`, so anyone
+with the anon key can read every party including its exact address and invite_code,
+and any signed-in account can open any party by id. Both need the public invite page
+reworked (a SECURITY DEFINER lookup by invite_code, with the table scoped to host and
+guests) plus an `is_public` column, which the schema does not have at all. Also open:
+`pool_responses` readable by every signed-in user, votes accepted from non-attendees,
+the pre-existing `/profile/account` prerender crash that blocks `npm run build`, and
+the leaked-password-protection switch in the Supabase dashboard.
+
 
 ---
 

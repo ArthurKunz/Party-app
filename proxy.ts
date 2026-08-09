@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { sanitizeNextPath } from '@/lib/utils'
 
 // Next 16 renamed the middleware convention to `proxy`; same behaviour, new filename.
 // Note the docs call this an OPTIMISTIC check — it keeps signed-out visitors out of the
@@ -9,6 +10,16 @@ import { createServerClient } from '@supabase/ssr'
 // themselves, the OAuth/recovery callback, and the public invite link — an anonymous
 // visitor is meant to see the party there and be offered the sign-up sheet.
 const PUBLIC_PATHS = [/^\/login(\/|$)/, /^\/forgot-password(\/|$)/, /^\/callback(\/|$)/, /^\/e\//]
+
+const LOGIN = /^\/login(\/|$)/
+const ONBOARDING = /^\/onboarding(\/|$)/
+
+// The two routes that legitimately run WITH a session while the account is still
+// half-finished, so the profile gate below has to leave them alone: /callback is
+// mid-flow and routes itself, and /forgot-password is where a recovery link lands —
+// verifying that token creates a session, and bouncing it away would make the
+// password reset unreachable.
+const GATE_EXEMPT = [/^\/callback(\/|$)/, /^\/forgot-password(\/|$)/]
 
 export async function proxy(request: NextRequest) {
   // The response is rebuilt whenever Supabase rotates the auth cookies, so a refreshed
@@ -37,7 +48,10 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
-  if (!user && !PUBLIC_PATHS.some((pattern) => pattern.test(path))) {
+
+  if (!user) {
+    if (PUBLIC_PATHS.some((pattern) => pattern.test(path))) return response
+
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.search = ''
@@ -45,6 +59,39 @@ export async function proxy(request: NextRequest) {
     // reader still runs it through sanitizeNextPath.
     if (path !== '/') url.searchParams.set('next', path)
     return NextResponse.redirect(url)
+  }
+
+  if (GATE_EXEMPT.some((pattern) => pattern.test(path))) return response
+
+  // A session is only half an account: onboarding is what writes the profiles row, and
+  // until it exists no screen can render this user. That gate used to live only in
+  // /callback, which meant it covered Google and nothing else — an email user who
+  // walked BACKWARDS out of onboarding was signed in, profile-less and stuck, because
+  // signing up again hit their own existing account and signing in dropped them into
+  // /parties without a profile. Deciding it here instead makes the rule hold for every
+  // route and every way in, including the browser back button and a typed URL.
+  const { data: profile } = await supabase.from('profiles').select('id').eq('id', user.id).maybeSingle()
+
+  const onLogin = LOGIN.test(path)
+  const onOnboarding = ONBOARDING.test(path)
+  // Where the user was heading before the gate caught them. On /login that intent
+  // lives in the query (an invite link put it there); anywhere else it is the path
+  // itself, so onboarding hands them back to the party they came for.
+  const intended = onLogin ? sanitizeNextPath(request.nextUrl.searchParams.get('next')) : path
+
+  if (!profile && !onOnboarding) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/onboarding'
+    url.search = ''
+    if (intended && intended !== '/') url.searchParams.set('next', intended)
+    return NextResponse.redirect(url)
+  }
+
+  // The mirror image: a finished account has no business on the auth screens or back
+  // in onboarding, which is what makes `/login` safe to navigate to from inside the app.
+  if (profile && (onLogin || onOnboarding)) {
+    const target = sanitizeNextPath(request.nextUrl.searchParams.get('next')) ?? '/parties'
+    return NextResponse.redirect(new URL(target, request.url))
   }
 
   return response

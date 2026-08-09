@@ -8,12 +8,14 @@ import { alertError } from '@/lib/utils'
 import type { VerifyProps } from '../types/auth.types'
 import { OTP_LENGTH } from '../constants/auth.constants'
 import { useOtpInput } from '../hooks/useOtpInput'
-import { verifySignupOtp } from '../services/auth.service'
+import { resendSignupOtp, verifySignupOtp } from '../services/auth.service'
 import { authBannerMessage } from '../services/auth-errors'
 
 export default function VerifyOtpForm({ email, onSuccess, onClose }: VerifyProps) {
   const [saving, setSaving] = useState(false)
   const [warning, setWarning] = useState<string | null>(null)
+  const [resending, setResending] = useState(false)
+  const [resent, setResent] = useState(false)
 
   // Six digits is the whole answer, so there is nothing left to confirm: the code is
   // verified the moment the last box is filled, without reaching for `weiter`.
@@ -43,6 +45,28 @@ export default function VerifyOtpForm({ email, onSuccess, onClose }: VerifyProps
       return
     }
     onSuccess()
+  }
+
+  // Stays clickable after a successful send: a second mail is exactly what someone
+  // whose first one never arrived wants, and the send rate limit — which comes back
+  // as its own banner — is the thing that says when to stop, not this button.
+  const handleResend = async () => {
+    if (resending) return
+    setResending(true)
+    setWarning(null)
+    const { error } = await resendSignupOtp(email)
+    setResending(false)
+    if (error) {
+      setResent(false)
+      const banner = authBannerMessage(error)
+      if (banner) {
+        setWarning(banner)
+        return
+      }
+      alertError('Die Email konnte nicht gesendet werden.', error.message)
+      return
+    }
+    setResent(true)
   }
 
   return (
@@ -79,6 +103,22 @@ export default function VerifyOtpForm({ email, onSuccess, onClose }: VerifyProps
         className={sheetButtonClass}
       >
         {saving ? <Spinner /> : 'weiter'}
+      </button>
+
+      {resent && !warning && (
+        <span className='text-center text-subheading-1 text-sheet-body'>
+          Wir haben dir einen neuen Code geschickt.
+        </span>
+      )}
+
+      {/* Same quiet secondary action as 'Password vergessen?' on the login sheet. */}
+      <button
+        type='button'
+        onClick={handleResend}
+        disabled={resending}
+        className='self-center px-1 text-subheading-1 text-sheet-body disabled:opacity-60'
+      >
+        {resending ? 'Wird gesendet …' : 'Code erneut senden'}
       </button>
     </SheetLayout>
   )

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { alertError, sanitizeNextPath } from '@/lib/utils'
 import FloatingEmojis from '@/features/parties/components/FloatingEmojis'
-import { getSession } from './services/onboarding.service'
+import { getSession, signOut } from './services/onboarding.service'
 import PersonalDataForm from './components/PersonalDataForm'
 import BirthdateForm from './components/BirthdateForm'
 import ProfilePictureForm from './components/ProfilePictureForm'
@@ -31,6 +31,15 @@ export default function OnboardingScreen() {
   const handleBirthdateDone = (bd: string) => {
     setBirthday(bd)
     setStep('picture')
+  }
+
+  // The way out of step one. A plain push to /login would bounce straight back:
+  // the user is signed in, and the proxy sends a session without a profiles row here.
+  // Dropping the session is what actually frees them — and it is the honest reading
+  // of abandoning onboarding, not least when they signed up with the wrong address.
+  const handleAbort = async () => {
+    await signOut()
+    router.push('/login')
   }
 
   const handlePictureDone = async (avatarUrl: string | null, avatarColor: string) => {
@@ -62,7 +71,7 @@ export default function OnboardingScreen() {
 
       {/* Only the Name sheet slides up (it sets `appear` itself): the later steps
           swap their contents inside a panel that is already standing. */}
-      {step === 'name' && <PersonalDataForm onSuccess={handleNameDone} onClose={() => router.push('/login')} />}
+      {step === 'name' && <PersonalDataForm onSuccess={handleNameDone} onClose={handleAbort} />}
 
       {step === 'birthday' && (
         <BirthdateForm onSuccess={handleBirthdateDone} onClose={() => setStep('name')} />

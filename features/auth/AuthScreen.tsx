@@ -51,7 +51,9 @@ export default function AuthPage() {
 
       {effectiveStep === 'signup' && (
         <SignUpForm
+          initialEmail={signupEmail}
           onClose={() => setStep('overview')}
+          onSignIn={() => setStep('signin')}
           onSuccess={(email) => {
             setSignupEmail(email)
             setStep('verify')

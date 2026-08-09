@@ -125,7 +125,51 @@ Key fields:
 Never hardcode these. Always read from process.env.
 
 ## Current state
-BottomNav was rebuilt from a reference screenshot (an iOS-style floating glass tab bar). It is no longer a full-width bar pinned to `bottom-0` on the dead `bg-background-main` token: it is now a centred floating pill — `bottom-safe-nav fixed left-1/2 -translate-x-1/2 z-30` (that safe-area utility already existed in globals.css but was unused) wrapping a `rounded-full bg-secondary backdrop-blur-xl p-1.5` container. The three destinations (`/parties`, `/create-party`, `/profile`) are now ONE uniform `ITEMS` array of 72x50 (`w-18 h-12.5`) links, so the `+` is no longer a visually special middle button. Their hand-rolled `<svg>`s are gone: lucide `PartyPopper` / `Plus` / `User` at size 24, `strokeWidth` 2.5 when active and 2 when not, coloured `text-label-large` active / `text-subheading` inactive. The active item sits under a single absolutely-positioned highlight capsule (`bg-tertiary`, same 72x50, `rounded-full`) that SLIDES via `translateX(activeIndex * 100%)` over `duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]` — the same one-pill-that-moves pattern as PartiesScreen's Gast/Gastgeber tabs, and it works because the items are equal width with no gap between them, so 100% of the capsule's own width is exactly one item. It renders only when `activeIndex >= 0`; `/create-party` can never be the active one, since the nav hides itself on that route (all three hide rules are unchanged). Not done here: `/parties` kept `PartyPopper` rather than becoming the reference's house icon, since it is 'Meine Partys' and the semantics were not part of the ask. The bar was then sized and positioned to Arthur's spec: the WHOLE pill is 50px tall (`h-12.5 p-1`), exactly PartiesScreen's Gast/Gastgeber switch — so it borrows that switch's geometry too, the capsule being `bottom-1 left-1 top-1` and the items `h-full` rather than each carrying its own 50px height (the bar used to be 62px: 50px items inside 6px of padding). It also sits FLUSH with the bottom edge now: `.bottom-safe-nav` is `bottom: 0` instead of `calc(1.5rem + env(safe-area-inset-bottom))` (5px was tried in between and Arthur asked for zero). NOTE what that trades away — the utility no longer clears the iPhone home indicator, which is what the safe-area inset was there for; Arthur asked for ~5px explicitly. `.pb-safe-nav` (6rem) was left alone, since it more than clears the shorter bar. TWO ANIMATIONS were then added on top of the sliding capsule (Arthur picked these two out of four offered; an entrance animation for the whole pill and a hide-on-scroll were both declined). (1) PRESS FEEDBACK: the `Link` is a `group` and the icon carries `group-active:scale-90` with the shared 200ms cubic-bezier — the scale sits on the ICON, never on the pill, because the pill is the surface carrying `backdrop-blur-xl` and animating it would flatten its blur. (2) ICON POP: the icon that just became active runs `.animate-nav-icon-pop` (new `@keyframes nav-icon-pop`, scale 1 → 1.22 → 1 over 300ms, matching the capsule's slide), replayed by giving the icon `key={active ? 'active' : 'idle'}` so React REMOUNTS it on every switch — a CSS animation on a persistent element only ever runs once. The icon is wrapped in TWO spans, the outer holding the press scale and the inner the pop, so the two never fight; note Tailwind v4 compiles `scale-90` to the `scale` property while the keyframe uses `transform`, so they would not actually collide, but the split keeps the two concerns readable. `prefers-reduced-motion` kills the pop, next to the other animation utilities.
+The auth funnel had three ways to strand a user, all of them reachable with the back
+button, and they are now closed. THE ROOT CAUSE was that the rule 'a session without a
+`profiles` row still owes us onboarding' lived in exactly one place — `app/(auth)/callback/route.ts`
+— which only ever runs for Google. An email user who verified their code and then walked
+BACKWARDS out of onboarding was signed in, profile-less and stuck on `/login`: signing
+up again hit their OWN account (Supabase answers a repeat signup with a decoy user
+carrying `identities: []`, so the sheet said 'diese Email hat schon ein Konto'), and
+signing in worked but dropped them on `/parties` with no profile.
+
+That gate now lives in `proxy.ts`, where it holds for every route and every way in,
+including a typed URL. After `getUser()` it reads `profiles.id` once (RLS already lets a
+user read their own row) and applies two mirrored rules: a session WITHOUT a profile is
+sent to `/onboarding`, and a session WITH one is sent off `/login` and `/onboarding` to
+`?next=` or `/parties`. The intent survives the bounce — on `/login` it comes from the
+query (an invite link put it there), anywhere else it is the path itself, so a profile-less
+visitor on `/e/abc` onboards and lands back on that party. TWO ROUTES ARE EXEMPT
+(`GATE_EXEMPT`) because they legitimately run with a session on a half-finished account:
+`/callback`, which routes itself, and `/forgot-password`, where a recovery link lands —
+verifying that token CREATES a session, so gating it would make password reset
+unreachable. The signed-out branch is unchanged (verified: `/` and `/parties` still 307 to
+`/login`, carrying `?next=`). Note this costs one indexed query per authenticated
+navigation, next to the `getUser()` roundtrip that was already there. The duplicate checks
+in `/callback` and in `app/page.tsx` are now redundant but were left alone.
+
+Three consequences in the UI. (1) Onboarding step one's back button can no longer just
+push `/login` — it would bounce straight back off the new gate — so it calls the new
+`signOut()` in `features/onboarding/services/onboarding.service.ts` first. Leaving
+onboarding now means leaving the SESSION; the account survives and signing in returns to
+step one, which is also the escape hatch for having signed up with the wrong address.
+(2) The verification sheet got its own 'Code erneut senden' (`resendSignupOtp` →
+`supabase.auth.resend({ type: 'signup' })`), because the only route to a fresh code used
+to lead backwards through the sign-up form. It stays clickable after a successful send —
+a second mail is the whole point for someone whose first never arrived, and the send rate
+limit is what says when to stop, surfacing as the existing `over_email_send_rate_limit`
+banner. (3) The 'diese Email hat schon ein Konto' warning now carries a 'Stattdessen
+anmelden' action (`emailTaken` state, set from both the decoy-user check and the
+`user_already_exists`/`email_exists` codes), and going back from verify keeps the typed
+address in the field via `initialEmail`. Not touched: the sign-in sheet does not prefill
+that address, and abandoned unconfirmed signups still leave a row in `auth.users` — it is
+reused by the next signup with the same address, so it is harmless.
+
+NOTE `npm run build` fails on `/profile/account` with `TypeError: Cannot read properties
+of null (reading 'useContext')` during prerender. That is PRE-EXISTING — verified by
+building a clean tree — and unrelated to any of the above; `tsc --noEmit` and eslint are
+clean.
 
 ---
 

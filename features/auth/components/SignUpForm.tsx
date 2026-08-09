@@ -17,12 +17,15 @@ import { usePasswordValidation } from '../hooks/usePasswordValidation'
 import { signUpWithEmail } from '../services/auth.service'
 import { authBannerMessage } from '../services/auth-errors'
 
-export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
-  const [email, setEmail] = useState('')
+export default function SignUpForm({ onSuccess, onClose, onSignIn, initialEmail = '' }: SignUpProps) {
+  const [email, setEmail] = useState(initialEmail)
   const [password, setPassword] = useState('')
   const [saving, setSaving] = useState(false)
   // What the server said last time, held until the user changes something.
   const [serverWarning, setServerWarning] = useState<string | null>(null)
+  // Set alongside the 'already taken' warning, because that one warning is the only
+  // one the user cannot type their way out of — it needs a door, not just a message.
+  const [emailTaken, setEmailTaken] = useState(false)
   const { passwordWarning, isPasswordValid } = usePasswordValidation(password)
   const passwordRef = useRef<HTMLInputElement>(null)
 
@@ -49,6 +52,7 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
       const banner = authBannerMessage(error)
       if (banner) {
         setServerWarning(banner)
+        if (error.code === 'user_already_exists' || error.code === 'email_exists') setEmailTaken(true)
         return
       }
       alertError('Dein Account konnte nicht erstellt werden.', error.message)
@@ -64,6 +68,7 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
     // failed on profiles_pkey at the end of onboarding.
     if (data.user?.identities?.length === 0) {
       setServerWarning('Diese Email hat schon ein Konto')
+      setEmailTaken(true)
       return
     }
 
@@ -84,6 +89,7 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
             onChange={(e) => {
               setEmail(e.target.value)
               setServerWarning(null)
+              setEmailTaken(false)
             }}
             onKeyDown={handleEmailKeyDown}
           />
@@ -103,6 +109,7 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
             onChange={(e) => {
               setPassword(e.target.value)
               setServerWarning(null)
+              setEmailTaken(false)
             }}
             onKeyDown={(e) => e.key === 'Enter' && handleSignUp()}
           />
@@ -110,6 +117,15 @@ export default function SignUpForm({ onSuccess, onClose }: SignUpProps) {
       </div>
 
       {warning && <WarningBanner message={warning} />}
+
+      {/* The address is taken — possibly by this very user, coming back around from a
+          half-finished sign-up. Either way the only move left is to sign in, so the
+          sheet offers it instead of leaving them on a wall. */}
+      {emailTaken && (
+        <button type='button' onClick={onSignIn} className='self-center px-1 text-subheading-1 text-sheet-body'>
+          Stattdessen anmelden
+        </button>
+      )}
 
       <button type='button' onClick={handleSignUp} disabled={!canContinue || saving} className={sheetButtonClass}>
         {saving ? <Spinner /> : 'weiter'}

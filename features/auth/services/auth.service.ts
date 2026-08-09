@@ -22,6 +22,13 @@ export async function signUpWithEmail(email: string, password: string) {
   return supabase.auth.signUp({ email, password })
 }
 
+// The verification sheet's own way to a fresh code. Without it the only route to one
+// led backwards through the sign-up form, which then answered a repeat of the user's
+// OWN address with 'diese Email hat schon ein Konto'.
+export async function resendSignupOtp(email: string) {
+  return supabase.auth.resend({ type: 'signup', email })
+}
+
 export async function verifySignupOtp(email: string, token: string) {
   return supabase.auth.verifyOtp({
     email,

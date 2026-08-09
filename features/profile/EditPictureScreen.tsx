@@ -6,6 +6,7 @@ import { Check, Pencil, User } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import Avatar from '@/components/shared/Avatar'
 import Spinner from '@/components/shared/Spinner'
+import UnsavedChangesDialog from '@/components/shared/UnsavedChangesDialog'
 import { alertError } from '@/lib/utils'
 import { AVATAR_COLORS, BUCKET, MAX_BYTES } from '@/features/onboarding/constants/onboarding.constants'
 import {
@@ -71,6 +72,17 @@ export default function EditPictureScreen() {
 
   const canSave = !!file || (!!color && (color !== profile?.avatar_color || !!profile?.avatar_url))
 
+  // Set when the back button is tapped with something worth saving still on screen.
+  const [askLeave, setAskLeave] = useState(false)
+
+  const handleBack = () => {
+    if (canSave) {
+      setAskLeave(true)
+      return
+    }
+    router.push('/profile')
+  }
+
   const handleSave = async () => {
     if (!canSave || !userId) return
     setSaving(true)
@@ -113,7 +125,7 @@ export default function EditPictureScreen() {
   const shownPhoto = color ? null : (previewUrl ?? profile?.avatar_url ?? null)
 
   return (
-    <SettingsPage title='Profilbild' fill>
+    <SettingsPage title='Profilbild' fill onBack={handleBack}>
       {loading ? (
         <>
           <div className='flex justify-center'>
@@ -188,6 +200,15 @@ export default function EditPictureScreen() {
       <button type='button' onClick={handleSave} disabled={loading || !canSave || saving} className={`${saveButtonClass} mt-4`}>
         {saving ? <Spinner /> : 'speichern'}
       </button>
+
+      {askLeave && (
+        <UnsavedChangesDialog
+          saving={saving}
+          onSave={handleSave}
+          onDiscard={() => router.push('/profile')}
+          onCancel={() => setAskLeave(false)}
+        />
+      )}
     </SettingsPage>
   )
 }

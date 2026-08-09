@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import Spinner from '@/components/shared/Spinner'
+import UnsavedChangesDialog from '@/components/shared/UnsavedChangesDialog'
 import WarningBanner from '@/components/shared/WarningBanner'
 import { NAME_MAX } from '@/features/onboarding/constants/onboarding.constants'
 import { alertError } from '@/lib/utils'
@@ -54,6 +55,17 @@ export default function EditNameScreen() {
   const canSave = firstname.trim().length > 0 && lastname.trim().length > 0 && changed
   const atLimit = firstname.length >= NAME_MAX || lastname.length >= NAME_MAX
 
+  // Set when the back button is tapped with something worth saving still on screen.
+  const [askLeave, setAskLeave] = useState(false)
+
+  const handleBack = () => {
+    if (canSave) {
+      setAskLeave(true)
+      return
+    }
+    router.push('/profile')
+  }
+
   const handleSave = async () => {
     if (!canSave) return
     setSaving(true)
@@ -67,7 +79,7 @@ export default function EditNameScreen() {
   }
 
   return (
-    <SettingsPage title='Name'>
+    <SettingsPage title='Name' onBack={handleBack}>
       {loading ? (
         <div className='h-25 w-full rounded-[25px] skeleton' />
       ) : (
@@ -120,6 +132,15 @@ export default function EditNameScreen() {
       <button type='button' onClick={handleSave} disabled={loading || !canSave || saving} className={saveButtonClass}>
         {saving ? <Spinner /> : 'speichern'}
       </button>
+
+      {askLeave && (
+        <UnsavedChangesDialog
+          saving={saving}
+          onSave={handleSave}
+          onDiscard={() => router.push('/profile')}
+          onCancel={() => setAskLeave(false)}
+        />
+      )}
     </SettingsPage>
   )
 }

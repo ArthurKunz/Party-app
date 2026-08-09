@@ -23,11 +23,15 @@ export default function SettingsPage({
   children,
   fill = false,
   backHref = '/profile',
+  onBack,
 }: {
   title: string
   children: React.ReactNode
   // Sub-sub-pages (the legal texts) go back to their list, not all the way home.
   backHref?: string
+  // Given by pages that hold unsaved work: they intercept the tap and put their own
+  // question up first. Without it the button behaves exactly as it always has.
+  onBack?: () => void
   // Most pages hold one card just above the save button, so the whole block hugs
   // the bottom. `fill` instead gives the children the rest of the screen, for a page
   // that starts at the top and pushes its own button down with mt-auto.
@@ -42,7 +46,7 @@ export default function SettingsPage({
       <div className={`relative z-10 flex flex-col px-4 pt-7.5 pb-safe-rsvp ${fill ? 'min-h-dvh' : 'h-dvh'}`}>
         <div className='relative flex items-center justify-center'>
           <button
-            onClick={() => router.push(backHref)}
+            onClick={() => (onBack ? onBack() : router.push(backHref))}
             aria-label='Zurück'
             className='absolute left-0 flex h-11.25 w-11.25 items-center justify-center rounded-full bg-secondary backdrop-blur-xl transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
           >

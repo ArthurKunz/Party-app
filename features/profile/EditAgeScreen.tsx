@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import Spinner from '@/components/shared/Spinner'
+import UnsavedChangesDialog from '@/components/shared/UnsavedChangesDialog'
 import { alertError } from '@/lib/utils'
 import { getMyProfile, updateProfileBirthday } from './services/profile.service'
 import BirthdayPicker from './components/BirthdayPicker'
@@ -65,6 +66,17 @@ export default function EditAgeScreen() {
   // Nothing to save while the wheel still shows what is already stored.
   const changed = iso !== storedBirthday
 
+  // 'changed' is this screen's canSave: the button is disabled without it.
+  const [askLeave, setAskLeave] = useState(false)
+
+  const handleBack = () => {
+    if (changed) {
+      setAskLeave(true)
+      return
+    }
+    router.push('/profile')
+  }
+
   const handleSave = async () => {
     setSaving(true)
     const { error } = await updateProfileBirthday(userId, iso)
@@ -78,7 +90,7 @@ export default function EditAgeScreen() {
 
   return (
     <>
-      <SettingsPage title='Alter'>
+      <SettingsPage title='Alter' onBack={handleBack}>
         {loading ? (
           <div className='h-12.5 w-full rounded-[25px] skeleton' />
         ) : (
@@ -93,6 +105,15 @@ export default function EditAgeScreen() {
         <button type='button' onClick={handleSave} disabled={loading || !changed || saving} className={saveButtonClass}>
           {saving ? <Spinner /> : 'speichern'}
         </button>
+
+        {askLeave && (
+          <UnsavedChangesDialog
+            saving={saving}
+            onSave={handleSave}
+            onDiscard={() => router.push('/profile')}
+            onCancel={() => setAskLeave(false)}
+          />
+        )}
       </SettingsPage>
 
       {pickerOpen && (

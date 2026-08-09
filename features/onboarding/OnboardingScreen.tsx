@@ -33,10 +33,9 @@ export default function OnboardingScreen() {
     setStep('picture')
   }
 
-  // The way out of step one. A plain push to /login would bounce straight back:
-  // the user is signed in, and the proxy sends a session without a profiles row here.
-  // Dropping the session is what actually frees them — and it is the honest reading
-  // of abandoning onboarding, not least when they signed up with the wrong address.
+  // The way out of step one, behind a button that names it. A plain push to /login
+  // would bounce straight back: the user is signed in, and the proxy sends a session
+  // without a profiles row here. Dropping the session is what actually frees them.
   const handleAbort = async () => {
     await signOut()
     router.push('/login')
@@ -71,7 +70,7 @@ export default function OnboardingScreen() {
 
       {/* Only the Name sheet slides up (it sets `appear` itself): the later steps
           swap their contents inside a panel that is already standing. */}
-      {step === 'name' && <PersonalDataForm onSuccess={handleNameDone} onClose={handleAbort} />}
+      {step === 'name' && <PersonalDataForm onSuccess={handleNameDone} onSwitchAccount={handleAbort} />}
 
       {step === 'birthday' && (
         <BirthdateForm onSuccess={handleBirthdateDone} onClose={() => setStep('name')} />

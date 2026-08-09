@@ -149,11 +149,17 @@ unreachable. The signed-out branch is unchanged (verified: `/` and `/parties` st
 navigation, next to the `getUser()` roundtrip that was already there. The duplicate checks
 in `/callback` and in `app/page.tsx` are now redundant but were left alone.
 
-Three consequences in the UI. (1) Onboarding step one's back button can no longer just
-push `/login` — it would bounce straight back off the new gate — so it calls the new
-`signOut()` in `features/onboarding/services/onboarding.service.ts` first. Leaving
-onboarding now means leaving the SESSION; the account survives and signing in returns to
-step one, which is also the escape hatch for having signed up with the wrong address.
+Three consequences in the UI. (1) Onboarding step one HAS NO BACK CHEVRON any more
+(`PersonalDataForm` simply passes no `onClose`, which is what `SheetLayout` keys the
+button off). With the gate in place the browser's own back button already bounces back
+into onboarding, so a chevron that instead signed the user out was the one control in
+the flow doing something other than what it looked like — press it by reflex and you
+were at the start screen wondering what you broke, then tried 'Account erstellen' again
+and hit your own account. The exit still exists, but SPELLED OUT: a quiet 'Mit einem
+anderen Konto anmelden' under the weiter button (`onSwitchAccount`), which calls the new
+`signOut()` in `features/onboarding/services/onboarding.service.ts` and then `/login`.
+It only matters to someone who picked the wrong GOOGLE account — an emailed code that
+was verified already proves the address belongs to the user — hence quiet, not primary.
 (2) The verification sheet got its own 'Code erneut senden' (`resendSignupOtp` →
 `supabase.auth.resend({ type: 'signup' })`), because the only route to a fresh code used
 to lead backwards through the sign-up form. It stays clickable after a successful send —

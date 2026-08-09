@@ -13,7 +13,7 @@ import WarningBanner from '@/components/shared/WarningBanner'
 import { NAME_MAX } from '../constants/onboarding.constants'
 import type { NameFormProps } from '../types/onboarding.types'
 
-export default function PersonalDataForm({ onSuccess, onClose }: NameFormProps) {
+export default function PersonalDataForm({ onSuccess, onSwitchAccount }: NameFormProps) {
   const [firstname, setFirstname] = useState('')
   const [lastname, setLastname] = useState('')
   const lastnameRef = useRef<HTMLInputElement>(null)
@@ -27,8 +27,12 @@ export default function PersonalDataForm({ onSuccess, onClose }: NameFormProps) 
     if (firstname.trim()) lastnameRef.current?.focus()
   }
 
+  // No onClose, so no chevron: there is nothing behind this step. The browser's own
+  // back button already bounces off the proxy gate and returns here, and a chevron
+  // that quietly signed the user out instead was the one control in the flow that did
+  // something other than what it looked like.
   return (
-    <SheetLayout title='Name' onClose={onClose} appear>
+    <SheetLayout title='Name' appear>
       <div className={sheetCardClass}>
         <label className={sheetRowClass}>
           <span className={sheetRowLabelClass}>Vorname</span>
@@ -71,6 +75,17 @@ export default function PersonalDataForm({ onSuccess, onClose }: NameFormProps) 
         className={sheetButtonClass}
       >
         weiter
+      </button>
+
+      {/* The exit, spelled out. It only matters to someone who signed in with the
+          wrong Google account — verifying an emailed code already proves that
+          address is theirs — so it is quiet, like 'Password vergessen?'. */}
+      <button
+        type='button'
+        onClick={onSwitchAccount}
+        className='self-center px-1 text-subheading-1 text-sheet-body'
+      >
+        Mit einem anderen Konto anmelden
       </button>
     </SheetLayout>
   )

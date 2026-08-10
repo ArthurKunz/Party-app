@@ -169,7 +169,7 @@ export default function PoolDraftForm({
                   type='text'
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
-                  placeholder='Bringst du was mit?'
+                  placeholder='z.B. Bringst du was mit?'
                   maxLength={QUESTION_MAX}
                   className={rowInputClass}
                 />
@@ -200,7 +200,7 @@ export default function PoolDraftForm({
                       type='text'
                       value={option.value}
                       onChange={(e) => setOption(option.id, e.target.value)}
-                      placeholder={i === 0 ? 'Ja' : 'Nein'}
+                      placeholder={i === 0 ? 'z.B. Ja' : 'z.B. Nein'}
                       maxLength={OPTION_MAX}
                       className={rowInputClass}
                     />

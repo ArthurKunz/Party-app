@@ -706,7 +706,7 @@ export default function CreatePartyScreen() {
                   value={values.title}
                   onChange={(e) => setField('title', e.target.value)}
                   onKeyDown={handleEnterAdvance}
-                  placeholder='Sommerparty'
+                  placeholder='z.B. Sommerparty'
                   enterKeyHint='next'
                   maxLength={TITLE_MAX}
                   className={rowInputClass}
@@ -753,7 +753,7 @@ export default function CreatePartyScreen() {
                     setField('max_guests', Number(digits) > GUESTS_MAX ? String(GUESTS_MAX) : digits)
                   }}
                   onKeyDown={handleEnterAdvance}
-                  placeholder='50'
+                  placeholder='z.B. 50'
                   enterKeyHint='next'
                   className={rowInputClass}
                 />

@@ -6,6 +6,7 @@ import { cardClass, primaryButtonClass, RowDivider, rowClass, rowInputClass, row
 import Switch from '@/components/shared/Switch'
 import Collapse from '@/components/shared/Collapse'
 import WarningBanner from '@/components/shared/WarningBanner'
+import UnsavedChangesDialog from '@/components/shared/UnsavedChangesDialog'
 import type { PoolDraft } from '../types/parties.types'
 
 const MIN_OPTIONS = 2
@@ -36,10 +37,17 @@ export default function PoolDraftForm({
   draft,
   onAdd,
   onCancel,
+  commit = 'button',
 }: {
   draft?: PoolDraft
   onAdd: (draft: PoolDraft) => void
   onCancel: () => void
+  // Where the poll is headed decides how it is confirmed. 'button' is the create
+  // flow: an explicit Hinzufügen/Speichern, and leaving with something typed asks
+  // first. 'onBack' is the party edit, where nothing is written until the edit
+  // screen itself is saved — a second Speichern here would promise a permanence it
+  // does not have, so the chevron simply carries the draft back.
+  commit?: 'button' | 'onBack'
 }) {
   const [question, setQuestion] = useState(draft?.question ?? '')
   const [options, setOptions] = useState(() => toOptions(draft ? draft.options : ['', '']))
@@ -51,10 +59,28 @@ export default function PoolDraftForm({
   const [addedId, setAddedId] = useState<number | null>(null)
   const removeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
+  const [askLeave, setAskLeave] = useState(false)
+
   useEffect(() => () => clearTimeout(removeTimer.current), [])
 
   const filled = options.map((o) => o.value.trim()).filter(Boolean)
   const canAdd = question.trim().length > 0 && filled.length >= MIN_OPTIONS
+
+  // Compared against what the form opened with, so an untouched poll leaves without
+  // a word. A new one starts on two empty options, which is why that is the baseline.
+  const untouched =
+    JSON.stringify({
+      q: draft?.question ?? '',
+      o: draft ? draft.options : ['', ''],
+      d: draft?.description ?? '',
+      m: draft?.allow_multiple ?? false,
+    }) ===
+    JSON.stringify({
+      q: question,
+      o: options.map((o) => o.value),
+      d: description,
+      m: allowMultiple,
+    })
 
   // A poll asks something, so the question mark is not the host's job. Applied on SAVE
   // rather than while typing, which would fight the cursor on every keystroke. A
@@ -65,6 +91,32 @@ export default function PoolDraftForm({
     const trimmed = value.trim()
     if (trimmed.endsWith('?') || trimmed.endsWith('!')) return trimmed
     return trimmed.endsWith('.') ? `${trimmed.slice(0, -1)}?` : `${trimmed}?`
+  }
+
+  const buildDraft = (): PoolDraft => ({
+    id: draft?.id ?? crypto.randomUUID(),
+    question: withQuestionMark(question),
+    description: description.trim() || null,
+    options: filled,
+    allow_multiple: allowMultiple,
+  })
+
+  // The chevron means different things in the two modes. In the party edit it IS the
+  // save: nothing is written here anyway, so carrying the draft back costs nothing
+  // and asking would be noise. In the create flow it is a way out, so a half-typed
+  // poll gets the question first — and a poll too incomplete to keep can only be
+  // discarded, which is why the dialog is skipped when there is nothing to hand back.
+  const handleBack = () => {
+    if (commit === 'onBack') {
+      if (canAdd) onAdd(buildDraft())
+      else onCancel()
+      return
+    }
+    if (untouched || !canAdd) {
+      onCancel()
+      return
+    }
+    setAskLeave(true)
   }
 
   const setOption = (id: number, value: string) =>
@@ -94,7 +146,7 @@ export default function PoolDraftForm({
       <div className='fixed inset-x-0 top-0 z-20 px-4 pt-7.5'>
         <button
           type='button'
-          onClick={onCancel}
+          onClick={handleBack}
           aria-label='Zurück'
           className='flex h-11.25 w-11.25 items-center justify-center rounded-full bg-secondary backdrop-blur-xl transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
         >
@@ -203,25 +255,29 @@ export default function PoolDraftForm({
               <WarningBanner message={`Maximal ${DESCRIPTION_MAX} Zeichen`} />
             )}
 
-            <button
-              type='button'
-              disabled={!canAdd}
-              onClick={() =>
-                onAdd({
-                  id: draft?.id ?? crypto.randomUUID(),
-                  question: withQuestionMark(question),
-                  description: description.trim() || null,
-                  options: filled,
-                  allow_multiple: allowMultiple,
-                })
-              }
-              className={primaryButtonClass}
-            >
-              {draft ? 'Speichern' : 'Hinzufügen'}
-            </button>
+            {/* No button in the party edit: the poll is not written here, the edit
+                screen's own Speichern is what commits it. */}
+            {commit === 'button' && (
+              <button
+                type='button'
+                disabled={!canAdd}
+                onClick={() => onAdd(buildDraft())}
+                className={primaryButtonClass}
+              >
+                {draft ? 'Speichern' : 'Hinzufügen'}
+              </button>
+            )}
           </div>
         </Collapse>
       </div>
+
+      {askLeave && (
+        <UnsavedChangesDialog
+          onSave={() => onAdd(buildDraft())}
+          onDiscard={onCancel}
+          onCancel={() => setAskLeave(false)}
+        />
+      )}
     </div>
   )
 }

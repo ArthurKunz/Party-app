@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, ChevronLeft, Copy, MoreHorizontal, Trash2 } from 'lucide-react'
+import { Check, ChevronLeft, Copy, MoreHorizontal, SquarePen, Trash2, UsersRound } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { alertError, getOrigin } from '@/lib/utils'
 import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
@@ -33,6 +33,10 @@ const CopyIcon = <Copy size={15} strokeWidth={2} className='text-heading' />
 const MoreIcon = <MoreHorizontal size={20} strokeWidth={2.5} className='text-heading' />
 
 const TrashIcon = <Trash2 size={20} strokeWidth={2.5} className='text-warning' />
+
+const EditIcon = <SquarePen size={20} strokeWidth={2.5} className='text-label-large' />
+
+const GuestsIcon = <UsersRound size={20} strokeWidth={2.5} className='text-label-large' />
 
 const CheckIcon = <Check size={18} strokeWidth={3} className='text-heading' />
 
@@ -346,6 +350,32 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
                         <div className='h-0.25 w-full bg-[#3D3D3D] my-2' />
                       </>
                     )}
+                    {/* The host's own controls. Plain rows like every other one —
+                        nothing here is special enough to be highlighted. */}
+                    {isHost && (
+                      <>
+                        <button
+                          type='button'
+                          onClick={() => router.push(`/parties/${partyId}/edit`)}
+                          className='flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-left'
+                        >
+                          <span className='w-5 h-5 flex items-center justify-center'>{EditIcon}</span>
+                          <span className='text-label-1 text-label-large'>Bearbeiten</span>
+                        </button>
+
+                        <button
+                          type='button'
+                          onClick={() => router.push(`/parties/${partyId}/guests`)}
+                          className='flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-left'
+                        >
+                          <span className='w-5 h-5 flex items-center justify-center'>{GuestsIcon}</span>
+                          <span className='text-label-1 text-label-large'>Gäste verwalten</span>
+                        </button>
+
+                        <div className='h-0.25 w-full bg-[#3D3D3D] my-2' />
+                      </>
+                    )}
+
                     <button
                       type='button'
                       onClick={isHost ? handleDeleteParty : handleLeaveParty}

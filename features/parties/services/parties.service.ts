@@ -192,6 +192,17 @@ export async function setRsvp(partyId: string, userId: string, status: RsvpStatu
     .upsert({ event_id: partyId, user_id: userId, status }, { onConflict: 'event_id,user_id' })
 }
 
+// The host's edit screen writes the whole form at once; RLS restricts it to their
+// own party, so no host_id check is needed here.
+export async function updateParty(partyId: string, patch: Partial<CreatePartyPayload>) {
+  return supabase.from('events').update(patch).eq('id', partyId)
+}
+
+// Options and responses go with it by cascade.
+export async function deletePool(poolId: string) {
+  return supabase.from('pools').delete().eq('id', poolId)
+}
+
 export async function deleteParty(partyId: string) {
   return supabase.from('events').delete().eq('id', partyId)
 }

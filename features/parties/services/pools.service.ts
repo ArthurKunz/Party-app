@@ -68,6 +68,24 @@ export async function createPool(payload: {
   return supabase.from('pools').insert(payload).select('id').single()
 }
 
+export async function updatePool(
+  poolId: string,
+  patch: { question: string; description: string | null; allow_multiple: boolean }
+) {
+  return supabase.from('pools').update(patch).eq('id', poolId)
+}
+
+// Renaming an option in place, rather than dropping it and inserting a new one, is
+// what keeps the votes on it: pool_responses.option_id is ON DELETE SET NULL, so a
+// delete would silently detach every answer that had picked it.
+export async function updatePoolOption(optionId: string, label: string, position: number) {
+  return supabase.from('pool_options').update({ label, position }).eq('id', optionId)
+}
+
+export async function deletePoolOption(optionId: string) {
+  return supabase.from('pool_options').delete().eq('id', optionId)
+}
+
 export async function addPoolOption(poolId: string, label: string, position: number) {
   return supabase.from('pool_options').insert({ pool_id: poolId, label, position })
 }

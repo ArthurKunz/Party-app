@@ -13,6 +13,8 @@ const STATUS_CONFIG = {
   not_going: { label: 'abgesagt', icon: '❌', color: 'bg-warning/50' },
 } as const
 
+type StatusConfig = (typeof STATUS_CONFIG)[keyof typeof STATUS_CONFIG]
+
 export default function AttendeeList({ attendees }: { attendees: Attendee[] }) {
   if (attendees.length === 0) {
     return <span className='block py-4 text-center text-label-2 text-label-small'>Noch keine Zusagen.</span>
@@ -21,7 +23,9 @@ export default function AttendeeList({ attendees }: { attendees: Attendee[] }) {
   return (
     <div className='flex flex-col'>
       {attendees.map((a, i) => {
-        const status = STATUS_CONFIG[a.status]
+        // Optional on purpose — see PartyGuestsScreen: the status column is text,
+        // and an unknown word must not cost the whole list.
+        const status: StatusConfig | undefined = STATUS_CONFIG[a.status]
         return (
           <div key={a.user_id}>
             <div className='flex items-center gap-3 py-3'>
@@ -34,10 +38,12 @@ export default function AttendeeList({ attendees }: { attendees: Attendee[] }) {
                   <span className='block text-label-2 text-label-small'>{calculateAge(a.birthday)} Jahre alt</span>
                 )}
               </div>
-              <span className={`flex items-center gap-1.5 rounded-full h-7.5 px-2.5 text-label-2 text-heading ${status.color}`}>
-                <span>{status.icon}</span>
-                {status.label}
-              </span>
+              {status && (
+                <span className={`flex items-center gap-1.5 rounded-full h-7.5 px-2.5 text-label-2 text-heading ${status.color}`}>
+                  <span>{status.icon}</span>
+                  {status.label}
+                </span>
+              )}
             </div>
             {i < attendees.length - 1 && (
               <div className='flex items-center gap-3'>

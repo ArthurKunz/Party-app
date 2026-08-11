@@ -18,6 +18,8 @@ const STATUS_LABEL = {
   not_going: { label: 'abgesagt', icon: '❌', color: 'bg-warning/50' },
 } as const
 
+type StatusLabel = (typeof STATUS_LABEL)[keyof typeof STATUS_LABEL]
+
 export default function PartyGuestsScreen({
   partyId,
   fromEdit = false,
@@ -110,7 +112,10 @@ export default function PartyGuestsScreen({
         // guest row carries backdrop-blur, so an animating ancestor cannot flatten it.
         <div className='flex flex-col animate-fade-in-up'>
           {attendees.map((a, i) => {
-            const status = STATUS_LABEL[a.status]
+            // Typed as optional on purpose: rsvps.status is a text column, and a
+            // word outside these four would otherwise take the whole list down with
+            // it. The row still renders — only the pill stays away.
+            const status: StatusLabel | undefined = STATUS_LABEL[a.status]
             // The host has no remove button: throwing yourself out of your own party
             // is not a thing, and the row would only ever fail against RLS anyway.
             const removable = a.status !== 'host'
@@ -127,10 +132,12 @@ export default function PartyGuestsScreen({
                     )}
                   </div>
 
-                  <span className={`flex shrink-0 items-center gap-1.5 rounded-full h-7.5 px-2.5 text-label-2 text-heading ${status.color}`}>
-                    <span>{status.icon}</span>
-                    {status.label}
-                  </span>
+                  {status && (
+                    <span className={`flex shrink-0 items-center gap-1.5 rounded-full h-7.5 px-2.5 text-label-2 text-heading ${status.color}`}>
+                      <span>{status.icon}</span>
+                      {status.label}
+                    </span>
+                  )}
 
                   {removable && (
                     // A minus, not a cross: ✕ already means 'abgesagt' everywhere else

@@ -19,7 +19,6 @@ type Props = {
   // Where to return after the OAuth round-trip (an invite link, usually).
   next?: string | null
   description?: string
-  showLogo?: boolean
   // Slides the sheet up from the bottom edge on mount.
   appear?: boolean
 }
@@ -29,7 +28,6 @@ export default function AuthSheet({
   onSignIn,
   next,
   description,
-  showLogo = false,
   appear = false,
 }: Props) {
   const [pending, setPending] = useState(false)
@@ -46,9 +44,6 @@ export default function AuthSheet({
 
   return (
     <SheetLayout appear={appear}>
-      {/* Placeholder — a logo goes in here later. */}
-      {showLogo && <div className='h-15 w-15 rounded-full bg-button-primary' />}
-
       <div className='flex flex-col gap-1.5 text-center'>
         <span className='text-heading-3 font-semibold text-sheet-heading'>Sign up oder login</span>
         {description && <span className='text-subheading-1 text-sheet-body'>{description}</span>}

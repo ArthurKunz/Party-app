@@ -695,7 +695,6 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
           <div className='fixed inset-0 z-30 touch-none overscroll-none bg-main/30 backdrop-blur-xl' />
 
           <AuthSheet
-            showLogo
             description='Um an einer Party teilnehmen zu können brauchst du einen Account.'
             next={inviteNext}
             onCreateAccount={() => router.push(`${loginHref}&step=signup`)}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Image from 'next/image'
 import { Check, Pencil } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
@@ -22,6 +22,8 @@ export default function ProfilePictureForm({ onSuccess, onClose, firstname, last
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
+  // What this flow has already uploaded, so a second attempt can clear the first.
+  const uploadedPath = useRef<string | null>(null)
   // Picking the wrong file is the user's to fix, right here, so it is a banner and
   // not an alert — see features/auth/services/auth-errors.ts for the rule.
   const [warning, setWarning] = useState<string | null>(null)
@@ -85,6 +87,10 @@ export default function ProfilePictureForm({ onSuccess, onClose, firstname, last
       alertError('Dein Bild konnte nicht hochgeladen werden.', uploadError.message)
       return
     }
+    // Going back a step and picking another picture uploads under a new timestamped
+    // name, so whatever this flow uploaded before is now unreferenced.
+    if (uploadedPath.current) await supabase.storage.from(BUCKET).remove([uploadedPath.current])
+    uploadedPath.current = path
 
     const publicUrl = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
     await onSuccess(publicUrl, pickRandomAvatarColor())

@@ -176,7 +176,7 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
     if (!party) return
     if (!confirm('Party wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return
     setDeleting(true)
-    const { error } = await deleteParty(party.id)
+    const { error } = await deleteParty(party.id, party.host_id)
     if (error) {
       setDeleting(false)
       setMenuOpen(false)

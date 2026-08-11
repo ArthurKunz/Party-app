@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase/client'
 import { isPartyOver } from '@/lib/utils'
+import { removeStorageFolder } from '@/lib/storage'
 import type { CreatePartyPayload, PartyWithCount, PartyDetail, Attendee, PartyHost, RsvpStatus } from '../types/parties.types'
 
 export async function createParty(payload: CreatePartyPayload) {
@@ -203,8 +204,14 @@ export async function deletePool(poolId: string) {
   return supabase.from('pools').delete().eq('id', poolId)
 }
 
-export async function deleteParty(partyId: string) {
-  return supabase.from('events').delete().eq('id', partyId)
+// The background lives at {host_id}/{party_id}/background.ext and is NOT removed by
+// deleting the row — 41 files from deleted parties had piled up that way. The row goes
+// first because that is what the host asked for; a failed cleanup afterwards only
+// leaves the orphan we used to leave every time anyway.
+export async function deleteParty(partyId: string, hostId: string) {
+  const result = await supabase.from('events').delete().eq('id', partyId)
+  if (!result.error) await removeStorageFolder('event-backgrounds', `${hostId}/${partyId}`)
+  return result
 }
 
 export async function deleteRsvp(partyId: string, userId: string) {

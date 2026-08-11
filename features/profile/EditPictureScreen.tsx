@@ -8,6 +8,7 @@ import Avatar from '@/components/shared/Avatar'
 import Spinner from '@/components/shared/Spinner'
 import UnsavedChangesDialog from '@/components/shared/UnsavedChangesDialog'
 import { alertError } from '@/lib/utils'
+import { removeStorageFileByUrl } from '@/lib/storage'
 import { AVATAR_COLORS, BUCKET, MAX_BYTES } from '@/features/onboarding/constants/onboarding.constants'
 import {
   getMyProfile,
@@ -89,11 +90,14 @@ export default function EditPictureScreen() {
 
     if (color) {
       const { error } = await updateProfileAvatarColor(userId, color as string)
-      setSaving(false)
       if (error) {
+        setSaving(false)
         alertError('Deine Farbe konnte nicht gespeichert werden.', error.message)
         return
       }
+      // Initials replace the photo, so the file it used to point at has to go.
+      await removeStorageFileByUrl(BUCKET, profile?.avatar_url)
+      setSaving(false)
       router.push('/profile')
       return
     }
@@ -112,12 +116,17 @@ export default function EditPictureScreen() {
     }
 
     const publicUrl = supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
+    const previousUrl = profile?.avatar_url
     const { error } = await updateProfileAvatar(userId, publicUrl)
-    setSaving(false)
     if (error) {
+      setSaving(false)
       alertError('Dein Profilbild konnte nicht gespeichert werden.', error.message)
       return
     }
+    // Only once the row points at the new file — otherwise a failed update would
+    // leave the profile aimed at something that no longer exists.
+    await removeStorageFileByUrl(BUCKET, previousUrl)
+    setSaving(false)
     router.push('/profile')
   }
 

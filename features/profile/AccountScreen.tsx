@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { LogOut, Trash2 } from 'lucide-react'
 import { alertError } from '@/lib/utils'
+import { removeStorageFolder } from '@/lib/storage'
 import Spinner from '@/components/shared/Spinner'
 import SettingsPage, { saveButtonClass } from './components/SettingsPage'
 
@@ -31,6 +32,15 @@ export default function AccountScreen() {
   const handleDeleteAccount = async () => {
     if (!confirm('Account wirklich löschen? Alle deine Partys und Antworten gehen verloren.')) return
     setPending('delete')
+    // Before the account goes, not after: the storage policies check auth.uid(), so
+    // once the user is deleted nobody may touch these files again — they would sit in
+    // the buckets for ever. Both folders are keyed by the user id.
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      await removeStorageFolder('avatars', user.id)
+      await removeStorageFolder('event-backgrounds', user.id)
+    }
+
     const { error } = await supabase.rpc('delete_self')
     if (error) {
       setPending(null)

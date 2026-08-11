@@ -18,6 +18,7 @@ import {
 } from './services/parties.service'
 import { getPartyPools } from './services/pools.service'
 import Avatar from '@/components/shared/Avatar'
+import Spinner from '@/components/shared/Spinner'
 import Section from './components/Section'
 import CapacityWarning, { isFull, isNearlyFull } from './components/CapacityWarning'
 import PartyDescription from './components/PartyDescription'
@@ -69,7 +70,10 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
   const [userId, setUserId] = useState<string | null>(null)
   const [counts, setCounts] = useState({ going: 0, maybe: 0, not_going: 0 })
   const [copied, setCopied] = useState(false)
-  const [rsvpLoading, setRsvpLoading] = useState(false)
+  // The status being written, not just a flag: the spinner has to sit on the row
+  // that was tapped, and every row is disabled while any one of them is running.
+  const [pendingRsvp, setPendingRsvp] = useState<RsvpStatus | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuHeight, setMenuHeight] = useState(MENU_CLOSED_SIZE)
   const menuContentRef = useRef<HTMLDivElement>(null)
@@ -171,28 +175,38 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
   const handleDeleteParty = async () => {
     if (!party) return
     if (!confirm('Party wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return
-    setMenuOpen(false)
+    setDeleting(true)
     const { error } = await deleteParty(party.id)
-    if (error) { alertError('Party konnte nicht gelöscht werden.', error.message); return }
+    if (error) {
+      setDeleting(false)
+      setMenuOpen(false)
+      alertError('Party konnte nicht gelöscht werden.', error.message)
+      return
+    }
     router.push('/parties')
   }
 
   const handleLeaveParty = async () => {
     if (!party || !userId) return
     if (!confirm('Party für dich löschen? Du kannst über den Einladungslink jederzeit wieder beitreten.')) return
-    setMenuOpen(false)
+    setDeleting(true)
     const { error } = await deleteRsvp(party.id, userId)
-    if (error) { alertError('Du konntest nicht aus der Party entfernt werden.', error.message); return }
+    if (error) {
+      setDeleting(false)
+      setMenuOpen(false)
+      alertError('Du konntest nicht aus der Party entfernt werden.', error.message)
+      return
+    }
     router.push('/parties')
   }
 
   const handleRsvp = async (status: RsvpStatus) => {
     if (!party || !userId) return
-    setRsvpLoading(true)
+    setPendingRsvp(status)
     const { error } = await setRsvp(party.id, userId, status)
     if (error) {
       alertError('Deine Antwort konnte nicht gespeichert werden.', error.message)
-      setRsvpLoading(false)
+      setPendingRsvp(null)
       return
     }
     const oldStatus = rsvpStatus
@@ -207,7 +221,7 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
       return next
     })
     setRsvpStatus(status)
-    setRsvpLoading(false)
+    setPendingRsvp(null)
     // Hold the menu open briefly so the ✓ visibly lands on the row that was tapped.
     setTimeout(() => setMenuOpen(false), 600)
   }
@@ -346,12 +360,14 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
                             key={status}
                             type='button'
                             onClick={() => handleRsvp(status)}
-                            disabled={rsvpLoading || blocked}
+                            disabled={pendingRsvp !== null || blocked}
                             className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-left backdrop-blur-xl ${
                               rsvpStatus === status ? 'bg-tertiary' : ''
                             } ${blocked ? 'opacity-40' : ''}`}
                           >
-                            <span className='w-5 h-5 flex items-center justify-center text-md'>{icon}</span>
+                            <span className='w-5 h-5 flex items-center justify-center text-md text-label-large'>
+                              {pendingRsvp === status ? <Spinner size={16} /> : icon}
+                            </span>
                             <span className='text-label-1 text-label-large'>{label}</span>
                             {rsvpStatus === status && <span className='ml-auto flex items-center'>{CheckIcon}</span>}
                           </button>
@@ -389,9 +405,12 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
                     <button
                       type='button'
                       onClick={isHost ? handleDeleteParty : handleLeaveParty}
+                      disabled={deleting}
                       className='flex items-center gap-3.25 w-full px-4 py-3'
                     >
-                      <span className='w-5 h-5 flex items-center justify-center'>{TrashIcon}</span>
+                      <span className='w-5 h-5 flex items-center justify-center text-warning'>
+                        {deleting ? <Spinner size={16} /> : TrashIcon}
+                      </span>
                       <span className='text-label-1 font-semibold text-warning'>Löschen</span>
                     </button>
                   </div>

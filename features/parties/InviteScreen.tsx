@@ -18,6 +18,7 @@ import {
 } from './services/parties.service'
 import { getPartyPools } from './services/pools.service'
 import Avatar from '@/components/shared/Avatar'
+import Spinner from '@/components/shared/Spinner'
 import WarningBanner from '@/components/shared/WarningBanner'
 import Section from './components/Section'
 import AuthSheet from '@/features/auth/components/AuthSheet'
@@ -73,7 +74,10 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   const [userId, setUserId] = useState<string | null>(null)
   const [counts, setCounts] = useState({ going: 0, maybe: 0, not_going: 0 })
   const [copied, setCopied] = useState(false)
-  const [rsvpLoading, setRsvpLoading] = useState(false)
+  // The status being written, not just a flag: the spinner has to sit on the
+  // button that was tapped, and all of them are disabled while one is running.
+  const [pendingRsvp, setPendingRsvp] = useState<RsvpStatus | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuHeight, setMenuHeight] = useState(MENU_CLOSED_SIZE)
   const menuContentRef = useRef<HTMLDivElement>(null)
@@ -220,18 +224,28 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   const handleDeleteParty = async () => {
     if (!party) return
     if (!confirm('Party wirklich löschen? Das kann nicht rückgängig gemacht werden.')) return
-    setMenuOpen(false)
+    setDeleting(true)
     const { error } = await deleteParty(party.id)
-    if (error) { alertError('Party konnte nicht gelöscht werden.', error.message); return }
+    if (error) {
+      setDeleting(false)
+      setMenuOpen(false)
+      alertError('Party konnte nicht gelöscht werden.', error.message)
+      return
+    }
     router.push('/parties')
   }
 
   const handleLeaveParty = async () => {
     if (!party || !userId) return
     if (!confirm('Party für dich löschen? Du kannst über den Einladungslink jederzeit wieder beitreten.')) return
-    setMenuOpen(false)
+    setDeleting(true)
     const { error } = await deleteRsvp(party.id, userId)
-    if (error) { alertError('Du konntest nicht aus der Party entfernt werden.', error.message); return }
+    if (error) {
+      setDeleting(false)
+      setMenuOpen(false)
+      alertError('Du konntest nicht aus der Party entfernt werden.', error.message)
+      return
+    }
     router.push('/parties')
   }
 
@@ -239,11 +253,11 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
     if (!party) return
     // Anonymous visitors have to sign up before they can answer.
     if (!userId) { router.push(loginHref); return }
-    setRsvpLoading(true)
+    setPendingRsvp(status)
     const { error } = await setRsvp(party.id, userId, status)
     if (error) {
       alertError('Deine Antwort konnte nicht gespeichert werden.', error.message)
-      setRsvpLoading(false)
+      setPendingRsvp(null)
       return
     }
     const oldStatus = rsvpStatus
@@ -258,7 +272,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
       return next
     })
     setRsvpStatus(status)
-    setRsvpLoading(false)
+    setPendingRsvp(null)
     // Poll answers are only readable once you belong to the party, and this very
     // click is what made that true — the copy in state was fetched a moment ago,
     // when the answer was still none of this visitor's business, so it came back
@@ -404,12 +418,14 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                           key={status}
                           type='button'
                           onClick={() => handleRsvp(status)}
-                          disabled={rsvpLoading || blocked}
+                          disabled={pendingRsvp !== null || blocked}
                           className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-left backdrop-blur-xl ${
                             rsvpStatus === status ? 'bg-tertiary' : ''
                           } ${blocked ? 'opacity-40' : ''}`}
                         >
-                          <span className='w-5 h-5 flex items-center justify-center text-md'>{icon}</span>
+                          <span className='w-5 h-5 flex items-center justify-center text-md text-label-large'>
+                            {pendingRsvp === status ? <Spinner size={16} /> : icon}
+                          </span>
                           <span className='text-label-1 text-label-large'>{label}</span>
                           {rsvpStatus === status && <span className='ml-auto flex items-center'>{CheckIcon}</span>}
                         </button>
@@ -448,9 +464,12 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                         <button
                           type='button'
                           onClick={isHost ? handleDeleteParty : handleLeaveParty}
+                          disabled={deleting}
                           className='flex items-center gap-3.25 w-full px-4 py-3'
                         >
-                          <span className='w-5 h-5 flex items-center justify-center'>{TrashIcon}</span>
+                          <span className='w-5 h-5 flex items-center justify-center text-warning'>
+                            {deleting ? <Spinner size={16} /> : TrashIcon}
+                          </span>
                           <span className='text-label-1 font-semibold text-warning'>Löschen</span>
                         </button>
                       </>
@@ -620,21 +639,19 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
               <button
                 type='button'
                 onClick={() => handleRsvp('not_going')}
-                disabled={rsvpLoading}
+                disabled={pendingRsvp !== null}
                 className='h-12.5 flex-1 flex items-center justify-center gap-2 rounded-full border border-warning/60 bg-warning/15 backdrop-blur-xl text-subheading-1 font-semibold text-warning disabled:opacity-50'
               >
-                <span>❌</span>
-                absagen
+                {pendingRsvp === 'not_going' ? <Spinner /> : <><span>❌</span>absagen</>}
               </button>
 
               <button
                 type='button'
                 onClick={() => handleRsvp('maybe')}
-                disabled={rsvpLoading}
+                disabled={pendingRsvp !== null}
                 className='h-12.5 flex-1 flex items-center justify-center gap-2 rounded-full border border-maybe/60 bg-maybe/15 backdrop-blur-xl text-subheading-1 font-semibold text-maybe disabled:opacity-50'
               >
-                <span>🤔</span>
-                vielleicht
+                {pendingRsvp === 'maybe' ? <Spinner /> : <><span>🤔</span>vielleicht</>}
               </button>
             </div>
           ) : (
@@ -642,31 +659,30 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
               <button
                 type='button'
                 onClick={() => handleRsvp('not_going')}
-                disabled={rsvpLoading}
+                disabled={pendingRsvp !== null}
                 aria-label='Absagen'
-                className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-warning/60 bg-warning/15 backdrop-blur-xl disabled:opacity-50'
+                className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-warning/60 bg-warning/15 text-warning backdrop-blur-xl disabled:opacity-50'
               >
-                {CrossIcon}
+                {pendingRsvp === 'not_going' ? <Spinner /> : CrossIcon}
               </button>
 
               <button
                 type='button'
                 onClick={() => handleRsvp('going')}
-                disabled={rsvpLoading}
+                disabled={pendingRsvp !== null}
                 className='h-12.5 flex items-center justify-center gap-2 rounded-full border border-success/60 bg-success/15 px-6 backdrop-blur-xl text-subheading-1 font-semibold text-success disabled:opacity-50'
               >
-                <span>✅</span>
-                zusagen
+                {pendingRsvp === 'going' ? <Spinner /> : <><span>✅</span>zusagen</>}
               </button>
 
               <button
                 type='button'
                 onClick={() => handleRsvp('maybe')}
-                disabled={rsvpLoading}
+                disabled={pendingRsvp !== null}
                 aria-label='Vielleicht'
-                className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-maybe/60 bg-maybe/15 backdrop-blur-xl text-subheading-1 disabled:opacity-50'
+                className='h-12.5 w-12.5 shrink-0 flex items-center justify-center rounded-full border border-maybe/60 bg-maybe/15 text-maybe backdrop-blur-xl text-subheading-1 disabled:opacity-50'
               >
-                🤔
+                {pendingRsvp === 'maybe' ? <Spinner /> : '🤔'}
               </button>
             </div>
           )}

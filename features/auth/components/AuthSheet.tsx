@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { alertError } from '@/lib/utils'
 import SheetLayout from '@/components/shared/SheetLayout'
+import Spinner from '@/components/shared/Spinner'
 import { signInWithGoogle } from '../services/auth.service'
 
 // lucide dropped brand marks, so the provider logo is an inline path.
@@ -76,8 +77,9 @@ export default function AuthSheet({
           disabled={pending}
           className='h-14 w-full flex items-center justify-center gap-2 rounded-full bg-button-secondary text-button font-semibold text-sheet-heading transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95 disabled:text-sheet-body'
         >
-          {GoogleIcon}
-          Google
+          {/* The wait here is a redirect to Google, which is exactly the kind of
+              shapeless pause the spinner exists for. */}
+          {pending ? <Spinner /> : <>{GoogleIcon}Google</>}
         </button>
       </div>
     </SheetLayout>

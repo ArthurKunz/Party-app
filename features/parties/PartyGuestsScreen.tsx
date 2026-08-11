@@ -6,6 +6,7 @@ import { Minus } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { alertError, calculateAge } from '@/lib/utils'
 import Avatar from '@/components/shared/Avatar'
+import Spinner from '@/components/shared/Spinner'
 import SettingsPage from '@/features/profile/components/SettingsPage'
 import { getPartyById, getPartyAttendees, deleteRsvp } from './services/parties.service'
 import type { Attendee } from './types/parties.types'
@@ -140,9 +141,11 @@ export default function PartyGuestsScreen({
                       onClick={() => handleRemove(a)}
                       disabled={removing !== null}
                       aria-label={`${[a.firstname, a.lastname].filter(Boolean).join(' ')} entfernen`}
-                      className='flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-warning/60 bg-warning/15 transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-90 disabled:opacity-40'
+                      className='flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-warning/60 bg-warning/15 text-warning transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-90 disabled:opacity-40'
                     >
-                      <Minus size={16} strokeWidth={3} className='text-warning' />
+                      {removing === a.user_id
+                        ? <Spinner size={16} />
+                        : <Minus size={16} strokeWidth={3} className='text-warning' />}
                     </button>
                   )}
                 </div>

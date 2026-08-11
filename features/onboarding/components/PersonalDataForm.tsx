@@ -13,7 +13,7 @@ import WarningBanner from '@/components/shared/WarningBanner'
 import { NAME_MAX } from '../constants/onboarding.constants'
 import type { NameFormProps } from '../types/onboarding.types'
 
-export default function PersonalDataForm({ onSuccess, onSwitchAccount }: NameFormProps) {
+export default function PersonalDataForm({ onSuccess }: NameFormProps) {
   const [firstname, setFirstname] = useState('')
   const [lastname, setLastname] = useState('')
   const lastnameRef = useRef<HTMLInputElement>(null)
@@ -75,17 +75,6 @@ export default function PersonalDataForm({ onSuccess, onSwitchAccount }: NameFor
         className={sheetButtonClass}
       >
         weiter
-      </button>
-
-      {/* The exit, spelled out. It only matters to someone who signed in with the
-          wrong Google account — verifying an emailed code already proves that
-          address is theirs — so it is quiet, like 'Password vergessen?'. */}
-      <button
-        type='button'
-        onClick={onSwitchAccount}
-        className='self-center px-1 text-subheading-1 text-sheet-body'
-      >
-        Mit einem anderen Konto anmelden
       </button>
     </SheetLayout>
   )

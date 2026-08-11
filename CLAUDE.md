@@ -104,6 +104,7 @@ Always git push after commiting something
 - AI features
 - Public profile pages
 - Party type tags
+- A way out of onboarding ("mit anderem Konto anmelden"): the flow goes forward only
 
 ## Data model (see SCHEMA.md for full detail)
 Core tables: profiles, events, rsvps, tasks (stubbed), votes (stubbed)

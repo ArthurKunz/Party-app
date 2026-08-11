@@ -1,8 +1,5 @@
 export interface NameFormProps {
   onSuccess: (firstname: string, lastname: string) => void
-  // Deliberately NOT an onClose: step one has no back button, so this is the
-  // labelled way out and it says out loud what it does.
-  onSwitchAccount: () => void
 }
 
 export interface BirthdateFormProps {

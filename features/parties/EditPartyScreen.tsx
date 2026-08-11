@@ -19,6 +19,7 @@ import {
 } from '@/components/shared/Card'
 import SettingsPage from '@/features/profile/components/SettingsPage'
 import Collapse from '@/components/shared/Collapse'
+import Switch from '@/components/shared/Switch'
 import FloatingEmojis from './components/FloatingEmojis'
 import PoolDraftCard from './components/PoolDraftCard'
 import PoolDraftForm from './components/PoolDraftForm'
@@ -54,6 +55,17 @@ const GUESTS_MAX = 500
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
+// The end is a clock time, not a date: an end earlier than the start means the party
+// runs past midnight, exactly as the create flow builds it. Both the stored value and
+// the edited one go through this, so an untouched end re-serialises to what is saved.
+const endIsoFrom = (start: Date, end: PartyTime | null): string | null => {
+  if (!end) return null
+  const d = new Date(start)
+  d.setHours(end.hour, end.minute, 0, 0)
+  if (d <= start) d.setDate(d.getDate() + 1)
+  return d.toISOString()
+}
+
 // These rows are `text-right` while the input still spans the whole remaining width,
 // so almost every tap lands in the empty space to the LEFT of the value and drops the
 // caret at position 0 — you end up typing in front of the 50 instead of behind it.
@@ -79,12 +91,16 @@ export default function EditPartyScreen({ partyId }: { partyId: string }) {
   const [maxGuests, setMaxGuests] = useState('')
   const [date, setDate] = useState<PartyDate>({ day: 1, month: 0, year: new Date().getFullYear() })
   const [time, setTime] = useState<PartyTime>({ hour: 20, minute: 0 })
+  // 02:00 is the create flow's default for a party that has an end at all.
+  const [endTime, setEndTime] = useState<PartyTime>({ hour: 2, minute: 0 })
+  const [hasEndTime, setHasEndTime] = useState(false)
 
   // What is stored, so an unchanged form cannot be saved and the back button knows
   // whether there is anything to ask about.
   const [stored, setStored] = useState('')
   const [dateOpen, setDateOpen] = useState(false)
   const [timeOpen, setTimeOpen] = useState(false)
+  const [endOpen, setEndOpen] = useState(false)
   const [guestCount, setGuestCount] = useState(0)
 
   // Polls live here, not on a page of their own, because nothing about them is
@@ -125,20 +141,25 @@ export default function EditPartyScreen({ partyId }: { partyId: string }) {
       setMaxGuests(party.max_guests != null ? String(party.max_guests) : '')
       setDate({ day: start.getDate(), month: start.getMonth(), year: start.getFullYear() })
       setTime({ hour: start.getHours(), minute: start.getMinutes() })
+      const end = party.ends_at ? new Date(party.ends_at) : null
+      const storedEnd = end ? { hour: end.getHours(), minute: end.getMinutes() } : null
+      setHasEndTime(storedEnd !== null)
+      if (storedEnd) setEndTime(storedEnd)
       // The stored date has to go through the SAME construction as the edited one,
       // or the two never match: Postgres hands back '…T18:00:00+00:00' while
       // toISOString() writes '…T18:00:00.000Z'. Comparing those two strings marked
       // the form as changed the moment it loaded, so leaving it always asked.
-      const storedIso = new Date(
+      const storedStart = new Date(
         start.getFullYear(), start.getMonth(), start.getDate(), start.getHours(), start.getMinutes(), 0, 0
-      ).toISOString()
+      )
       setStored(
         JSON.stringify({
           title: party.title.trim(),
           description: (party.description ?? '').trim(),
           location: party.location.trim(),
           maxGuests: party.max_guests != null ? String(party.max_guests) : '',
-          iso: storedIso,
+          iso: storedStart.toISOString(),
+          endIso: endIsoFrom(storedStart, storedEnd),
         })
       )
       setLoading(false)
@@ -159,12 +180,14 @@ export default function EditPartyScreen({ partyId }: { partyId: string }) {
   }, [partyId, router])
 
   const startDate = new Date(date.year, date.month, date.day, time.hour, time.minute, 0, 0)
+  const endIso = endIsoFrom(startDate, hasEndTime ? endTime : null)
   const current = JSON.stringify({
     title: title.trim(),
     description: description.trim(),
     location: location.trim(),
     maxGuests,
     iso: startDate.toISOString(),
+    endIso,
   })
   // Polls are part of the same unsaved work, so they belong in the same question the
   // back button asks.
@@ -236,6 +259,7 @@ export default function EditPartyScreen({ partyId }: { partyId: string }) {
       location: location.trim(),
       max_guests: maxGuests ? parseInt(maxGuests, 10) : null,
       event_date: startDate.toISOString(),
+      ends_at: endIso,
     })
     if (error) {
       setSaving(false)
@@ -404,13 +428,28 @@ export default function EditPartyScreen({ partyId }: { partyId: string }) {
 
                 <RowDivider />
 
+                {/* Named like the party page's stats: one time is the plain
+                    'Uhrzeit', two are 'Startzeit' and 'Endzeit'. */}
                 <button type='button' onClick={() => setTimeOpen(true)} className={rowClass}>
-                  <span className={rowLabelClass}>Uhrzeit</span>
+                  <span className={rowLabelClass}>{hasEndTime ? 'Startzeit' : 'Uhrzeit'}</span>
                   <span className={`ml-auto ${rowValueClass}`}>
                     {pad(time.hour)}:{pad(time.minute)} Uhr
                   </span>
                   {chevron}
                 </button>
+
+                {/* Unfolds out of the card the way the create flow's end row does,
+                    so the switch below visibly makes room for it. */}
+                <Collapse open={hasEndTime}>
+                  <RowDivider />
+                  <button type='button' onClick={() => setEndOpen(true)} className={rowClass}>
+                    <span className={rowLabelClass}>Endzeit</span>
+                    <span className={`ml-auto ${rowValueClass}`}>
+                      {pad(endTime.hour)}:{pad(endTime.minute)} Uhr
+                    </span>
+                    {chevron}
+                  </button>
+                </Collapse>
 
                 <RowDivider />
 
@@ -442,6 +481,8 @@ export default function EditPartyScreen({ partyId }: { partyId: string }) {
                   />
                 </label>
               </div>
+
+              <Switch label='Endzeitpunkt hinzufügen' checked={hasEndTime} onChange={setHasEndTime} />
 
               {/* A description is paragraphs, not a value: in a 50px row you see
                   about four words of it. Same box the create flow uses for the
@@ -501,6 +542,7 @@ export default function EditPartyScreen({ partyId }: { partyId: string }) {
 
       {dateOpen && <PartyDateSheet value={date} onChange={setDate} onClose={() => setDateOpen(false)} />}
       {timeOpen && <PartyTimeSheet value={time} onChange={setTime} onClose={() => setTimeOpen(false)} />}
+      {endOpen && <PartyTimeSheet value={endTime} onChange={setEndTime} onClose={() => setEndOpen(false)} />}
 
       {askLeave && (
         <UnsavedChangesDialog

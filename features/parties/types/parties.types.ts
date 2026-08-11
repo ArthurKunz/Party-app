@@ -49,6 +49,7 @@ export type PartyDetail = {
   title: string
   description: string | null
   event_date: string
+  ends_at: string | null
   location: string
   invite_code: string
   background_url?: string | null

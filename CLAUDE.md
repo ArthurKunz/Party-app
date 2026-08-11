@@ -73,7 +73,7 @@ Always git push after commiting something
 ## V1 features (in scope)
 - Sign up / log in with email
 - Profile: display name, initials avatar and age
-- Create event: name, description, type, date, time, location
+- Create event: name, description, type, date, time, optional end time, location
 - Simple RSVP: coming / not coming 
 - Host guest list: attendee names, ages, total headcount
 - Shareable link format: /e/[invite_code] — no auth required to view basic info

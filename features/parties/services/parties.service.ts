@@ -133,7 +133,7 @@ export async function getAttendedParties(userId: string): Promise<PartyWithCount
   )
 }
 
-const PARTY_DETAIL_COLUMNS = 'id, host_id, title, description, event_date, location, invite_code, background_url, max_guests'
+const PARTY_DETAIL_COLUMNS = 'id, host_id, title, description, event_date, ends_at, location, invite_code, background_url, max_guests'
 
 export async function getPartyById(partyId: string): Promise<PartyDetail | null> {
   const { data, error } = await supabase

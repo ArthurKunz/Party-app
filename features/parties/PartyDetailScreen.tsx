@@ -223,11 +223,21 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
           }),
         },
         {
-          label: 'Uhrzeit',
+          // The end time is optional, so a party without one keeps the single plain
+          // 'Uhrzeit'; as soon as there is an end, the two become a labelled pair.
+          label: party.ends_at ? 'Startzeit' : 'Uhrzeit',
           value: new Date(party.event_date).toLocaleTimeString('de-DE', {
             hour: '2-digit', minute: '2-digit',
           }) + ' Uhr',
         },
+        ...(party.ends_at
+          ? [{
+              label: 'Endzeit',
+              value: new Date(party.ends_at).toLocaleTimeString('de-DE', {
+                hour: '2-digit', minute: '2-digit',
+              }) + ' Uhr',
+            }]
+          : []),
         // Occupancy, not just the cap: "10/50" reads as zugesagt out of max.
         ...(party.max_guests != null
           ? [{

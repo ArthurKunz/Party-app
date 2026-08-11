@@ -162,6 +162,15 @@ export async function getPartyHost(partyId: string): Promise<PartyHost | null> {
   return data[0] as unknown as PartyHost
 }
 
+// The invite page's version: keyed on the code rather than on membership, so someone
+// who has the link but has not answered yet still sees who is coming. get_event_attendees
+// itself stays members-only — this is the one page where holding the link IS the claim.
+export async function getPartyAttendeesByInviteCode(inviteCode: string): Promise<Attendee[]> {
+  const { data, error } = await supabase.rpc('get_event_attendees_by_invite_code', { p_invite_code: inviteCode })
+  if (error || !data) return []
+  return data as unknown as Attendee[]
+}
+
 export async function getPartyAttendees(partyId: string): Promise<Attendee[]> {
   const { data, error } = await supabase.rpc('get_event_attendees', { p_event_id: partyId })
   if (error || !data) return []

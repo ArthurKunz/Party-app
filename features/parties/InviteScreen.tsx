@@ -8,7 +8,7 @@ import { alertError, getOrigin } from '@/lib/utils'
 import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
 import {
   getPartyByInviteCode,
-  getPartyAttendees,
+  getPartyAttendeesByInviteCode,
   getPartyHost,
   getMyRsvpStatus,
   setRsvp,
@@ -176,7 +176,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
         setCountsLoading(false)
       })
 
-      void getPartyAttendees(partyData.id).then((data) => {
+      void getPartyAttendeesByInviteCode(inviteCode).then((data) => {
         if (cancelled) return
         setAttendees(data)
         setAttendeesLoading(false)

@@ -35,6 +35,7 @@ chats and stories.
 - The only other symbols allowed are Apple emojis (the native system emoji, e.g. 👤 🎂 📸 🤫 ⚖️). Emoji for flavour and list bullets, lucide for interface icons — never a drawn substitute for either.
 - update the CLAUDE.md file after each change yourself — but never add a "Current state" section, and never reintroduce one
 - Never use `any` type
+- Never nest `backdrop-blur` inside an element that already blurs: the inner one re-samples the already tinted backdrop and paints a visible darker pill behind the row. Inside a glass panel, rows carry a background colour or nothing at all
 - Always ask for my permission to commit or add something
 - call me 'Arthur' every time you respond
 - Always give me a summary of all changes at the end of all responses

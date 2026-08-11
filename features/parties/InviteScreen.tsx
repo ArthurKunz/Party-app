@@ -419,7 +419,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                           type='button'
                           onClick={() => handleRsvp(status)}
                           disabled={pendingRsvp !== null || blocked}
-                          className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-left backdrop-blur-xl ${
+                          className={`flex items-center gap-3 w-full px-4 py-2.5 rounded-full text-left ${
                             rsvpStatus === status ? 'bg-tertiary' : ''
                           } ${blocked ? 'opacity-40' : ''}`}
                         >

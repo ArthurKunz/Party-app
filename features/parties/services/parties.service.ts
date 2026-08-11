@@ -85,7 +85,10 @@ export async function getAttendedParties(userId: string): Promise<PartyWithCount
   // 'going', 'not_going' and 'maybe' RSVPs all appear under "Ich bin Gast"
   const { data, error } = await supabase
     .from('rsvps')
-    .select('status, parties(id, title, event_date, ends_at, location, invite_code, background_url, host_id, max_guests)')
+    // 'parties:events(...)': the table is still named `events` and PostgREST resolves an
+    // embed by the real table name, so a plain `parties(...)` matched nothing and every
+    // one of these requests came back 400 (PGRST200) — the guest tab never loaded.
+    .select('status, parties:events(id, title, event_date, ends_at, location, invite_code, background_url, host_id, max_guests)')
     .eq('user_id', userId)
   if (error || !data) return []
 

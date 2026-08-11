@@ -43,6 +43,8 @@ chats and stories.
 - Use createServerClient in server components and API routes
 - Use createBrowserClient in client components
 - Write RLS policies for every table — never skip this
+- An RLS SELECT policy has to be satisfiable from the row's own columns. `.insert(...).select(...)` becomes `INSERT ... RETURNING`, which Postgres checks against the SELECT policy while the new row is still invisible to any function that looks it up again
+- PostgREST embeds resolve by the real table name, not by the app's wording: the table is `events`, so write `parties:events(...)`, never `parties(...)`
 - Never expose the Supabase service role key on the client
 - Generate TypeScript types regularly: supabase gen types typescript
 

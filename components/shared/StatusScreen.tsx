@@ -4,7 +4,7 @@ import FloatingEmojis from '@/features/parties/components/FloatingEmojis'
 // blown up to a whole screen. Shared because the two pages differ only in their
 // emoji, their words and their buttons.
 export const statusButtonClass =
-  'flex h-50 items-center gap-2 rounded-full bg-sheet px-6 text-button font-semibold text-sheet-heading transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+  'flex h-12.5 items-center gap-2 rounded-full bg-sheet px-6 text-button font-semibold text-sheet-heading transition-transform duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
 
 export default function StatusScreen({
   emoji,
@@ -21,8 +21,9 @@ export default function StatusScreen({
     <div className='relative flex h-dvh w-full flex-col items-center justify-center gap-8 overflow-hidden bg-main'>
       <FloatingEmojis active seed />
 
-      {/* Above the drifting emojis, which are decoration and sit at the back. */}
-      <div className='relative flex flex-col items-center gap-8'>
+      {/* z-10 like every other screen's content wrapper: FloatingEmojis lays a
+          backdrop-blur veil at z-[1], and anything below that comes out blurred. */}
+      <div className='relative z-10 flex flex-col items-center gap-8'>
         <span className='text-6xl'>{emoji}</span>
 
         <div className='flex w-75 flex-col items-center gap-1 px-4 text-center'>

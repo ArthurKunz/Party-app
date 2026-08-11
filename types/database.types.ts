@@ -12,12 +12,39 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.4"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       events: {
         Row: {
+          background_url: string | null
           created_at: string | null
           description: string | null
+          ends_at: string | null
           event_date: string
           event_type: string | null
           host_id: string
@@ -28,8 +55,10 @@ export type Database = {
           title: string
         }
         Insert: {
+          background_url?: string | null
           created_at?: string | null
           description?: string | null
+          ends_at?: string | null
           event_date: string
           event_type?: string | null
           host_id: string
@@ -40,8 +69,10 @@ export type Database = {
           title: string
         }
         Update: {
+          background_url?: string | null
           created_at?: string | null
           description?: string | null
+          ends_at?: string | null
           event_date?: string
           event_type?: string | null
           host_id?: string
@@ -61,8 +92,132 @@ export type Database = {
           },
         ]
       }
+      pool_options: {
+        Row: {
+          created_at: string | null
+          id: string
+          label: string
+          pool_id: string
+          position: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          label: string
+          pool_id: string
+          position?: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          label?: string
+          pool_id?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pool_options_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pool_responses: {
+        Row: {
+          created_at: string | null
+          id: string
+          option_id: string | null
+          pool_id: string
+          text_response: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          option_id?: string | null
+          pool_id: string
+          text_response?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          option_id?: string | null
+          pool_id?: string
+          text_response?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pool_responses_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "pool_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pool_responses_pool_id_fkey"
+            columns: ["pool_id"]
+            isOneToOne: false
+            referencedRelation: "pools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pool_responses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pools: {
+        Row: {
+          allow_multiple: boolean
+          allow_text_response: boolean
+          created_at: string | null
+          description: string | null
+          event_id: string
+          id: string
+          question: string
+          type: string
+        }
+        Insert: {
+          allow_multiple?: boolean
+          allow_text_response?: boolean
+          created_at?: string | null
+          description?: string | null
+          event_id: string
+          id?: string
+          question: string
+          type: string
+        }
+        Update: {
+          allow_multiple?: boolean
+          allow_text_response?: boolean
+          created_at?: string | null
+          description?: string | null
+          event_id?: string
+          id?: string
+          question?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pools_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          avatar_color: string
+          avatar_url: string | null
           birthday: string | null
           created_at: string | null
           firstname: string | null
@@ -70,6 +225,8 @@ export type Database = {
           lastname: string | null
         }
         Insert: {
+          avatar_color?: string
+          avatar_url?: string | null
           birthday?: string | null
           created_at?: string | null
           firstname?: string | null
@@ -77,6 +234,8 @@ export type Database = {
           lastname?: string | null
         }
         Update: {
+          avatar_color?: string
+          avatar_url?: string | null
           birthday?: string | null
           created_at?: string | null
           firstname?: string | null
@@ -124,154 +283,98 @@ export type Database = {
           },
         ]
       }
-      pools: {
-        Row: {
-          id: string
-          event_id: string
-          question: string
-          description: string | null
-          type: string
-          allow_text_response: boolean
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          event_id: string
-          question: string
-          description?: string | null
-          type: string
-          allow_text_response?: boolean
-          created_at?: string | null
-        }
-        Update: {
-          id?: string
-          event_id?: string
-          question?: string
-          description?: string | null
-          type?: string
-          allow_text_response?: boolean
-          created_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pools_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pool_options: {
-        Row: {
-          id: string
-          pool_id: string
-          label: string
-          position: number
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          pool_id: string
-          label: string
-          position?: number
-          created_at?: string | null
-        }
-        Update: {
-          id?: string
-          pool_id?: string
-          label?: string
-          position?: number
-          created_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pool_options_pool_id_fkey"
-            columns: ["pool_id"]
-            isOneToOne: false
-            referencedRelation: "pools"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pool_responses: {
-        Row: {
-          id: string
-          pool_id: string
-          user_id: string
-          option_id: string | null
-          text_response: string | null
-          created_at: string | null
-        }
-        Insert: {
-          id?: string
-          pool_id: string
-          user_id: string
-          option_id?: string | null
-          text_response?: string | null
-          created_at?: string | null
-        }
-        Update: {
-          id?: string
-          pool_id?: string
-          user_id?: string
-          option_id?: string | null
-          text_response?: string | null
-          created_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pool_responses_pool_id_fkey"
-            columns: ["pool_id"]
-            isOneToOne: false
-            referencedRelation: "pools"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pool_responses_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       delete_self: { Args: never; Returns: undefined }
+      get_attendee_avatars_for_events: {
+        Args: { p_event_ids: string[] }
+        Returns: {
+          avatar_color: string
+          avatar_url: string
+          event_id: string
+          firstname: string
+          lastname: string
+          user_id: string
+        }[]
+      }
       get_event_attendees: {
         Args: { p_event_id: string }
         Returns: {
+          avatar_color: string
+          avatar_url: string
           birthday: string
           firstname: string
           lastname: string
+          status: string
           user_id: string
         }[]
       }
       get_event_host: {
         Args: { p_event_id: string }
         Returns: {
+          avatar_color: string
+          avatar_url: string
           firstname: string
           lastname: string
         }[]
       }
-      get_rsvp_count: { Args: { p_event_id: string }; Returns: number }
+      get_host_info_for_events: {
+        Args: { p_event_ids: string[] }
+        Returns: {
+          avatar_color: string
+          avatar_url: string
+          event_id: string
+          firstname: string
+          lastname: string
+        }[]
+      }
+      get_party_by_invite_code: {
+        Args: { p_invite_code: string }
+        Returns: {
+          background_url: string
+          description: string
+          ends_at: string
+          event_date: string
+          host_id: string
+          id: string
+          invite_code: string
+          location: string
+          max_guests: number
+          title: string
+        }[]
+      }
+      get_party_pools_by_invite_code: {
+        Args: { p_invite_code: string }
+        Returns: Json
+      }
       get_pool_responses_by_event: {
         Args: { p_event_id: string }
         Returns: {
-          id: string
-          pool_id: string
-          user_id: string
-          option_id: string | null
-          text_response: string | null
+          avatar_color: string
+          avatar_url: string
           created_at: string
-          firstname: string | null
-          lastname: string | null
+          firstname: string
+          id: string
+          lastname: string
+          option_id: string
+          pool_id: string
+          text_response: string
+          user_id: string
         }[]
       }
+      get_rsvp_count: { Args: { p_event_id: string }; Returns: number }
+      get_rsvp_counts_by_status: {
+        Args: { p_event_id: string }
+        Returns: {
+          going_count: number
+          maybe_count: number
+          not_going_count: number
+        }[]
+      }
+      is_party_member: { Args: { p_event_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
@@ -400,6 +503,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

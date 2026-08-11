@@ -16,7 +16,7 @@ import {
   deleteRsvp,
   getRsvpCountsByStatus,
 } from './services/parties.service'
-import { getPartyPools } from './services/pools.service'
+import { getPartyPoolsByInviteCode } from './services/pools.service'
 import Avatar from '@/components/shared/Avatar'
 import Spinner from '@/components/shared/Spinner'
 import WarningBanner from '@/components/shared/WarningBanner'
@@ -182,7 +182,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
         setAttendeesLoading(false)
       })
 
-      void getPartyPools(partyData.id).then((data) => {
+      void getPartyPoolsByInviteCode(inviteCode, partyData.id).then((data) => {
         if (cancelled) return
         setPools(data)
         setPoolsLoading(false)
@@ -203,7 +203,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
 
   const refreshPools = () => {
     if (!party) return
-    void getPartyPools(party.id).then(setPools)
+    void getPartyPoolsByInviteCode(inviteCode, party.id).then(setPools)
   }
 
   // Measured on open (the rows are static, so this is read lazily rather than watched)

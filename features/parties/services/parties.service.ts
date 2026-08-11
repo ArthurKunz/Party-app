@@ -146,14 +146,14 @@ export async function getPartyById(partyId: string): Promise<PartyDetail | null>
   return data
 }
 
+// Through an RPC rather than the table, because this is the one read that has to
+// work WITHOUT an account. Leaving `events` world-readable for its sake handed every
+// party — and every invite code — to anyone who asked. The function is keyed on the
+// code, which is the secret the link already rests on, so there is nothing to walk.
 export async function getPartyByInviteCode(inviteCode: string): Promise<PartyDetail | null> {
-  const { data, error } = await supabase
-    .from('events')
-    .select(PARTY_DETAIL_COLUMNS)
-    .eq('invite_code', inviteCode)
-    .maybeSingle()
+  const { data, error } = await supabase.rpc('get_party_by_invite_code', { p_invite_code: inviteCode })
   if (error || !data) return null
-  return data
+  return (data as unknown as PartyDetail[])[0] ?? null
 }
 
 export async function getPartyHost(partyId: string): Promise<PartyHost | null> {

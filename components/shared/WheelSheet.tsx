@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { Check, X } from 'lucide-react'
 
 // iOS-style wheel in a sheet: N scroll-snapping columns under one selection band.
 // Sizes are fixed because the maths below (padding, scrollTop → index) depends on
@@ -102,7 +103,25 @@ function Column({ labels, index, onChange }: WheelColumn) {
 // its entry backwards before the parent is told to unmount it.
 const CLOSE_MS = 300
 
-export default function WheelSheet({ columns, onClose }: { columns: WheelColumn[]; onClose: () => void }) {
+// Both controls belong to the PAGE, not to the sheet: the same 45px circle in the
+// same top corners as every other back button in the app. They sit ABOVE the scrim,
+// unlike SheetLayout's chevron, which deliberately hides under it — while the wheel
+// is open the top corners are its two answers, not the page's way back.
+const cornerButtonClass =
+  'fixed top-0 z-50 mt-7.5 flex h-11.25 w-11.25 items-center justify-center rounded-full bg-secondary backdrop-blur-xl transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-95'
+
+export default function WheelSheet({
+  columns,
+  onCancel,
+  onClose,
+}: {
+  columns: WheelColumn[]
+  // Puts the value back to what it was when the sheet opened. The wheel writes every
+  // turn straight through, so discarding is something only the parent can do — it is
+  // the one holding the value this sheet started from.
+  onCancel: () => void
+  onClose: () => void
+}) {
   // Flipped on the frame after mount, so the sheet has a state to animate FROM.
   const [shown, setShown] = useState(false)
   useEffect(() => {
@@ -123,6 +142,12 @@ export default function WheelSheet({ columns, onClose }: { columns: WheelColumn[
     closeTimer.current = setTimeout(onClose, CLOSE_MS)
   }
 
+  const handleCancel = () => {
+    if (closeTimer.current) return
+    onCancel()
+    handleClose()
+  }
+
   // The document must not scroll behind the sheet.
   useEffect(() => {
     const previous = document.body.style.overflow
@@ -138,6 +163,26 @@ export default function WheelSheet({ columns, onClose }: { columns: WheelColumn[
           shown ? 'opacity-100' : 'opacity-0'
         }`}
       />
+
+      {/* The way out, spelled out. Tapping the dimmed backdrop was the only exit
+          before, and an exit nobody can see is one nobody finds. */}
+      <button
+        type='button'
+        onClick={handleCancel}
+        aria-label='Abbrechen'
+        className={`left-4 ${cornerButtonClass} ${shown ? 'opacity-100' : 'opacity-0'}`}
+      >
+        <X size={24} strokeWidth={3} className='text-white' />
+      </button>
+
+      <button
+        type='button'
+        onClick={handleClose}
+        aria-label='Übernehmen'
+        className={`right-4 ${cornerButtonClass} ${shown ? 'opacity-100' : 'opacity-0'}`}
+      >
+        <Check size={24} strokeWidth={3} className='text-white' />
+      </button>
 
       {/* Grown by height rather than slid in with a transform: a transform on this
           element would put its backdrop-blur in its own compositing group, and the

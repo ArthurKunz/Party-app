@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import WheelSheet from '@/components/shared/WheelSheet'
 
 const MONTHS = [
@@ -28,8 +29,15 @@ export default function PartyDateSheet({
   const maxDay = daysInMonth(value.month, value.year)
   const day = Math.min(value.day, maxDay)
 
+  // The sheet is mounted only while it is open, so the first render IS the moment it
+  // opened — which is the date the ✕ has to give back. Restored in ONE call: the three
+  // columns each close over the same `value`, so putting them back one at a time would
+  // have every call overwrite the one before it.
+  const opened = useRef(value)
+
   return (
     <WheelSheet
+      onCancel={() => onChange(opened.current)}
       onClose={onClose}
       columns={[
         {

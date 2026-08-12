@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import WheelSheet from '@/components/shared/WheelSheet'
 
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
@@ -17,8 +18,12 @@ export default function PartyTimeSheet({
   onChange: (next: PartyTime) => void
   onClose: () => void
 }) {
+  // The time this sheet opened with — see PartyDateSheet.
+  const opened = useRef(value)
+
   return (
     <WheelSheet
+      onCancel={() => onChange(opened.current)}
       onClose={onClose}
       columns={[
         {

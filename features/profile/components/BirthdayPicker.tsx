@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import WheelSheet from '@/components/shared/WheelSheet'
 
 const MONTHS = [
@@ -32,6 +32,9 @@ export default function BirthdayPicker({
 }) {
   const maxDay = daysInMonth(month, year)
 
+  // The date this picker opened with — see PartyDateSheet.
+  const opened = useRef({ day, month, year })
+
   // A month that just got shorter cannot keep the 31st.
   useEffect(() => {
     if (day > maxDay) onChange({ day: maxDay, month, year })
@@ -39,6 +42,7 @@ export default function BirthdayPicker({
 
   return (
     <WheelSheet
+      onCancel={() => onChange(opened.current)}
       onClose={onClose}
       columns={[
         {

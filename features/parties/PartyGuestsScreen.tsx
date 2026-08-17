@@ -101,7 +101,7 @@ export default function PartyGuestsScreen({
               {i < 4 && (
                 <div className='flex items-center gap-3'>
                   <div className='w-12.5 shrink-0' />
-                  <div className='h-0.25 flex-1 rounded-full bg-[#161616]' />
+                  <div className='h-0.25 flex-1 rounded-full bg-divider-subtle' />
                 </div>
               )}
             </div>
@@ -160,7 +160,7 @@ export default function PartyGuestsScreen({
                 {i < attendees.length - 1 && (
                   <div className='flex items-center gap-3'>
                     <div className='w-12.5 shrink-0' />
-                    <div className='h-0.25 flex-1 rounded-full bg-[#161616]' />
+                    <div className='h-0.25 flex-1 rounded-full bg-divider-subtle' />
                   </div>
                 )}
               </div>

@@ -31,6 +31,7 @@ chats and stories.
 
 ## Coding rules
 - Always use my global.css variables. Never use things like bg-green-500 or bg-[#fff], but always use the variables. If there are no matching variables, ask me for permisson to create those.
+- Hairline dividers have their own two variables: `bg-divider` inside the glass ••• panel, `bg-divider-subtle` on the black page. Never write the hex again
 - Icons: ONLY `lucide-react`. Never hand-roll an `<svg>` for an icon — no inline paths for chevrons, arrows, plus, close, etc. If lucide has no matching icon, ask me before drawing one. (The two deliberate exceptions are a brand mark lucide dropped — the Google logo on the auth sheet — and genuine illustration, not iconography.)
 - The only other symbols allowed are Apple emojis (the native system emoji, e.g. 👤 🎂 📸 🤫 ⚖️). Emoji for flavour and list bullets, lucide for interface icons — never a drawn substitute for either.
 - update the CLAUDE.md file after each change yourself — but never add a "Current state" section, and never reintroduce one

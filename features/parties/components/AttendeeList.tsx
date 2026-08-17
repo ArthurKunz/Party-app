@@ -48,7 +48,7 @@ export default function AttendeeList({ attendees }: { attendees: Attendee[] }) {
             {i < attendees.length - 1 && (
               <div className='flex items-center gap-3'>
                 <div className='w-12.5 shrink-0' />
-                <div className='h-0.25 flex-1 bg-[#161616] rounded-full' />
+                <div className='h-0.25 flex-1 bg-divider-subtle rounded-full' />
               </div>
             )}
           </div>

@@ -329,13 +329,16 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
                   style={{ height: menuOpen ? menuHeight : MENU_CLOSED_SIZE }}
                   className={`${menuContainerClass} ${menuOpen ? 'w-56.25' : 'w-11.25'}`}
                 >
+                  {/* No blur of its own: the panel above already blurs, and a second
+                      pass re-samples that tinted backdrop into a darker circle —
+                      visible in the corner for the 150ms this button fades out. */}
                   <button
                     onClick={openMenu}
                     aria-label='Mehr Optionen'
                     aria-expanded={menuOpen}
                     aria-hidden={menuOpen}
                     tabIndex={menuOpen ? -1 : 0}
-                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 backdrop-blur-xl ${
+                    className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 ${
                       menuOpen ? 'pointer-events-none opacity-0' : 'opacity-100 delay-150'
                     }`}
                   >
@@ -373,7 +376,7 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
                           </button>
                           )
                         })}
-                        <div className='h-0.25 w-full bg-[#3D3D3D] my-2' />
+                        <div className='h-0.25 w-full bg-divider my-2' />
                       </>
                     )}
                     {/* The host's own controls. Plain rows like every other one —
@@ -398,7 +401,7 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
                           <span className='text-label-1 text-label-large'>Gäste verwalten</span>
                         </button>
 
-                        <div className='h-0.25 w-full bg-[#3D3D3D] my-2' />
+                        <div className='h-0.25 w-full bg-divider my-2' />
                       </>
                     )}
 
@@ -460,7 +463,7 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
             </div>
           )}
 
-          <div className='w-full h-0.25 bg-[#161616]'/>
+          <div className='w-full h-0.25 bg-divider-subtle'/>
 
           <div className='w-full overflow-x-auto scroll-smooth scrollbar-none [-webkit-overflow-scrolling:touch]'>
             {statsLoading ? (

@@ -14,6 +14,11 @@
 
     /*COMPONENTS*/
     --color-arrow: rgba(127, 127, 127, 0.9);
+    /* Hairline dividers. The bright one sits inside the glass ••• panel, where the
+       blurred backdrop swallows anything darker; the subtle one sits on the black
+       page, where it only has to hint at a break. */
+    --color-divider: #3D3D3D;
+    --color-divider-subtle: #161616;
 
     /* TEXT */
     --color-heading: rgba(255, 255, 255, 0.9);

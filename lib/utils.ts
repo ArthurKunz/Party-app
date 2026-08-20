@@ -34,15 +34,6 @@ export function generateInviteCode(): string {
   return Array.from({ length: 10 }, () => Math.floor(Math.random() * 16).toString(16)).join('')
 }
 
-export function calculateAge(birthday: string): number {
-  const birth = new Date(birthday)
-  const now = new Date()
-  let age = now.getFullYear() - birth.getFullYear()
-  const monthDiff = now.getMonth() - birth.getMonth()
-  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) age--
-  return age
-}
-
 // How long a party is assumed to run when the host set no end time. Six hours means
 // one that starts at 20:00 counts as over at 02:00 — not at 20:01, while the guests
 // are still looking up the address.

@@ -9,7 +9,6 @@ have to be aliased: `parties:events(...)`, never `parties(...)`.
 | id            | uuid PK     | IS `auth.users.id` — no separate auth_user_id column  |
 | firstname     | text        | nullable until onboarding fills it                    |
 | lastname      | text        | nullable until onboarding fills it                    |
-| birthday      | date        | nullable — never leaves the row, see below            |
 | avatar_url    | text        | nullable — initials avatar when empty                 |
 | avatar_color  | text        | not null, default `#A336FF`                           |
 | created_at    | timestamptz | default now()                                         |
@@ -18,9 +17,16 @@ have to be aliased: `parties:events(...)`, never `parties(...)`.
 profile, and every FK below cascades from there, which is what makes `delete_self()`
 a complete erasure.
 
-**birthday never leaves the row.** A profile reads its own date to render the age on
-the profile screen and to prefill the birthday wheel. Every path that shows *someone
-else's* age goes through an RPC that returns `age int`, computed in the database.
+**There is no date of birth and no age, anywhere.** The column was dropped on
+21.08.2026 along with the onboarding step, the profile row and the line under every
+name in the guest list. The 16+ minimum lives in the terms instead.
+
+The reasoning, so nobody reintroduces it: Art. 8 DSGVO wants parental consent under
+16, but it only applies where the legal basis is consent — running an account is
+Art. 6(1)(b), performance of a contract. What actually pulled Art. 8 in was the
+audience. A service aimed at 14-year-olds is 'directed at children' whatever the
+terms say, so the audience moved to 16+ and the column became unnecessary. Asking
+for a birthday now would only put the data back without buying anything.
 
 ## events
 | column         | type        | notes                                    |
@@ -169,6 +175,5 @@ code, so an id alone is enough for a host's name and a headcount. Event ids are 
 published anywhere, so this is small — but keying them on the invite code too would
 leave exactly one public entry point.
 
-Both attendee RPCs return `age int`. They used to return `birthday` — the full date —
-to every invited browser, where it was passed straight to `calculateAge` and the rest
-thrown away. Guest lists are full of minors; the purpose is answered by an integer.
+Both attendee RPCs return names and avatars only. They returned `birthday` until
+20.08.2026 and `age int` for one day after that; both are gone with the column.

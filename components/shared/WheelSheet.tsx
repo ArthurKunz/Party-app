@@ -5,7 +5,7 @@ import { Check, X } from 'lucide-react'
 
 // iOS-style wheel in a sheet: N scroll-snapping columns under one selection band.
 // Sizes are fixed because the maths below (padding, scrollTop → index) depends on
-// them. Used for the birthday (day/month/year) and the party's date and times.
+// them. Used for the party's date and its start and end times.
 const ITEM_HEIGHT = 36
 const VISIBLE_ITEMS = 7
 const LIST_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS

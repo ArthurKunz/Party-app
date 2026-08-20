@@ -2,7 +2,7 @@
 
 # CLAUDE.md
 
-This is a party and event discovery app for people aged 14–25.
+This is a party and event discovery app for people aged 16–25.
 Read this entire file before writing any code.
 
 ---
@@ -13,7 +13,7 @@ discover and RSVP to them. Two user roles: host and guest.
 Current phase: V1 MVP. Deadline: July 2026.
 
 ## Problem statement
-For students and young people aged 14–25, finding out what's
+For students and young people aged 16–25, finding out what's
 happening socially still depends on being in the right WhatsApp
 group or following the right person on Instagram. If you're new
 to a city or university, events are invisible to you and you're
@@ -77,10 +77,10 @@ Always git push after commiting something
 
 ## V1 features (in scope)
 - Sign up / log in with email
-- Profile: first name, last name, initials avatar and age (from a birthday)
+- Profile: first name, last name and initials avatar
 - Create event: name, description, type, date, time, optional end time, location
 - Simple RSVP: coming / maybe / not coming
-- Host guest list: attendee names, ages, total headcount
+- Host guest list: attendee names, total headcount
 - Shareable link format: /e/[invite_code] — no auth required to view basic info
 - Non-users who open a link see basic info and are prompted to sign up
 - Guest can click 'coming late' and provide the expected arriving time
@@ -113,10 +113,10 @@ Core tables: profiles, events, rsvps, pools, pool_options, pool_responses
 Key fields:
 - events.invite_code: 10 random hex chars, UNIQUE — the shareable link's only secret
 - rsvps.status: 'going' | 'maybe' | 'not_going', CHECK-constrained
-- profiles: firstname, lastname, birthday, avatar_url, avatar_color. profiles.id IS
+- profiles: firstname, lastname, avatar_url, avatar_color. profiles.id IS
   auth.users.id — there is no separate auth_user_id column
-- profiles.birthday never leaves its own row: every screen showing someone else's age
-  reads `age int` from an RPC that computes it in the database
+- the app stores NO date of birth and no age. The 16+ minimum lives in the terms, not
+  in a column and not in a sign-up question — do not reintroduce one
 - no tasks table and no party_score column yet — do not write code that assumes either
 
 ## Folder structure

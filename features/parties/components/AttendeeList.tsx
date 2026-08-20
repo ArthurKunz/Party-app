@@ -33,9 +33,6 @@ export default function AttendeeList({ attendees }: { attendees: Attendee[] }) {
                 <span className='block truncate text-label-1 font-md text-heading'>
                   {[a.firstname, a.lastname].filter(Boolean).join(' ') || 'Unbekannt'}
                 </span>
-                {a.age !== null && (
-                  <span className='block text-label-2 text-label-small'>{a.age} Jahre alt</span>
-                )}
               </div>
               {status && (
                 <span className={`flex items-center gap-1.5 rounded-full h-7.5 px-2.5 text-label-2 text-heading ${status.color}`}>

@@ -7,10 +7,11 @@ import { alertError, sanitizeNextPath } from '@/lib/utils'
 import FloatingEmojis from '@/features/parties/components/FloatingEmojis'
 import { getSession } from './services/onboarding.service'
 import PersonalDataForm from './components/PersonalDataForm'
-import BirthdateForm from './components/BirthdateForm'
 import ProfilePictureForm from './components/ProfilePictureForm'
 
-type Step = 'name' | 'birthday' | 'picture'
+// Two steps, not three. The birthday step is gone with the column behind it: the
+// app is for 16+ now, and that threshold lives in the terms rather than in a wheel.
+type Step = 'name' | 'picture'
 
 export default function OnboardingScreen() {
   const router = useRouter()
@@ -20,16 +21,10 @@ export default function OnboardingScreen() {
   const [step, setStep] = useState<Step>('name')
   const [firstname, setFirstname] = useState('')
   const [lastname, setLastname] = useState('')
-  const [birthday, setBirthday] = useState('')
 
   const handleNameDone = (fn: string, ln: string) => {
     setFirstname(fn)
     setLastname(ln)
-    setStep('birthday')
-  }
-
-  const handleBirthdateDone = (bd: string) => {
-    setBirthday(bd)
     setStep('picture')
   }
 
@@ -44,7 +39,6 @@ export default function OnboardingScreen() {
       id: session.user.id,
       firstname,
       lastname,
-      birthday,
       avatar_url: avatarUrl,
       avatar_color: avatarColor,
     })
@@ -64,16 +58,12 @@ export default function OnboardingScreen() {
           swap their contents inside a panel that is already standing. */}
       {step === 'name' && <PersonalDataForm onSuccess={handleNameDone} />}
 
-      {step === 'birthday' && (
-        <BirthdateForm onSuccess={handleBirthdateDone} onClose={() => setStep('name')} />
-      )}
-
       {step === 'picture' && (
         <ProfilePictureForm
           firstname={firstname}
           lastname={lastname}
           onSuccess={handlePictureDone}
-          onClose={() => setStep('birthday')}
+          onClose={() => setStep('name')}
         />
       )}
     </div>

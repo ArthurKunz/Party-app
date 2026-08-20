@@ -127,9 +127,6 @@ export default function PartyGuestsScreen({
                     <span className='block truncate text-label-1 font-md text-heading'>
                       {[a.firstname, a.lastname].filter(Boolean).join(' ') || 'Unbekannt'}
                     </span>
-                    {a.age !== null && (
-                      <span className='block text-label-2 text-label-small'>{a.age} Jahre alt</span>
-                    )}
                   </div>
 
                   {status && (

@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
-import { calculateAge } from '@/lib/utils'
 import Avatar from '@/components/shared/Avatar'
 import FloatingEmojis from '@/features/parties/components/FloatingEmojis'
 import { getMyProfile, type Profile } from './services/profile.service'
@@ -74,8 +73,8 @@ export default function ProfileScreen() {
             <span className='text-subheading-1 text-subheading animate-fade-in-up'>{email}</span>
 
             <div className='mt-12.5 flex w-full flex-col gap-3'>
-              {/* Name, Alter and Profilbild in one card. Name and Alter are edited in
-                  place: the value on the right is the input itself. */}
+              {/* Name and Profilbild in one card. Name is edited in place: the value
+                  on the right is the input itself. */}
               <div className={cardClass}>
                 <Link href='/profile/name' className={rowClass}>
                   <span className='text-xl leading-none'>👤</span>
@@ -87,20 +86,6 @@ export default function ProfileScreen() {
                 <div className='flex px-4'>
                   {/* Invisible spacer matching the emoji column, so the hairline always
                       starts under the label however the emoji is sized. */}
-                  <div className='w-6 shrink-0' />
-                  <div className='ml-3 h-[0.75px] flex-1 bg-white/10 backdrop-blur-xl' />
-                </div>
-
-                <Link href='/profile/age' className={rowClass}>
-                  <span className='text-xl leading-none'>🎂</span>
-                  <span className={`${rowLabelClass} shrink-0`}>Alter</span>
-                  <span className={`ml-auto ${rowValueClass}`}>
-                    {profile?.birthday ? calculateAge(profile.birthday) : '—'}
-                  </span>
-                  {ChevronIcon}
-                </Link>
-
-                <div className='flex px-4'>
                   <div className='w-6 shrink-0' />
                   <div className='ml-3 h-[0.75px] flex-1 bg-white/10 backdrop-blur-xl' />
                 </div>

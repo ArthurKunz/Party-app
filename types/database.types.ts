@@ -218,7 +218,6 @@ export type Database = {
         Row: {
           avatar_color: string
           avatar_url: string | null
-          birthday: string | null
           created_at: string | null
           firstname: string | null
           id: string
@@ -227,7 +226,6 @@ export type Database = {
         Insert: {
           avatar_color?: string
           avatar_url?: string | null
-          birthday?: string | null
           created_at?: string | null
           firstname?: string | null
           id: string
@@ -236,7 +234,6 @@ export type Database = {
         Update: {
           avatar_color?: string
           avatar_url?: string | null
-          birthday?: string | null
           created_at?: string | null
           firstname?: string | null
           id?: string
@@ -303,7 +300,6 @@ export type Database = {
       get_event_attendees: {
         Args: { p_event_id: string }
         Returns: {
-          age: number
           avatar_color: string
           avatar_url: string
           firstname: string
@@ -315,7 +311,6 @@ export type Database = {
       get_event_attendees_by_invite_code: {
         Args: { p_invite_code: string }
         Returns: {
-          age: number
           avatar_color: string
           avatar_url: string
           firstname: string

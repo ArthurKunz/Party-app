@@ -60,9 +60,6 @@ export type Attendee = {
   user_id: string
   firstname: string | null
   lastname: string | null
-  // Years, not a date. The RPCs compute it — a guest list has no business knowing
-  // anyone's day of birth, and no screen ever showed one.
-  age: number | null
   avatar_url: string | null
   avatar_color: string | null
   // 'host' never comes from the rsvps table — the host cannot RSVP to their own

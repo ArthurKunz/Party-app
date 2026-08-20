@@ -9,7 +9,7 @@ import { ChevronLeft } from 'lucide-react'
 //
 // Everything below is the LIGHT-SURFACE twin of the kit the dark pages use — same
 // 50px rows, same 25px card radius, same 45px icon circle, same easing — with the
-// colours swapped for the pair BirthdayPicker's wheel already established on this
+// colours swapped for the pair the wheel sheets already established on this
 // surface: `bg-button-secondary` for a container, `text-sheet-heading` for what you
 // read and `text-sheet-body` for what you have not filled in yet. These surfaces are
 // OPAQUE, so none of them carries backdrop-blur (a filter behind something you

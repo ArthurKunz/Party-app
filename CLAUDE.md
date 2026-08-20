@@ -77,9 +77,9 @@ Always git push after commiting something
 
 ## V1 features (in scope)
 - Sign up / log in with email
-- Profile: display name, initials avatar and age
+- Profile: first name, last name, initials avatar and age (from a birthday)
 - Create event: name, description, type, date, time, optional end time, location
-- Simple RSVP: coming / not coming 
+- Simple RSVP: coming / maybe / not coming
 - Host guest list: attendee names, ages, total headcount
 - Shareable link format: /e/[invite_code] — no auth required to view basic info
 - Non-users who open a link see basic info and are prompted to sign up
@@ -109,11 +109,15 @@ Always git push after commiting something
 - A way out of onboarding ("mit anderem Konto anmelden"): the flow goes forward only
 
 ## Data model (see SCHEMA.md for full detail)
-Core tables: profiles, events, rsvps, tasks (stubbed), votes (stubbed)
+Core tables: profiles, events, rsvps, pools, pool_options, pool_responses
 Key fields:
-- events.invite_code: short random string for shareable links
-- rsvps.status: 'going' | 'not_going'
-- profiles.party_score: integer, starts at 0, used in V2
+- events.invite_code: 10 random hex chars, UNIQUE — the shareable link's only secret
+- rsvps.status: 'going' | 'maybe' | 'not_going', CHECK-constrained
+- profiles: firstname, lastname, birthday, avatar_url, avatar_color. profiles.id IS
+  auth.users.id — there is no separate auth_user_id column
+- profiles.birthday never leaves its own row: every screen showing someone else's age
+  reads `age int` from an RPC that computes it in the database
+- no tasks table and no party_score column yet — do not write code that assumes either
 
 ## Folder structure
 - app/ - all routes

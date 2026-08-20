@@ -152,10 +152,10 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "pool_responses_option_id_fkey"
-            columns: ["option_id"]
+            columns: ["pool_id", "option_id"]
             isOneToOne: false
             referencedRelation: "pool_options"
-            referencedColumns: ["id"]
+            referencedColumns: ["pool_id", "id"]
           },
           {
             foreignKeyName: "pool_responses_pool_id_fkey"
@@ -303,9 +303,21 @@ export type Database = {
       get_event_attendees: {
         Args: { p_event_id: string }
         Returns: {
+          age: number
           avatar_color: string
           avatar_url: string
-          birthday: string
+          firstname: string
+          lastname: string
+          status: string
+          user_id: string
+        }[]
+      }
+      get_event_attendees_by_invite_code: {
+        Args: { p_invite_code: string }
+        Returns: {
+          age: number
+          avatar_color: string
+          avatar_url: string
           firstname: string
           lastname: string
           status: string
@@ -375,6 +387,10 @@ export type Database = {
         }[]
       }
       is_party_member: { Args: { p_event_id: string }; Returns: boolean }
+      party_has_room: {
+        Args: { p_event_id: string; p_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never

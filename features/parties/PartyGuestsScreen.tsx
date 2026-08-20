@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Minus } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
-import { alertError, calculateAge } from '@/lib/utils'
+import { alertError } from '@/lib/utils'
 import Avatar from '@/components/shared/Avatar'
 import Spinner from '@/components/shared/Spinner'
 import SettingsPage from '@/features/profile/components/SettingsPage'
@@ -127,8 +127,8 @@ export default function PartyGuestsScreen({
                     <span className='block truncate text-label-1 font-md text-heading'>
                       {[a.firstname, a.lastname].filter(Boolean).join(' ') || 'Unbekannt'}
                     </span>
-                    {a.birthday && (
-                      <span className='block text-label-2 text-label-small'>{calculateAge(a.birthday)} Jahre alt</span>
+                    {a.age !== null && (
+                      <span className='block text-label-2 text-label-small'>{a.age} Jahre alt</span>
                     )}
                   </div>
 

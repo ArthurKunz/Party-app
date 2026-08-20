@@ -22,11 +22,16 @@ export function sanitizeNextPath(next: string | null | undefined): string | null
   return next
 }
 
+// Ten hex characters, not eight. The code is the only thing standing between a link
+// and a party's address, but the reason for the two extra is collisions rather than
+// guessing: events.invite_code is UNIQUE, so a birthday-paradox clash is not a silent
+// duplicate, it is an insert that fails and a host who cannot create their party. At
+// eight that lands around 1% by the ten-thousandth party. Ten pushes it out of sight.
 export function generateInviteCode(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID().replace(/-/g, '').slice(0, 8)
+    return crypto.randomUUID().replace(/-/g, '').slice(0, 10)
   }
-  return Array.from({ length: 8 }, () => Math.floor(Math.random() * 16).toString(16)).join('')
+  return Array.from({ length: 10 }, () => Math.floor(Math.random() * 16).toString(16)).join('')
 }
 
 export function calculateAge(birthday: string): number {

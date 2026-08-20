@@ -1,6 +1,5 @@
 'use client'
 
-import { calculateAge } from '@/lib/utils'
 import Avatar from '@/components/shared/Avatar'
 import type { Attendee } from '../types/parties.types'
 
@@ -34,8 +33,8 @@ export default function AttendeeList({ attendees }: { attendees: Attendee[] }) {
                 <span className='block truncate text-label-1 font-md text-heading'>
                   {[a.firstname, a.lastname].filter(Boolean).join(' ') || 'Unbekannt'}
                 </span>
-                {a.birthday && (
-                  <span className='block text-label-2 text-label-small'>{calculateAge(a.birthday)} Jahre alt</span>
+                {a.age !== null && (
+                  <span className='block text-label-2 text-label-small'>{a.age} Jahre alt</span>
                 )}
               </div>
               {status && (

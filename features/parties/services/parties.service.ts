@@ -7,16 +7,54 @@ export async function createParty(payload: CreatePartyPayload) {
   return supabase.from('events').insert(payload).select('id, invite_code').single()
 }
 
-async function attachCountAndAttendees(party: Omit<PartyWithCount, 'attendee_count' | 'attendees'>): Promise<PartyWithCount> {
-  const [countResult, attendeesResult] = await Promise.all([
-    supabase.rpc('get_rsvp_count', { p_event_id: party.id }),
-    supabase.rpc('get_event_attendees', { p_event_id: party.id }),
+// How many faces the card stacks. The list is cut here rather than in the screen so
+// nothing downstream has to know the number.
+const ATTENDEE_PREVIEW = 10
+
+// Two requests for the whole list instead of two PER party. This used to be a loop:
+// ten parties meant twenty round trips before the screen could paint, and on a phone
+// every one of them is a real network hop that queues behind the others.
+//
+// get_rsvp_counts_for_events and get_event_attendees_for_events are line-for-line
+// derived from their single-party versions — same statuses, same host special case,
+// same ordering — so the cards show exactly what they showed before.
+async function loadCountsAndAttendees(eventIds: string[]): Promise<{
+  counts: Map<string, number>
+  attendees: Map<string, Attendee[]>
+}> {
+  const counts = new Map<string, number>()
+  const attendees = new Map<string, Attendee[]>()
+  if (eventIds.length === 0) return { counts, attendees }
+
+  const [countResult, attendeeResult] = await Promise.all([
+    supabase.rpc('get_rsvp_counts_for_events', { p_event_ids: eventIds }),
+    supabase.rpc('get_event_attendees_for_events', { p_event_ids: eventIds }),
   ])
-  return {
-    ...party,
-    attendee_count: countResult.data ?? 0,
-    attendees: ((attendeesResult.data as Attendee[] | null) ?? []).slice(0, 10),
+
+  // A party nobody has answered yet is absent from the counts altogether, which is why
+  // the readers below fall back to 0 instead of trusting the map to hold every id.
+  for (const row of countResult.data ?? []) counts.set(row.event_id, row.attendee_count)
+
+  // The RPC orders within each party the way the old one did — host, going, maybe,
+  // not_going — so taking the first ten as they arrive is the same slice as before.
+  for (const row of attendeeResult.data ?? []) {
+    const attendee: Attendee = {
+      user_id: row.user_id,
+      firstname: row.firstname,
+      lastname: row.lastname,
+      avatar_url: row.avatar_url,
+      avatar_color: row.avatar_color,
+      status: row.status as Attendee['status'],
+    }
+    const list = attendees.get(row.event_id)
+    if (!list) {
+      attendees.set(row.event_id, [attendee])
+    } else if (list.length < ATTENDEE_PREVIEW) {
+      list.push(attendee)
+    }
   }
+
+  return { counts, attendees }
 }
 
 const AVATAR_COLORS = ['#FF0090', '#A336FF', '#161BFA', '#5684FF', '#AE4FFF', '#D47AFF', '#E224A1']
@@ -60,25 +98,26 @@ export async function getHostedParties(userId: string): Promise<PartyWithCount[]
     .order('event_date', { ascending: true })
   if (error || !data) return []
 
-  // A finished party drops out HERE rather than in the screen, so the two RPCs below
-  // never fire for a party nobody is going to see. The row itself stays in the
-  // database: the invite link keeps working and the host keeps their guest list.
+  // A finished party drops out HERE rather than in the screen, so the RPCs below never
+  // ask about a party nobody is going to see. The row itself stays in the database:
+  // the invite link keeps working and the host keeps their guest list.
   const upcoming = (data as unknown as HostedRow[]).filter((e) => !isPartyOver(e.event_date, e.ends_at))
+  if (upcoming.length === 0) return []
 
-  // get_event_attendees / get_rsvp_count already include the host themselves.
-  return Promise.all(
-    upcoming.map((e) =>
-      attachCountAndAttendees({
-        id: e.id,
-        title: e.title,
-        event_date: e.event_date,
-        location: e.location,
-        invite_code: e.invite_code,
-        background_url: e.background_url,
-        max_guests: e.max_guests,
-      })
-    )
-  )
+  // Two requests for the whole tab. The counts already include the host themselves.
+  const { counts, attendees } = await loadCountsAndAttendees(upcoming.map((e) => e.id))
+
+  return upcoming.map((e) => ({
+    id: e.id,
+    title: e.title,
+    event_date: e.event_date,
+    location: e.location,
+    invite_code: e.invite_code,
+    background_url: e.background_url,
+    max_guests: e.max_guests,
+    attendee_count: counts.get(e.id) ?? 0,
+    attendees: attendees.get(e.id) ?? [],
+  }))
 }
 
 export async function getAttendedParties(userId: string): Promise<PartyWithCount[]> {
@@ -106,35 +145,46 @@ export async function getAttendedParties(userId: string): Promise<PartyWithCount
 
   if (rows.length === 0) return []
 
-  return Promise.all(
-    rows.map(async ({ status, party }) => {
-      // get_event_host is SECURITY DEFINER so it bypasses profiles RLS
-      const [hostResult, countResult, attendeesResult] = await Promise.all([
-        supabase.rpc('get_event_host', { p_event_id: party.id }),
-        supabase.rpc('get_rsvp_count', { p_event_id: party.id }),
-        supabase.rpc('get_event_attendees', { p_event_id: party.id }),
-      ])
-      const host = (hostResult.data as PartyHost[] | null)?.[0] ?? null
-      // get_event_attendees / get_rsvp_count already include the host themselves.
-      const attendees = (attendeesResult.data as Attendee[] | null) ?? []
-      return {
-        id: party.id,
-        title: party.title,
-        event_date: party.event_date,
-        location: party.location,
-        invite_code: party.invite_code,
-        background_url: party.background_url,
-        max_guests: party.max_guests,
-        attendee_count: countResult.data ?? 0,
-        attendees: attendees.slice(0, 10),
-        rsvp_status: status,
-        host_firstname: host?.firstname ?? null,
-        host_lastname: host?.lastname ?? null,
-        host_avatar_color: host?.avatar_color ?? hostColor(party.host_id),
-        host_avatar_url: host?.avatar_url ?? null,
-      }
+  const eventIds = rows.map(({ party }) => party.id)
+
+  // Three requests for the whole tab, whatever its length. get_host_info_for_events is
+  // get_event_host for many parties at once; it additionally requires membership, which
+  // every party here satisfies by construction — they all come from this user's own
+  // RSVPs. All three are SECURITY DEFINER, so they see past profiles RLS.
+  const [{ counts, attendees }, hostResult] = await Promise.all([
+    loadCountsAndAttendees(eventIds),
+    supabase.rpc('get_host_info_for_events', { p_event_ids: eventIds }),
+  ])
+
+  const hosts = new Map<string, PartyHost>()
+  for (const row of hostResult.data ?? []) {
+    hosts.set(row.event_id, {
+      firstname: row.firstname,
+      lastname: row.lastname,
+      avatar_url: row.avatar_url,
+      avatar_color: row.avatar_color,
     })
-  )
+  }
+
+  return rows.map(({ status, party }) => {
+    const host = hosts.get(party.id) ?? null
+    return {
+      id: party.id,
+      title: party.title,
+      event_date: party.event_date,
+      location: party.location,
+      invite_code: party.invite_code,
+      background_url: party.background_url,
+      max_guests: party.max_guests,
+      attendee_count: counts.get(party.id) ?? 0,
+      attendees: attendees.get(party.id) ?? [],
+      rsvp_status: status,
+      host_firstname: host?.firstname ?? null,
+      host_lastname: host?.lastname ?? null,
+      host_avatar_color: host?.avatar_color ?? hostColor(party.host_id),
+      host_avatar_url: host?.avatar_url ?? null,
+    }
+  })
 }
 
 const PARTY_DETAIL_COLUMNS = 'id, host_id, title, description, event_date, ends_at, location, invite_code, background_url, max_guests'

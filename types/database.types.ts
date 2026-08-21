@@ -319,6 +319,18 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_event_attendees_for_events: {
+        Args: { p_event_ids: string[] }
+        Returns: {
+          avatar_color: string
+          avatar_url: string
+          event_id: string
+          firstname: string
+          lastname: string
+          status: string
+          user_id: string
+        }[]
+      }
       get_event_host: {
         Args: { p_event_id: string }
         Returns: {
@@ -379,6 +391,13 @@ export type Database = {
           going_count: number
           maybe_count: number
           not_going_count: number
+        }[]
+      }
+      get_rsvp_counts_for_events: {
+        Args: { p_event_ids: string[] }
+        Returns: {
+          attendee_count: number
+          event_id: string
         }[]
       }
       is_party_member: { Args: { p_event_id: string }; Returns: boolean }

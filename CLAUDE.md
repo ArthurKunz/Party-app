@@ -56,6 +56,13 @@ chats and stories.
   "only one of these may exist") needs a BEFORE trigger that locks first, not a cleverer
   policy. `rsvps_enforce_capacity` is the worked example
 - An RLS SELECT policy has to be satisfiable from the row's own columns. `.insert(...).select(...)` becomes `INSERT ... RETURNING`, which Postgres checks against the SELECT policy while the new row is still invisible to any function that looks it up again
+- Never fetch a list by looping one request per row. Every screen that shows many
+  parties reads them through the `_for_events(uuid[])` RPCs, which take an array of ids
+  and answer in one round trip. A per-party loop turns ten parties into twenty network
+  hops, and on a phone that is the whole loading experience
+- A party that is over is still readable — the row stays, the invite link keeps working
+  — but it must never look upcoming. `isPartyOver` decides; InviteScreen and
+  PartyDetailScreen both hide the RSVP controls and the address once it is true
 - PostgREST embeds resolve by the real table name, not by the app's wording: the table is `events`, so write `parties:events(...)`, never `parties(...)`
 - Never expose the Supabase service role key on the client
 - Generate TypeScript types regularly: supabase gen types typescript

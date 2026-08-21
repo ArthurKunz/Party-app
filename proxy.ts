@@ -6,10 +6,17 @@ import { sanitizeNextPath } from '@/lib/utils'
 // Note the docs call this an OPTIMISTIC check — it keeps signed-out visitors out of the
 // app, but every screen still guards itself and RLS is what actually protects the data.
 
-// Everything the app has is behind an account, with four exceptions: the auth screens
-// themselves, the OAuth/recovery callback, and the public invite link — an anonymous
-// visitor is meant to see the party there and be offered the sign-up sheet.
-const PUBLIC_PATHS = [/^\/login(\/|$)/, /^\/forgot-password(\/|$)/, /^\/callback(\/|$)/, /^\/e\//]
+// The two legal texts, which are public for a reason rather than by oversight: an
+// Impressum has to be reachable without signing in, and nobody can be asked to agree
+// to a Datenschutzerklärung they must first create an account to read. They sit at
+// the app root instead of under /profile so this list can name them.
+const LEGAL = [/^\/impressum(\/|$)/, /^\/datenschutz(\/|$)/]
+
+// Everything the app has is behind an account, with these exceptions: the auth screens
+// themselves, the OAuth/recovery callback, the public invite link — an anonymous
+// visitor is meant to see the party there and be offered the sign-up sheet — and the
+// two legal texts above.
+const PUBLIC_PATHS = [/^\/login(\/|$)/, /^\/forgot-password(\/|$)/, /^\/callback(\/|$)/, /^\/e\//, ...LEGAL]
 
 const LOGIN = /^\/login(\/|$)/
 const ONBOARDING = /^\/onboarding(\/|$)/
@@ -19,7 +26,11 @@ const ONBOARDING = /^\/onboarding(\/|$)/
 // mid-flow and routes itself, and /forgot-password is where a recovery link lands —
 // verifying that token creates a session, and bouncing it away would make the
 // password reset unreachable.
-const GATE_EXEMPT = [/^\/callback(\/|$)/, /^\/forgot-password(\/|$)/]
+//
+// The legal texts join them for the same reason they are public at all: someone who
+// is halfway through onboarding is exactly the person who wants to read the terms
+// before finishing, and the profile gate would otherwise bounce them back.
+const GATE_EXEMPT = [/^\/callback(\/|$)/, /^\/forgot-password(\/|$)/, ...LEGAL]
 
 export async function proxy(request: NextRequest) {
   // The response is rebuilt whenever Supabase rotates the auth cookies, so a refreshed

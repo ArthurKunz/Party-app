@@ -21,14 +21,16 @@ export default function LegalScreen() {
   return (
     <SettingsPage title='Rechtliches'>
       <div className={cardClass}>
-        <Link href='/profile/legal/impressum' className={rowClass}>
+        {/* Both texts live at the app root, not under /profile: they have to render
+            without a session, and proxy.ts only lets public paths through. */}
+        <Link href='/impressum' className={rowClass}>
           <span className={rowLabelClass}>Impressum</span>
           <span className='ml-auto flex items-center'>{ChevronIcon}</span>
         </Link>
 
         <RowDivider />
 
-        <Link href='/profile/legal/datenschutz' className={rowClass}>
+        <Link href='/datenschutz' className={rowClass}>
           <span className={rowLabelClass}>Datenschutz</span>
           <span className='ml-auto flex items-center'>{ChevronIcon}</span>
         </Link>

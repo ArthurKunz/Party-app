@@ -122,6 +122,10 @@ Key fields:
 ## Folder structure
 - app/ - all routes
 - app/e/[invite_code]/ — event page via shareable link
+- app/impressum/, app/datenschutz/ — the two legal texts. They sit at the app ROOT and
+  not under /profile on purpose: both have to render without a session, so they are
+  listed in `PUBLIC_PATHS` and in `GATE_EXEMPT` in proxy.ts. Do not move them back
+  behind the auth gate
 - components/ — shared UI components
 - lib/ — Supabase client setup and utility functions
 - types/ — generated Supabase types and custom types

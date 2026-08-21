@@ -145,6 +145,46 @@ Another person's name or age is never read from this table, only from an RPC.
 
 ---
 
+## CHECK-Constraints und Indizes
+
+Die Regel aus CLAUDE.md — RLS entscheidet WER schreibt, nie WAS drinsteht — ist seit
+dem 21.08.2026 auf allen Spalten umgesetzt, nicht mehr nur auf `rsvps.status` und
+`pools.type`. Migration `20260820230226_bound_what_the_columns_may_hold`.
+
+| Tabelle | Constraint | Regel |
+|---|---|---|
+| profiles | `profiles_avatar_color_check` | `^#[0-9A-Fa-f]{6}$` |
+| profiles | `profiles_avatar_url_check` | NULL oder eine URL in den eigenen `avatars`-Bucket |
+| profiles | `profiles_name_length_check` | firstname/lastname ≤ 200 |
+| events | `events_text_length_check` | title ≤ 200, location ≤ 500, description ≤ 5000 |
+| events | `events_max_guests_check` | NULL oder 1 … 100000 |
+| events | `events_invite_code_check` | `^[0-9a-f]{8,32}$` |
+| pools | `pools_text_length_check` | question ≤ 600, description ≤ 3000 |
+| pool_options | `pool_options_label_length_check` | label ≤ 300 |
+| pool_responses | `pool_responses_text_length_check` | text_response ≤ 5000 |
+
+Jede Längengrenze liegt rund zehnmal über dem, was das Formular zulässt (`TITLE_MAX`
+ist 20, die Spalte erlaubt 200). Absicht: die Constraint soll ein Megabyte Text
+abwehren, nicht das Formular ein zweites Mal durchsetzen — eine Grenze enger als die
+UI würde aus einer künftigen Textänderung einen fehlgeschlagenen Speichervorgang
+machen.
+
+`events_invite_code_check` erlaubt 8 Zeichen, obwohl `generateInviteCode` 10 erzeugt:
+eine Party aus der Zeit vor der Verlängerung hat noch einen 8-stelligen Code, und eine
+Constraint, die vorhandene Zeilen ablehnt, lässt sich gar nicht erst anlegen.
+
+`profiles_avatar_url_check` ist die einzige davon, die nicht nur Unsinn abwehrt: die
+Spalte landet in einem `<img src>`, das jeder andere Gast lädt. Ohne die Regel könnte
+jemand seinen Avatar auf einen eigenen Server zeigen lassen und die IP-Adresse aller
+mitlesen, die ihn in einer Gästeliste sehen.
+
+Dazu sechs Indizes auf den Fremdschlüsseln, auf denen die Partyliste und die
+Umfrage-RPCs joinen — Migration `20260820230141_index_the_foreign_keys_the_party_list_joins_on`.
+Postgres legt für PRIMARY KEY und UNIQUE selbst einen an, für die verweisende Seite
+eines FOREIGN KEY nie.
+
+---
+
 ## Functions
 
 All `SECURITY DEFINER` with `search_path` pinned. `SECURITY DEFINER` bypasses RLS, so

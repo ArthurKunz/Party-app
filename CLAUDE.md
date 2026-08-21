@@ -46,6 +46,10 @@ chats and stories.
 - Use createBrowserClient in client components
 - Write RLS policies for every table — never skip this
 - A column with a fixed set of values needs a CHECK constraint. RLS decides WHO may write a row, never WHAT is in it, and the anon key sits in the browser bundle — so any value the UI does not offer can still be written by hand
+- Every text column is length-capped and every structured one format-checked in the
+  database as of 21.08.2026 — see the CHECK table in SCHEMA.md. When you add a column,
+  add its constraint in the same migration. Keep the bound roughly ten times the UI's
+  own limit: it exists to stop a megabyte of text, not to enforce the form twice
 - An RLS SELECT policy has to be satisfiable from the row's own columns. `.insert(...).select(...)` becomes `INSERT ... RETURNING`, which Postgres checks against the SELECT policy while the new row is still invisible to any function that looks it up again
 - PostgREST embeds resolve by the real table name, not by the app's wording: the table is `events`, so write `parties:events(...)`, never `parties(...)`
 - Never expose the Supabase service role key on the client

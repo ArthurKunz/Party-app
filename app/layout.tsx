@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { siteUrl } from '@/lib/site';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
@@ -13,8 +14,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Ohne metadataBase kann Next relative Bildpfade in Open-Graph-Angaben nicht zu
+  // absoluten Adressen auflösen und warnt bei jedem Build. Der Wert kommt aus der
+  // Umgebung, damit hier keine Domain fest verdrahtet ist — siehe lib/site.ts.
+  metadataBase: new URL(siteUrl()),
   title: 'Student Connect',
   description: 'Entdecke und erstelle Partys für Studierende',
+  // Der Vorgabetext für alles, was keine eigene Vorschau mitbringt. Die Einladungs-
+  // seite überschreibt ihn mit dem Namen der Party.
+  openGraph: {
+    title: 'Student Connect',
+    description: 'Entdecke und erstelle Partys für Studierende',
+    type: 'website',
+    locale: 'de_DE',
+    siteName: 'Student Connect',
+  },
 };
 
 export const viewport: Viewport = {

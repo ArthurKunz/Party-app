@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { siteUrl } from '@/lib/site'
 
 // An invite code is not guessable, but it is also not a password: the moment somebody
 // pastes their link into a public post, a crawler may follow it and put the party —
@@ -9,8 +10,8 @@ import type { MetadataRoute } from 'next'
 // answers a crawler with a redirect to /login: saying so costs one line and means the
 // rule survives a change to the proxy.
 //
-// No `sitemap` entry — that needs an absolute URL, and the production domain does not
-// exist yet. Add it when it does.
+// Die Sitemap-Zeile braucht eine absolute URL. Die kommt jetzt aus lib/site.ts, also
+// aus der Umgebung statt aus einer fest verdrahteten Domain.
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
@@ -18,5 +19,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/e/', '/profile/', '/parties/', '/create-party', '/onboarding', '/callback'],
     },
+    sitemap: `${siteUrl()}/sitemap.xml`,
   }
 }

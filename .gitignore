@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...ausser der Kopiervorlage: die enthaelt keine Werte, sondern erklaert, welche
+# Variablen gesetzt sein muessen und warum.
+!.env.example
 
 # vercel
 .vercel

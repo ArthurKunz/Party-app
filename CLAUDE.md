@@ -138,10 +138,11 @@ Key fields:
 ## Folder structure
 - app/ - all routes
 - app/e/[invite_code]/ — event page via shareable link
-- app/impressum/, app/datenschutz/ — the two legal texts. They sit at the app ROOT and
-  not under /profile on purpose: both have to render without a session, so they are
-  listed in `PUBLIC_PATHS` and in `GATE_EXEMPT` in proxy.ts. Do not move them back
-  behind the auth gate
+- app/impressum/, app/datenschutz/, app/nutzungsbedingungen/ — the three legal texts.
+  They sit at the app ROOT and not under /profile on purpose: all three have to render
+  without a session, so they are listed in `PUBLIC_PATHS` and in `GATE_EXEMPT` in
+  proxy.ts, and the sign-up sheet links straight to them. Do not move them behind the
+  auth gate. Everything a reader has to fill in themselves is marked with «...»
 - components/ — shared UI components
 - lib/ — Supabase client setup and utility functions
 - types/ — generated Supabase types and custom types
@@ -150,9 +151,15 @@ Key fields:
 ## Environment variables
 - NEXT_PUBLIC_SUPABASE_URL
 - NEXT_PUBLIC_SUPABASE_ANON_KEY
-- SUPABASE_SERVICE_ROLE_KEY (server only — never import on client)
-- API keys
-Never hardcode these. Always read from process.env.
+- NEXT_PUBLIC_GOOGLE_MAPS_KEY
+- NEXT_PUBLIC_SITE_URL — the own domain, once there is one. Everything that needs an
+  absolute address (Open Graph previews, robots.txt, sitemap.xml) reads it through
+  `siteUrl()` in lib/site.ts, which falls back to Vercel's own production URL and then
+  to localhost. Never write a domain into a file
+- SUPABASE_SERVICE_ROLE_KEY (server only — never import on client). Currently used
+  nowhere in the source, so it does not belong in the deployment either
+Never hardcode these. Always read from process.env. `.env.example` is the copy
+template and the only .env file that is versioned.
 
 ---
 

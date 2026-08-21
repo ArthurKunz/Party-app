@@ -4,12 +4,10 @@ import { useState, useEffect, useRef, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Copy, ImagePlus, Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
-import Spinner from '@/components/shared/Spinner'
 import { alertError, generateInviteCode, getOrigin } from '@/lib/utils'
 import AddressSearchField from './components/AddressSearchField'
 import PartyDateSheet from './components/PartyDateSheet'
 import PartyTimeSheet from './components/PartyTimeSheet'
-import StepProgress from './components/StepProgress'
 import CreateStepLayout from './components/CreateStepLayout'
 import FloatingEmojis from './components/FloatingEmojis'
 import { cardClass, primaryButtonClass, RowDivider, rowClass, rowInputClass, rowLabelClass, rowValueClass } from '@/components/shared/Card'
@@ -21,9 +19,6 @@ import WarningBanner from '@/components/shared/WarningBanner'
 import { createParty } from './services/parties.service'
 import { createPool, addPoolOption } from './services/pools.service'
 import type { CreatePartyFormValues, PoolDraft } from './types/parties.types'
-
-const inputClass =
-  'w-full px-4 h-14 bg-secondary backdrop-blur-xl border border-border-input rounded-xl text-heading text-sm focus:outline-none placeholder:text-label-small'
 
 const BG_MAX_BYTES = 10 * 1024 * 1024
 

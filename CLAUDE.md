@@ -50,6 +50,11 @@ chats and stories.
   database as of 21.08.2026 — see the CHECK table in SCHEMA.md. When you add a column,
   add its constraint in the same migration. Keep the bound roughly ten times the UI's
   own limit: it exists to stop a megabyte of text, not to enforce the form twice
+- RLS cannot serialise. A policy is an expression Postgres evaluates — it cannot take a
+  lock and knows nothing about the other transactions doing the same thing at the same
+  moment. Anything that has to hold across concurrent writers (a capacity, a quota, a
+  "only one of these may exist") needs a BEFORE trigger that locks first, not a cleverer
+  policy. `rsvps_enforce_capacity` is the worked example
 - An RLS SELECT policy has to be satisfiable from the row's own columns. `.insert(...).select(...)` becomes `INSERT ... RETURNING`, which Postgres checks against the SELECT policy while the new row is still invisible to any function that looks it up again
 - PostgREST embeds resolve by the real table name, not by the app's wording: the table is `events`, so write `parties:events(...)`, never `parties(...)`
 - Never expose the Supabase service role key on the client

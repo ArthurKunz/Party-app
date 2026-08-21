@@ -55,6 +55,19 @@ for a birthday now would only put the data back without buying anything.
 
 UNIQUE (event_id, user_id) — one answer per person per party.
 
+Trigger `rsvps_enforce_capacity` — BEFORE INSERT OR UPDATE. `party_has_room` in the
+INSERT/UPDATE policy counts the seats, but a policy is only an expression: it cannot
+lock, and it knows nothing about the other transactions doing the same thing at the
+same instant. Two guests answering together both read the same count, both pass, and
+the party ends up one over. The trigger takes `pg_advisory_xact_lock` on the party id
+before counting, so answers to the SAME party queue behind each other; answers to
+different parties never wait. It only engages for `status = 'going'` on a party that
+actually has a `max_guests`, so 'maybe', 'not_going' and uncapped parties never touch
+a lock. Rejects with `Diese Party ist voll.` rather than the RLS message.
+
+The policy stays as it is. The trigger does not replace it — the policy turns away the
+ordinary case, the trigger the dead heat.
+
 Three answers, not two. `host` is a fourth word the attendee RPCs invent to mark the
 host in a guest list; it is never stored, because the insert policy forbids the host
 from RSVPing to their own party.
@@ -208,6 +221,7 @@ the policy on `events` needs to read `rsvps`, whose policy needs to read `events
 | `get_rsvp_count(uuid)` | none | **anon** |
 | `get_rsvp_counts_by_status(uuid)` | none | **anon** |
 | `delete_self()` | auth.uid() | authenticated |
+| `rsvps_enforce_capacity()` | trigger only | **nobody** — revoked from anon and authenticated |
 
 The three anon-reachable lookups are what make `/e/[invite_code]` work without an
 account. `get_event_host` and the two counters take a raw event id rather than the

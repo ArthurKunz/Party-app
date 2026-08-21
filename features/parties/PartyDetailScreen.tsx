@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, ChevronLeft, Copy, MoreHorizontal, SquarePen, Trash2, UsersRound } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
-import { alertError, getOrigin } from '@/lib/utils'
+import { alertError, getOrigin, isPartyOver } from '@/lib/utils'
 import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
 import {
   getPartyById,
@@ -25,6 +25,7 @@ import PartyDescription from './components/PartyDescription'
 import PoolsSection from './components/PoolsSection'
 import AttendeeList from './components/AttendeeList'
 import PartyMap from './components/PartyMap'
+import WarningBanner from '@/components/shared/WarningBanner'
 import type { PartyDetail, Attendee, PartyHost, RsvpStatus, Pool } from './types/parties.types'
 
 const BackIcon = <ChevronLeft size={24} strokeWidth={3} className='text-white' />
@@ -152,6 +153,11 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
   const full = !countsLoading && isFull(counts.going, party?.max_guests ?? null)
   const showCapacityNotice = isHost || rsvpStatus === 'maybe' || rsvpStatus === 'not_going'
   const seatBlocked = full && rsvpStatus !== 'going'
+
+  // A finished party drops out of both lists, so this screen is only reachable for one
+  // by its URL — a bookmark, or the back button. It still has to say so rather than
+  // reading as an upcoming party. Same rule as the invite screen.
+  const partyOver = !!party && isPartyOver(party.event_date, party.ends_at)
 
   const refreshPools = () => {
     void getPartyPools(partyId).then(setPools)
@@ -353,7 +359,8 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
                       menuOpen ? 'opacity-100 delay-150' : 'pointer-events-none opacity-0'
                     }`}
                   >
-                    {!isHost && (
+                    {/* Nobody answers a party that has already happened. */}
+                    {!isHost && !partyOver && (
                       <>
                         {RSVP_MENU.map(({ status, label, icon }) => {
                           // Only 'zugesagt' costs a place.
@@ -427,6 +434,8 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
       {/* ── CONTENT ── */}
       <div className='relative px-4 pb-7.5 bg-main flex flex-col gap-12.5'>
 
+        {partyOver && <WarningBanner message='Diese Party ist vorbei.' />}
+
         <div className='w-full flex flex-col gap-5'>
           {partyLoading ? (
             <div className='w-full flex flex-col gap-3'>
@@ -495,6 +504,9 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
         </div>
 
         <div className='relative flex flex-col gap-5'>
+          {/* Somebody's home address, so it stops being shown once the party is over.
+              The host keeps seeing their own. */}
+          {(!partyOver || isHost) && (
           <Section title='Location' open={openSections.location} onToggle={() => toggleSection('location')}>
             {partyLoading || !party ? (
               <div className='w-full pb-7.5'>
@@ -514,6 +526,7 @@ export default function PartyDetailScreen({ partyId }: { partyId: string }) {
               </div>
             )}
           </Section>
+          )}
 
           {poolsLoading ? (
             <Section title='Umfragen' open={openSections.polls} onToggle={() => toggleSection('polls')}>

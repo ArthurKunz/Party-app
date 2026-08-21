@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, ChevronLeft, Copy, MoreHorizontal, SquarePen, Trash2, UsersRound, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
-import { alertError, getOrigin } from '@/lib/utils'
+import { alertError, getOrigin, isPartyOver } from '@/lib/utils'
 import { getMyProfile, type Profile } from '@/features/profile/services/profile.service'
 import {
   getPartyByInviteCode,
@@ -104,9 +104,15 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
   const inviteNext = `/e/${inviteCode}`
   const loginHref = `/login?next=${encodeURIComponent(inviteNext)}`
 
+  // An invite link outlives the party it points at — it sits in a WhatsApp thread for
+  // ever. Without this the page went on looking like an upcoming party months later,
+  // handing out the address and still taking answers.
+  const partyOver = !!party && isPartyOver(party.event_date, party.ends_at)
+
   // A signed-in guest who has not answered yet must answer first: the header
   // controls are hidden and the three RSVP buttons take over the bottom.
-  const showRsvpGate = !partyLoading && !!userId && !isHost && rsvpStatus === null
+  // Not once the party is over: there is nothing left to answer.
+  const showRsvpGate = !partyLoading && !!userId && !isHost && rsvpStatus === null && !partyOver
 
   // While the party is loading we do not yet know whether this is the host, a
   // guest or someone without an account, so the header stays completely empty.
@@ -410,8 +416,9 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
                       menuOpen ? 'opacity-100 delay-150' : 'pointer-events-none opacity-0'
                     }`}
                   >
-                    {/* The host cannot RSVP to their own party — they only get the delete row. */}
-                    {!isHost &&
+                    {/* The host cannot RSVP to their own party — they only get the delete row.
+                        Nobody can answer a party that has already happened. */}
+                    {!isHost && !partyOver &&
                       RSVP_MENU.map(({ status, label, icon }) => {
                         // Only 'zugesagt' costs a place, so it is the only row a full
                         // party takes away. Saying maybe or no stays open either way.
@@ -488,6 +495,8 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
       {/* ── CONTENT ── */}
       <div className={`relative px-4 bg-main flex flex-col gap-12.5 ${showRsvpGate ? 'pb-safe-rsvp-content' : 'pb-7.5'}`}>
 
+        {partyOver && <WarningBanner message='Diese Party ist vorbei.' />}
+
         <div className='w-full flex flex-col gap-5'>
           {partyLoading ? (
             <div className='w-full flex flex-col gap-3'>
@@ -556,6 +565,9 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
         </div>
 
         <div className='relative flex flex-col gap-5'>
+          {/* Somebody's home address, so it stops being handed out once the party is
+              over. The host keeps seeing their own. */}
+          {(!partyOver || isHost) && (
           <Section title='Location' open={openSections.location} onToggle={() => toggleSection('location')}>
             {partyLoading || !party ? (
               <div className='w-full pb-7.5'>
@@ -575,6 +587,7 @@ export default function InviteScreen({ inviteCode }: { inviteCode: string }) {
               </div>
             )}
           </Section>
+          )}
 
           {/* Voting needs an account, so anonymous visitors do not get this section at all. */}
           {poolsLoading && userId ? (

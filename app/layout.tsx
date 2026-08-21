@@ -49,7 +49,10 @@ export default function RootLayout({
     // Google Translate and similar tools rewrite attributes on these two elements
     // before React hydrates, which React reports as a hydration mismatch.
     <html lang='de' suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans`} suppressHydrationWarning>
+      {/* bg-main auf dem body, nicht nur auf den Screens: sonst ist die Flaeche zwischen
+          erstem Byte und erstem Paint die Standardfarbe des Browsers — also Weiss, bei
+          einer durchgehend schwarzen App ein sichtbares Aufblitzen. */}
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans bg-main`} suppressHydrationWarning>
         {children}
       </body>
     </html>

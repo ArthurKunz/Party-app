@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { sanitizeNextPath } from '@/lib/utils'
 import FloatingEmojis from '@/features/parties/components/FloatingEmojis'
 import AuthSheet from './components/AuthSheet'
@@ -10,13 +10,28 @@ import SignUpForm from './components/SignUpForm'
 import VerifyOtpForm from './components/VerifyOtpForm'
 import ChangePasswordForm from '@/features/settings/components/ChangePasswordForm'
 
-export default function AuthPage() {
+// `step` and `next` arrive as props rather than through useSearchParams, and that is
+// the whole point: useSearchParams cannot be answered while a page is being
+// prerendered, so React suspends and the boundary in page.tsx rendered its fallback —
+// which was nothing. The server therefore shipped an empty body and the browser showed
+// blank until the JavaScript had loaded, on the app's own front door.
+//
+// The page reads the query on the server instead and hands both values down. Nothing
+// here needs them any earlier than that, so the screen renders on the server like
+// every other one.
+export default function AuthPage({
+  stepParam,
+  nextParam,
+}: {
+  stepParam: string | null
+  nextParam: string | null
+}) {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const stepParam = searchParams.get('step')
+  // Sanitised here rather than in the page: this component should not have to trust
+  // where its props came from.
   // Set when the flow was entered from somewhere specific (an invite link), so
   // every exit below returns there instead of dumping the user on the parties list.
-  const next = sanitizeNextPath(searchParams.get('next'))
+  const next = sanitizeNextPath(nextParam)
   const onboardingHref = next ? `/onboarding?next=${encodeURIComponent(next)}` : '/onboarding'
 
   // Arriving with no ?step= means the user just landed on the site: the overview

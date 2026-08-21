@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { alertError, sanitizeNextPath } from '@/lib/utils'
 import FloatingEmojis from '@/features/parties/components/FloatingEmojis'
@@ -13,11 +13,14 @@ import ProfilePictureForm from './components/ProfilePictureForm'
 // app is for 16+ now, and that threshold lives in the terms rather than in a wheel.
 type Step = 'name' | 'picture'
 
-export default function OnboardingScreen() {
+// `next` comes in as a prop for the same reason it does on the auth screen: reading it
+// through useSearchParams suspends during prerendering and left the server with an
+// empty body to send.
+export default function OnboardingScreen({ nextParam }: { nextParam: string | null }) {
   const router = useRouter()
   // Carried over from the auth flow, so a user who started on an invite link
   // lands back on that party once their profile exists.
-  const next = sanitizeNextPath(useSearchParams().get('next'))
+  const next = sanitizeNextPath(nextParam)
   const [step, setStep] = useState<Step>('name')
   const [firstname, setFirstname] = useState('')
   const [lastname, setLastname] = useState('')

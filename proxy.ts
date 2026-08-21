@@ -6,16 +6,16 @@ import { sanitizeNextPath } from '@/lib/utils'
 // Note the docs call this an OPTIMISTIC check — it keeps signed-out visitors out of the
 // app, but every screen still guards itself and RLS is what actually protects the data.
 
-// The two legal texts, which are public for a reason rather than by oversight: an
-// Impressum has to be reachable without signing in, and nobody can be asked to agree
-// to a Datenschutzerklärung they must first create an account to read. They sit at
-// the app root instead of under /profile so this list can name them.
-const LEGAL = [/^\/impressum(\/|$)/, /^\/datenschutz(\/|$)/]
+// The three legal texts, public for a reason rather than by oversight: an Impressum
+// has to be reachable without signing in, and nobody can be asked to agree to terms
+// they must first create an account to read — the sign-up sheet links straight to
+// them. They sit at the app root instead of under /profile so this list can name them.
+const LEGAL = [/^\/impressum(\/|$)/, /^\/datenschutz(\/|$)/, /^\/nutzungsbedingungen(\/|$)/]
 
 // Everything the app has is behind an account, with these exceptions: the auth screens
 // themselves, the OAuth/recovery callback, the public invite link — an anonymous
 // visitor is meant to see the party there and be offered the sign-up sheet — and the
-// two legal texts above.
+// three legal texts above.
 const PUBLIC_PATHS = [/^\/login(\/|$)/, /^\/forgot-password(\/|$)/, /^\/callback(\/|$)/, /^\/e\//, ...LEGAL]
 
 const LOGIN = /^\/login(\/|$)/

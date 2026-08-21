@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRef, useState, type KeyboardEvent } from 'react'
 import SheetLayout, {
   sheetButtonClass,
@@ -132,6 +133,25 @@ export default function SignUpForm({ onSuccess, onClose, onSignIn, initialEmail 
           Stattdessen anmelden
         </button>
       )}
+
+      {/* Die 16-Jahre-Grenze steht nirgends als Datenfeld — die App speichert bewusst
+          kein Geburtsdatum. Sie lebt in den Nutzungsbedingungen, und das hier ist die
+          Stelle, an der sie zugestimmt wird. Ohne diesen Satz trägt die Entscheidung
+          gegen das Geburtsdatum nichts.
+
+          target='_blank', damit ein Blick in die Texte das halb ausgefüllte Formular
+          nicht wegwirft — der Sheet-Schritt lebt im lokalen State, nicht in der URL. */}
+      <p className='px-1 text-center text-label-2 text-sheet-body'>
+        Mit „weiter“ bestätigst du, dass du mindestens 16 Jahre alt bist, und stimmst den{' '}
+        <Link href='/nutzungsbedingungen' target='_blank' rel='noopener noreferrer' className='underline text-sheet-heading'>
+          Nutzungsbedingungen
+        </Link>{' '}
+        und der{' '}
+        <Link href='/datenschutz' target='_blank' rel='noopener noreferrer' className='underline text-sheet-heading'>
+          Datenschutzerklärung
+        </Link>{' '}
+        zu.
+      </p>
 
       <button type='button' onClick={handleSignUp} disabled={!canContinue || saving} className={sheetButtonClass}>
         {saving ? <Spinner /> : 'weiter'}

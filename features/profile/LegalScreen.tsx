@@ -34,6 +34,13 @@ export default function LegalScreen() {
           <span className={rowLabelClass}>Datenschutz</span>
           <span className='ml-auto flex items-center'>{ChevronIcon}</span>
         </Link>
+
+        <RowDivider />
+
+        <Link href='/nutzungsbedingungen' className={rowClass}>
+          <span className={rowLabelClass}>Nutzungsbedingungen</span>
+          <span className='ml-auto flex items-center'>{ChevronIcon}</span>
+        </Link>
       </div>
     </SettingsPage>
   )

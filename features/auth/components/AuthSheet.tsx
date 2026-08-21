@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { alertError } from '@/lib/utils'
 import SheetLayout from '@/components/shared/SheetLayout'
@@ -76,6 +77,26 @@ export default function AuthSheet({
               shapeless pause the spinner exists for. */}
           {pending ? <Spinner /> : <>{GoogleIcon}Google</>}
         </button>
+      </div>
+
+      {/* Dieses Sheet ist der einzige Ort, den JEDER Fremde zu sehen bekommt: es liegt
+          über /login und über die Einladungsseite. Damit ist es auch die Stelle, an der
+          das Impressum ohne Konto erreichbar sein muss — ein Impressum muss ständig
+          verfügbar und leicht erkennbar sein, nicht erst nach der Anmeldung.
+
+          target='_blank', damit ein Blick hinein den angefangenen Login nicht wegwirft. */}
+      <div className='flex items-center justify-center gap-2 text-label-2 text-sheet-body'>
+        <Link href='/impressum' target='_blank' rel='noopener noreferrer' className='underline'>
+          Impressum
+        </Link>
+        <span aria-hidden='true'>·</span>
+        <Link href='/datenschutz' target='_blank' rel='noopener noreferrer' className='underline'>
+          Datenschutz
+        </Link>
+        <span aria-hidden='true'>·</span>
+        <Link href='/nutzungsbedingungen' target='_blank' rel='noopener noreferrer' className='underline'>
+          Nutzungsbedingungen
+        </Link>
       </div>
     </SheetLayout>
   )
